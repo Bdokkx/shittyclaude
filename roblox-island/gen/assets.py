@@ -1,10 +1,19 @@
-"""Voxel asset definitions — the single source of truth for both the Blender
+"""Voxel asset definitions: the single source of truth for both the Blender
 meshes and the Roblox part-built models.
 
 Units are studs, Y is up, origin is the asset's ground point (bottom centre).
 Each asset is a list of axis-aligned boxes (x0, y0, z0, x1, y1, z1, color)
 plus optional lights / fires.
 """
+import math
+import random
+
+from noise import vnoise, weighted
+
+ROCK_SHADES = [("rock", 3), ("rock_dark", 2), ("rock_light", 1.4), ("rock_gray", 1.2),
+               ("rock_deep", 1), ("moss", 0.25), ("moss_dark", 0.15)]
+GRAY_ROCK_SHADES = [("rock_gray", 3), ("rock", 2), ("rock_dark", 1.5), ("rock_light", 1),
+                    ("stone_dark", 1), ("rock_deep", 0.8)]
 
 
 def B(cx, y, cz, sx, sy, sz, c):
@@ -28,9 +37,13 @@ def dezfight(boxes):
     for _ in range(8):
         changed = False
         for i in range(len(bx)):
+            p = bx[i]
             for j in range(i + 1, len(bx)):
-                p, q = bx[i], bx[j]
+                q = bx[j]
                 if p[6] == q[6]:
+                    continue
+                if not (p[0] < q[3] + 1e-6 and q[0] < p[3] + 1e-6 and p[1] < q[4] + 1e-6
+                        and q[1] < p[4] + 1e-6 and p[2] < q[5] + 1e-6 and q[2] < p[5] + 1e-6):
                     continue
                 for ax in range(3):
                     if not all(_overlap(p[k], p[k + 3], q[k], q[k + 3]) for k in range(3) if k != ax):
@@ -51,30 +64,161 @@ def asset(boxes, lights=(), fires=(), tintable=False):
             "tintable": tintable}
 
 
+# ---------------------------------------------------------------- detail helpers
+
+def roughen(boxes, seed, targets=("rock", "rock_dark"), tile=3.0, prot=(0.25, 0.9),
+            shades=ROCK_SHADES):
+    """Cover the exposed side faces of big rock boxes with small protruding blocks
+    in mixed shades, giving the chunky 'stacked cubes' cliff look."""
+    rng = random.Random(seed)
+    base = list(boxes)
+    out = list(boxes)
+
+    def covered(p, me):
+        for b in base:
+            if b is me:
+                continue
+            if b[0] < p[0] < b[3] and b[1] < p[1] < b[4] and b[2] < p[2] < b[5]:
+                return True
+        return False
+
+    for b in base:
+        if b[6] not in targets:
+            continue
+        x0, y0, z0, x1, y1, z1, _ = b
+        for axis, side in ((0, 0), (0, 1), (2, 0), (2, 1)):
+            u = 2 if axis == 0 else 0
+            u0, u1 = (z0, z1) if axis == 0 else (x0, x1)
+            plane = (x0, x1)[side] if axis == 0 else (z0, z1)[side]
+            sgn = 1 if side else -1
+            nu = max(1, round((u1 - u0) / tile))
+            du = (u1 - u0) / nu
+            for a in range(nu):
+                ua, ub = u0 + a * du, u0 + (a + 1) * du
+                v = y0
+                while v < y1 - 1e-6:
+                    h = rng.choice((tile * 0.67, tile, tile * 1.33))
+                    vb = y1 if y1 - (v + h) < 1.0 else v + h
+                    probe = [0, 0, 0]
+                    probe[axis] = plane + sgn * 0.05
+                    probe[u] = (ua + ub) / 2
+                    probe[1] = (v + vb) / 2
+                    if not covered(probe, b):
+                        p = rng.uniform(*prot)
+                        lo, hi = (plane, plane + p) if side else (plane - p, plane)
+                        c = weighted(rng, shades)
+                        if axis == 0:
+                            out.append((lo, v, ua, hi, vb, ub, c))
+                        else:
+                            out.append((ua, v, lo, ub, vb, hi, c))
+                    v = vb
+    return out
+
+
+def blob_rock(seed, rx, rz, height, vox=2.0, vh=2.5, moss=0.18, shades=GRAY_ROCK_SHADES):
+    """Lumpy voxel rock built from 2-stud columns with per-voxel shading and mossy tops."""
+    rng = random.Random(seed)
+    ni, nk = int(round(2 * rx / vox)), int(round(2 * rz / vox))
+    cols = {}
+    for i in range(ni):
+        for k in range(nk):
+            x = (i + 0.5) * vox - rx
+            z = (k + 0.5) * vox - rz
+            d = math.hypot(x / rx, z / rz)
+            if d > 1:
+                continue
+            hh = height * (1 - d ** 1.5) * (0.6 + 0.7 * vnoise(i * 0.55, k * 0.55, seed))
+            cols[(i, k)] = max(1, int(round(hh / vh)))
+    boxes = []
+    for (i, k), L in cols.items():
+        x0, z0 = i * vox - rx, k * vox - rz
+        x1, z1 = x0 + vox, z0 + vox
+        lowest = min(cols.get((i + a, k + b), 0) for a, b in ((1, 0), (-1, 0), (0, 1), (0, -1)))
+        colors = [weighted(rng, shades) for _ in range(L)]
+        if rng.random() < moss:
+            colors[-1] = weighted(rng, [("moss", 3), ("moss_dark", 2), ("grass", 1)])
+        start = min(lowest, L - 1)
+        if start > 0:  # hidden core of the column
+            boxes.append((x0, 0, z0, x1, start * vh, z1, colors[0]))
+        l = start
+        while l < L:
+            m = l
+            while m + 1 < L and colors[m + 1] == colors[l]:
+                m += 1
+            boxes.append((x0, l * vh, z0, x1, (m + 1) * vh, z1, colors[l]))
+            l = m + 1
+    return boxes
+
+
 # ---------------------------------------------------------------- plants
 
-def pine(tiers=6, tip_tiers=3):
-    b = [B(0, 0, 0, 2, 4 + tiers, 2, "trunk")]
-    size = 2 * tiers
-    y = 3
+def pine(tiers, base, seed, trunk=4):
+    rng = random.Random(seed)
+    b = [B(0, 0, 0, 2, trunk + tiers * 3 - 1, 2, "trunk"),
+         B(1.25, 0, 0.2, 0.5, 1, 1, "trunk"), B(-0.2, 0, -1.25, 1, 0.8, 0.5, "trunk")]
+    s, y = base, trunk
     for i in range(tiers):
-        c = "leaf_dark" if i % 2 == 0 else "leaf"
-        b.append(B(0, y, 0, size, 3, size, c))
-        if i < tip_tiers:
-            h = size / 2 + 0.5
-            o = 1 if i % 2 else -1
-            alt = "leaf" if c == "leaf_dark" else "leaf_dark"
-            b += [B(h, y + 0.5, o, 1, 1.5, 2, alt), B(-h, y + 0.5, -o, 1, 1.5, 2, alt),
-                  B(-o, y + 0.5, h, 2, 1.5, 1, alt), B(o, y + 0.5, -h, 2, 1.5, 1, alt)]
-        size = max(2, size - 2)
+        b.append(B(0, y, 0, s, 1.5, s, "leaf_dark"))
+        b.append(B(0, y + 1.5, 0, s - 2, 1.5, s - 2, "leaf"))
+        w = 2 if s >= 6 else 1
+        for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            if rng.random() < 0.7:
+                off = rng.choice((-1, 0, 1)) * (s / 4 if s >= 8 else 0)
+                if dx:
+                    b.append(B(dx * (s / 2 + 0.5), y - 0.75, off, 1, 1.5, w, "leaf_dark"))
+                else:
+                    b.append(B(off, y - 0.75, dz * (s / 2 + 0.5), w, 1.5, 1, "leaf_dark"))
+        if s >= 6:  # sunlit rim on the skirt
+            side = rng.choice((-1, 1)) * (s / 2 - 0.5)
+            along = rng.uniform(-(s / 2 - 2), s / 2 - 2)
+            if rng.random() < 0.5:
+                b.append(B(side, y + 1.5, along, 1, 0.4, 2, "leaf_light"))
+            else:
+                b.append(B(along, y + 1.5, side, 2, 0.4, 1, "leaf_light"))
         y += 3
-    b.append(B(0, y, 0, 1, 1, 1, "leaf"))
+        s -= 2
+        if s < 2:
+            break
+    b.append(B(0, y, 0, 2, 2, 2, "leaf"))
+    b.append(B(0, y + 2, 0, 1, 1.2, 1, "leaf_light"))
     return asset(b)
 
 
 def bush():
-    return asset([B(0, 0, 0, 6, 3, 6, "leaf"), B(1, 2, -1, 4, 2, 4, "leaf_dark"),
-                  B(-2, 0, 2, 3, 4, 3, "grass_dark"), B(2.5, 0, 2, 2, 2, 2, "leaf_dark")])
+    return asset([B(0, 0, 0, 5, 2.5, 4, "leaf"), B(0.8, 2.5, -0.4, 3, 1.4, 2.6, "leaf_light"),
+                  B(-1.9, 0, 1.4, 2.6, 2, 2.6, "leaf_dark"), B(2.3, 0, 1.5, 2, 1.6, 2, "leaf_dark"),
+                  B(-1, 2.5, 0.8, 1.6, 0.8, 1.6, "leaf"), B(1.6, 1.2, -2.2, 0.6, 0.6, 0.6, "mushroom_red")])
+
+
+def grass_tuft():
+    return asset([B(0, 0, 0, 0.4, 1.6, 0.4, "grass"), B(0.55, 0, 0.3, 0.4, 1.1, 0.4, "grass_light"),
+                  B(-0.45, 0, 0.45, 0.4, 1.3, 0.4, "grass_dark"), B(0.1, 0, -0.55, 0.4, 0.9, 0.4, "grass_light")])
+
+
+def flowers():
+    b = []
+    for x, z, h in ((0, 0, 1.4), (0.9, 0.5, 1.0), (-0.7, 0.7, 1.2)):
+        b.append(B(x, 0, z, 0.25, h, 0.25, "grass_dark"))
+        b.append(B(x, h, z, 0.7, 0.5, 0.7, "accent"))
+    b.append(B(0.2, 0, 0.3, 1.8, 0.35, 1.4, "grass"))
+    return asset(b, tintable=True)
+
+
+def fern():
+    return asset([B(0, 0, 0, 0.6, 1.2, 0.6, "leaf"), B(0.9, 0.6, 0, 1.4, 0.3, 0.6, "leaf"),
+                  B(-0.9, 0.8, 0.1, 1.4, 0.3, 0.6, "leaf_light"), B(0, 0.7, 0.9, 0.6, 0.3, 1.4, "leaf"),
+                  B(0.1, 0.9, -0.9, 0.6, 0.3, 1.4, "leaf_light"), B(1.7, 0.3, 0, 0.4, 0.3, 0.6, "leaf")])
+
+
+def mushrooms():
+    return asset([B(0, 0, 0, 0.6, 1, 0.6, "flower_white"), B(0, 1, 0, 1.6, 0.6, 1.6, "mushroom_red"),
+                  B(0.35, 1.6, 0.2, 0.4, 0.15, 0.4, "flower_white"),
+                  B(0.9, 0, 0.7, 0.4, 0.6, 0.4, "flower_white"), B(0.9, 0.6, 0.7, 1, 0.4, 1, "mushroom_red")])
+
+
+def small_rock():
+    return asset([B(0, 0, 0, 2, 1.1, 1.6, "rock_gray"), B(0.5, 0, 0.8, 1.1, 0.7, 1, "cobble"),
+                  B(-0.3, 1.1, -0.1, 1.1, 0.5, 0.9, "rock_gray"), B(-0.9, 0, -0.6, 0.6, 0.4, 0.6, "moss")])
 
 
 def seaweed():
@@ -95,7 +239,7 @@ def tube_coral():
     b = coral_root()
     for x, z, h in [(-1.1, -1, 6), (1.2, 0, 8), (0, 1.3, 5), (-1.3, 1.2, 4), (1.4, -1.6, 3.5)]:
         b.append(B(x, 2, z, 1.6, h, 1.6, "accent"))
-        b.append(B(x, 2 + h, z, 1.0, 0.4, 1.0, "accent_dark"))  # hollow-tube rim hint
+        b.append(B(x, 2 + h, z, 1.0, 0.4, 1.0, "accent_dark"))
     return asset(b, tintable=True)
 
 
@@ -120,41 +264,22 @@ def fan_coral():
 
 # ---------------------------------------------------------------- rocks
 
-def rock():
-    return asset([B(0, 0, 0, 6, 3, 5, "rock"), B(0.5, 3, 0, 4, 2, 4, "rock_dark"),
-                  B(-2, 0, 1.5, 3, 4, 3, "rock"), B(0, 5, 0.5, 2, 1, 2, "rock")])
-
-
-def rock_spire():
-    b = []
-    layers = [(14, 4, 12, 0, 0), (12, 4, 11, 1, -1), (11, 4, 9, -1, 0), (9, 4, 8, 0, 1),
-              (7, 3, 6, 1, 0), (4, 3, 4, 0, 0)]
-    y = 0
-    for i, (sx, h, sz, ox, oz) in enumerate(layers):
-        b.append(B(ox, y, oz, sx, h, sz, "rock" if i % 2 == 0 else "rock_dark"))
-        y += h
-    b += [B(-3, 12, 2, 3, 2, 3, "rock"), B(3, 8, -3, 3, 2, 3, "rock_dark"),
-          B(0, y, 0, 3, 1, 3, "grass"), B(-1, y - 2, 2, 2, 1, 2, "grass_dark")]
-    return asset(b)
-
-
 def boulder():
     return asset([B(0, 0, 0, 9, 2, 9, "rock_light"), B(0, 2, 0, 8, 2, 8, "rock_light"),
                   B(0, 4, 0, 6.5, 1.5, 6.5, "rock_light"), B(0, 5.5, 0, 4.5, 1, 4.5, "rock_light"),
-                  B(0, 6.5, 0, 2, 0.6, 2, "rock_light")])
+                  B(0, 6.5, 0, 2, 0.6, 2, "rock_light"), B(3, 0, 3.5, 3, 1.5, 3, "rock_gray")])
 
 
 def arch():
-    b = [B(-9, 0, 0, 7, 14, 8, "rock"), B(9, 0, 0, 7, 14, 8, "rock"),
-         B(0, 14, 0, 25, 6, 8, "rock_dark"), B(-6, 12, 0, 3, 2, 7.6, "rock"),
-         B(6, 12, 0, 3, 2, 7.6, "rock"), B(-11.3, 4, 1, 3, 6, 9, "rock_dark"),
-         B(10, 6, -1, 3, 5, 9, "rock_dark"),
-         B(0, 20, 0, 25, 1.5, 8, "sand"), B(0, 21.5, 0, 25, 1.5, 8, "grass"),
-         B(-7, 23, 1, 6, 2, 4, "leaf_dark"), B(6, 23, -1, 4, 3, 4, "leaf")]
+    """Natural rock arch, 26 wide x 24 tall x 10 deep, grassy top."""
+    b = [B(-9.5, 0, 0, 7, 16, 10, "rock"), B(9.5, 0, 0, 7, 16, 10, "rock"),
+         B(0, 16, 0, 26, 5, 10, "rock_dark"), B(-5, 14, 0, 2, 2, 9, "rock"), B(5, 14, 0, 2, 2, 9, "rock"),
+         B(0, 21, 0, 26, 1.5, 10, "sand"), B(0, 22.5, 0, 26, 1.5, 10, "grass")]
+    b = roughen(b, 11)
+    b += [B(-8, 24, 1, 5, 2, 4, "leaf_dark"), B(7, 24, -2, 4, 2.5, 4, "leaf"),
+          B(13.6, 18, 0, 1.4, 5, 3, "moss"), B(-13.8, 17, 2, 1.2, 6, 2, "moss_dark")]
     return asset(b)
 
-
-# ---------------------------------------------------------------- reef rock formations
 
 def reef_pinnacle():
     b = []
@@ -166,58 +291,80 @@ def reef_pinnacle():
         b.append(B(ox + sx * 0.15, y + h, oz, sx * 0.6, 0.6, sz * 0.6, "reef_sand"))
         y += h
     b.append(B(0, y, 1, 6.4, 0.8, 6.4, "reef_sand"))
-    return asset(b)
+    return asset(roughen(b, 21, tile=2.5, prot=(0.2, 0.7)))
 
 
 def reef_shelf():
-    return asset([B(-7, 0, 0, 7, 8, 7, "rock"), B(8, 0, 1, 6, 8, 6, "rock_dark"),
-                  B(0, 8, 0, 28, 3, 16, "rock"), B(2, 6, 0, 22, 2, 12, "rock_dark"),
-                  B(0, 11, 0, 27, 0.8, 15, "reef_sand"),
-                  B(-4, 11.8, 2, 10, 2, 8, "rock"), B(-4, 13.8, 2, 9, 0.6, 7, "reef_sand")])
+    b = [B(-7, 0, 0, 7, 8, 7, "rock"), B(8, 0, 1, 6, 8, 6, "rock_dark"),
+         B(0, 8, 0, 28, 3, 16, "rock"), B(2, 6, 0, 22, 2, 12, "rock_dark"),
+         B(0, 11, 0, 27, 0.8, 15, "reef_sand"),
+         B(-4, 11.8, 2, 10, 2, 8, "rock"), B(-4, 13.8, 2, 9, 0.6, 7, "reef_sand")]
+    return asset(roughen(b, 22, tile=2.5, prot=(0.2, 0.7)))
 
 
 def reef_arch():
-    return asset([B(-8, 0, 0, 6, 10, 7, "rock"), B(8, 0, 0, 6, 10, 7, "rock_dark"),
-                  B(0, 10, 0, 22, 4, 8, "rock"), B(0, 14, 0, 21, 0.7, 7, "reef_sand"),
-                  B(-5, 8, 0, 3, 2, 7, "rock_dark"), B(5, 8, 0, 3, 2, 7, "rock")])
+    b = [B(-8, 0, 0, 6, 10, 7, "rock"), B(8, 0, 0, 6, 10, 7, "rock_dark"),
+         B(0, 10, 0, 22, 4, 8, "rock"), B(0, 14, 0, 21, 0.7, 7, "reef_sand"),
+         B(-5, 8, 0, 3, 2, 7, "rock_dark"), B(5, 8, 0, 3, 2, 7, "rock")]
+    return asset(roughen(b, 23, tile=2.5, prot=(0.2, 0.7)))
 
 
 def ruin_pillar():
     return asset([B(0, 0, 0, 5, 1.5, 5, "stone_dark"), B(0, 1.5, 0, 3.5, 9, 3.5, "stone"),
                   B(0.5, 10.5, 0, 4.5, 1.5, 4.5, "stone_dark"), B(-0.5, 12, 0.5, 2.5, 1, 2.5, "stone"),
-                  B(2.5, 0, 2, 2, 1.5, 2, "stone")])
+                  B(2.5, 0, 2, 2, 1.5, 2, "stone"), B(-1.9, 3, 0.5, 0.3, 3, 1.5, "moss")])
 
 
 # ---------------------------------------------------------------- built props
 
 def dock():
-    """Origin = land end of the deck; deck top at y=0, extends toward +Z."""
+    """Origin = land end of the deck; deck top at y=0, extends toward +Z (40 long)."""
+    rng = random.Random(5)
     b = []
-    L, W = 36, 10
-    for k in range(int(L / 2)):  # planks across, alternating tone
-        b.append(B(0, -1, k * 2 + 1, W, 1, 1.9, "plank" if k % 2 else "wood"))
-    for z in range(0, L + 1, 9):
-        for x in (-W / 2 + 0.5, W / 2 - 0.5):
-            b.append(B(x, -12, min(z, L - 0.5), 1.2, 13.5, 1.2, "wood_dark"))
+    L, W = 40, 10
+    for k in range(int(L / 2)):  # planks across, slightly uneven
+        j = rng.choice((0, 0.08, 0.15))
+        b.append(B(0, -1 + j, k * 2 + 1, W, 1, 1.85, "plank" if k % 2 else "wood"))
+    for z in range(0, L + 1, 10):
+        zz = min(max(z, 0.7), L - 0.7)
+        for x in (-W / 2 - 0.2, W / 2 + 0.2):
+            b.append(B(x, -12, zz, 1.4, 13.5 if z in (L, 20) else 11.4, 1.4, "wood_dark"))
+        b.append(B(0, -2.6, zz, W, 0.8, 0.8, "wood_dark"))           # cross beam
+        b.append(B(0, -7, zz, W - 1, 0.6, 0.6, "wood_dark"))           # lower brace
     for x in (-W / 2 + 0.3, W / 2 - 0.3):
-        b.append(B(x, -1.6, L / 2, 0.6, 0.6, L, "wood_dark"))  # stringers
-    # mooring posts + rope rail at the end
-    for x in (-W / 2 + 0.5, W / 2 - 0.5):
-        b.append(B(x, 0, L - 0.5, 1.4, 4, 1.4, "wood_dark"))
-    b.append(B(0, 2.5, L - 0.5, W, 0.5, 0.5, "wood"))
-    # lantern post
-    b += [B(W / 2 - 0.5, 0, 2, 1, 9, 1, "wood_dark"), B(W / 2 - 1.5, 8, 2, 2.5, 0.6, 0.6, "wood_dark"),
-          B(W / 2 - 2.6, 6.4, 2, 1.2, 1.6, 1.2, "glow"), B(W / 2 - 2.6, 8, 2, 1.4, 0.3, 1.4, "metal")]
-    return asset(b, lights=[(W / 2 - 2.6, 7.2, 2, "glow", 18, 1.5)])
+        b.append(B(x, -1.8, L / 2, 0.6, 0.8, L, "wood_dark"))           # stringers
+    for x in (-W / 2 - 0.2, W / 2 + 0.2):                                 # rope rail, outer half
+        b.append(B(x, 1.1, 30, 0.3, 0.3, 20, "rope"))
+    # crane / lantern gallows at the land end (like the reference)
+    b += [B(-W / 2 + 0.8, 0, 3, 1.4, 14, 1.4, "wood_dark"), B(-W / 2 + 3.2, 12.6, 3, 6, 1.2, 1.2, "wood"),
+          B(-W / 2 + 2, 10.4, 3, 1, 2.2, 1, "wood_dark"),
+          B(-W / 2 + 5.4, 9.2, 3, 0.25, 3.4, 0.25, "rope"),
+          B(-W / 2 + 5.4, 7.6, 3, 1.3, 1.6, 1.3, "glow"), B(-W / 2 + 5.4, 9.2, 3, 1.6, 0.35, 1.6, "metal"),
+          B(-W / 2 + 5.4, 7.3, 3, 1.6, 0.3, 1.6, "metal")]
+    # cargo on the deck
+    b += [B(3, 0.15, 34, 2.6, 2.6, 2.6, "wood"), B(3.4, 2.75, 34.2, 2, 2, 2, "plank"),
+          B(-3, 0.15, 33, 2, 2.6, 2, "barrel"), B(-3, 0.75, 33, 2.1, 0.25, 2.1, "metal"),
+          B(-3, 2.0, 33, 2.1, 0.25, 2.1, "metal"), B(1, 0.15, 37.5, 1.6, 0.8, 1.6, "rope")]
+    # ladder down the end
+    for k in range(5):
+        b.append(B(0, -1.6 - k * 1.6, L + 0.5, 3, 0.4, 0.4, "wood_dark"))
+    b += [B(-1.5, -8.5, L + 0.5, 0.4, 8, 0.4, "wood_dark"), B(1.5, -8.5, L + 0.5, 0.4, 8, 0.4, "wood_dark")]
+    return asset(b, lights=[(-W / 2 + 5.4, 8.4, 3, "glow", 22, 1.6)])
 
 
 def rowboat():
     """Origin = waterline. Long axis Z."""
-    return asset([B(0, -1, 0, 3, 1, 9, "wood_dark"),
-                  B(-2, -0.6, 0, 1, 2.2, 10, "wood"), B(2, -0.6, 0, 1, 2.2, 10, "wood"),
-                  B(0, -0.6, 5.2, 3, 2.2, 1, "wood"), B(0, -0.6, -5.2, 3, 2.2, 1, "wood"),
-                  B(0, 0, 6.1, 1.6, 1.6, 1, "wood_dark"), B(0, 0.4, 0, 3, 0.4, 1.4, "plank"),
-                  B(0, 0.4, -3, 3, 0.4, 1.4, "plank"), B(-1, 0.8, 2, 0.4, 0.4, 6, "wood_dark")])
+    return asset([B(0, -1.2, 0, 3.2, 1, 9, "wood_dark"),
+                  B(-2, -0.8, 0, 1, 2.2, 8, "wood"), B(2, -0.8, 0, 1, 2.2, 8, "wood"),
+                  B(-1.4, -0.8, 4.6, 1, 2.2, 1.6, "wood"), B(1.4, -0.8, 4.6, 1, 2.2, 1.6, "wood"),
+                  B(0, -0.8, 5.6, 2, 2.4, 1, "wood_dark"),
+                  B(-1.4, -0.8, -4.6, 1, 2.2, 1.6, "wood"), B(1.4, -0.8, -4.6, 1, 2.2, 1.6, "wood"),
+                  B(0, -0.8, -5.2, 2.6, 2.2, 0.8, "wood_dark"),
+                  B(-2, 1.4, 0, 1.2, 0.3, 8.2, "wood_dark"), B(2, 1.4, 0, 1.2, 0.3, 8.2, "wood_dark"),
+                  B(0, 0.4, 1.5, 3, 0.4, 1.4, "plank"), B(0, 0.4, -2.5, 3, 0.4, 1.4, "plank"),
+                  B(-3.2, 1, 0.5, 2.6, 0.3, 0.3, "wood"), B(-5, 0.6, 0.5, 1.2, 0.2, 1, "wood"),
+                  B(3.2, 1, -0.5, 2.6, 0.3, 0.3, "wood"), B(5, 0.6, -0.5, 1.2, 0.2, 1, "wood"),
+                  B(0, -0.3, -3.6, 1.4, 1, 1.4, "rope")])
 
 
 def shipwreck():
@@ -229,21 +376,19 @@ def shipwreck():
         for seg_z, seg_l in ((-length / 4 - 2, length / 2 - 4), (length / 4 + 1, length / 2 - 2)):
             b.append(B(0, y, seg_z, w, h, seg_l, c))
         y += h
-    # walls above deck line + raised stern
     b += [B(-7.5, y, -14, 1, 3, 24, "ship_dark"), B(7.5, y, -14, 1, 3, 24, "ship_dark"),
           B(-7.5, y, 16, 1, 2, 22, "ship_dark"), B(7.5, y, 17, 1, 3, 20, "ship_dark"),
           B(0, y, -24, 14, 6, 8, "ship"), B(0, y + 6, -24, 15, 1, 9, "ship_dark"),
           B(0, y, -14, 14, 0.4, 24, "plank"), B(0, y, 16, 14, 0.4, 22, "plank")]
-    # bow + bowsprit
     b += [B(0, 3, 30.5, 8, 6, 3, "ship"), B(0, 6, 33, 4, 4, 3, "ship_dark"),
           B(0, 9, 38, 1.2, 1.2, 12, "wood_dark")]
-    # masts (one standing, one snapped & lying on deck)
     b += [B(0, y - 1, 6, 2, 26, 2, "wood_dark"), B(0, y + 17, 6, 16, 1, 1, "wood_dark"),
           B(0, y - 1, -10, 2, 8, 2, "wood_dark"), B(3, y + 1, -18, 1.6, 1.6, 18, "wood_dark")]
-    # ribs exposed at the break
     for z in (-3, 1):
         b.append(B(-6.5, 3, z, 1, 9, 1, "ship_dark"))
         b.append(B(6.5, 3, z, 1, 9, 1, "ship_dark"))
+    for x, yy, z in ((-8.2, 7, 10), (8.2, 5, -18), (-7.2, 4, -20), (8.2, 8, 20)):  # weed on hull
+        b.append(B(x, yy, z, 0.5, 1.5, 3, "seaweed_dk"))
     return asset(b)
 
 
@@ -252,76 +397,155 @@ def market_stall():
     for x in (-5, 5):
         for z in (-3, 3):
             b.append(B(x, 0, z, 1, 9 if z < 0 else 7.5, 1, "wood_dark"))
-    b += [B(0, 0, 3, 10, 3.5, 2, "wood"), B(0, 3.5, 3, 11, 0.5, 2.6, "plank"),
-          B(-2, 4, 3, 2, 1, 1.5, "fire"), B(1.5, 4, 3, 1.5, 1.5, 1.5, "grass"),
-          B(3.5, 4, 3.2, 1.2, 0.8, 1.2, "flag_blue")]
-    # striped awning, stepping down toward the front (+Z)
-    for row in range(5):
+    b += [B(0, 0, 3, 10, 3.5, 2, "wood"), B(0, 3.5, 3, 11, 0.5, 2.6, "plank")]
+    for k in range(5):  # front boards
+        b.append(B(-4 + k * 2, 0.4, 4.1, 1.8, 2.7, 0.2, "plank" if k % 2 else "wood_dark"))
+    for x, c in [(-3.6, "mushroom_red"), (-2.2, "fire_core"), (-0.8, "grass_light"),
+                 (0.6, "mushroom_red"), (2, "fire"), (3.6, "flag_blue")]:  # goods
+        b.append(B(x, 4, 3, 1, 0.8, 1.2, c))
+    for row in range(5):  # striped awning stepping down to the front
         yy = 9 - row * 0.4
         zz = -3.5 + row * 1.8
         for s in range(6):
-            c = "cloth" if s % 2 == 0 else "cloth_brown"
-            b.append(B(-5 + s * 2 + 0, yy, zz, 2, 0.5, 1.9, c))
-    for s in range(6):  # scalloped front edge
-        c = "cloth" if s % 2 == 0 else "cloth_brown"
-        b.append(B(-5 + s * 2, 6.8, 5.5, 2, 1.2, 0.3, c))
-    # crates & barrel beside
+            b.append(B(-5 + s * 2, yy, zz, 2, 0.5, 1.9, "cloth" if s % 2 == 0 else "cloth_brown"))
+    for s in range(6):
+        b.append(B(-5 + s * 2, 6.8, 5.5, 2, 1.2, 0.3, "cloth" if s % 2 == 0 else "cloth_brown"))
+    b += [B(0, 9.6, -3.4, 6, 1.8, 0.4, "plank"), B(0, 10, -3.65, 4, 1, 0.3, "fire")]  # sign board
     b += [B(7.5, 0, 1, 3, 3, 3, "wood"), B(7.5, 3, 1.4, 2.4, 2.4, 2.4, "plank"),
-          B(-7.5, 0, 2, 2.6, 3.6, 2.6, "wood_dark"), B(-7.5, 3.6, 2, 2.2, 0.4, 2.2, "metal")]
+          B(-7.5, 0, 2, 2.6, 3.6, 2.6, "barrel"), B(-7.5, 3.6, 2, 2.2, 0.4, 2.2, "metal"),
+          B(-7.5, 1, 2, 2.7, 0.3, 2.7, "metal")]
     return asset(b)
 
 
 def campfire():
     b = []
-    for (x, z) in [(2.5, 0), (-2.5, 0), (0, 2.5), (0, -2.5), (1.8, 1.8), (-1.8, 1.8),
-                   (1.8, -1.8), (-1.8, -1.8)]:
-        b.append(B(x, 0, z, 1.4, 1, 1.4, "stone" if (x + z) % 2 else "stone_dark"))
-    b += [B(0, 0.2, 0, 4, 0.8, 0.8, "trunk"), B(0, 0.6, 0, 0.8, 0.8, 4, "wood_dark"),
-          B(0, 1, 0, 2, 2, 2, "fire"), B(0.3, 1.5, -0.2, 1, 2.5, 1, "fire_core"),
-          B(-0.6, 1.4, 0.5, 0.7, 1.4, 0.7, "fire")]
-    # log benches
-    b += [B(0, 0, 6, 6, 1.4, 1.4, "trunk"), B(-6, 0, 0, 1.4, 1.4, 6, "trunk")]
-    return asset(b, lights=[(0, 3, 0, "fire", 26, 2)], fires=[(0, 1.5, 0, 3)])
+    for k in range(8):
+        a = k * math.pi / 4
+        b.append(B(2.6 * math.cos(a), 0, 2.6 * math.sin(a), 1.4, 1, 1.4,
+                   "stone" if k % 2 else "stone_dark"))
+    b += [B(0, 0.1, 0, 4, 0.8, 0.8, "trunk"), B(0, 0.5, 0, 0.8, 0.8, 4, "wood_dark"),
+          B(0, 0.9, 0, 2, 2, 2, "fire"), B(0.3, 1.4, -0.2, 1, 2.6, 1, "fire_core"),
+          B(-0.6, 1.3, 0.5, 0.7, 1.5, 0.7, "fire"), B(0.7, 1.1, 0.6, 0.6, 1.2, 0.6, "fire")]
+    b += [B(-3.4, 0, 0, 0.5, 4, 0.5, "wood_dark"), B(3.4, 0, 0, 0.5, 4, 0.5, "wood_dark"),
+          B(0, 3.6, 0, 7.4, 0.35, 0.35, "metal"), B(0, 2.8, 0, 1.2, 0.8, 0.8, "cloth_brown")]
+    b += [B(0, 0, 6.5, 6, 1.4, 1.4, "trunk"), B(-6.5, 0, 0, 1.4, 1.4, 6, "trunk"),
+          B(6.5, 0, -1, 1.4, 1.4, 5, "trunk")]
+    return asset(b, lights=[(0, 3.5, 0, "fire", 28, 2.2)], fires=[(0, 1.5, 0, 3)])
 
 
 def lamp_post():
     return asset([B(0, 0, 0, 1.6, 1, 1.6, "stone_dark"), B(0, 1, 0, 1, 10, 1, "wood_dark"),
                   B(0.9, 10, 0, 2.8, 0.6, 0.6, "wood_dark"), B(1.8, 8.2, 0, 1.2, 1.6, 1.2, "glow"),
-                  B(1.8, 9.8, 0, 1.6, 0.4, 1.6, "metal")],
+                  B(1.8, 9.8, 0, 1.6, 0.4, 1.6, "metal"), B(1.8, 7.9, 0, 1.6, 0.3, 1.6, "metal")],
                  lights=[(1.8, 9, 0, "glow", 20, 1.4)])
 
 
-def flag_frame():
-    b = [B(0, 0, 0, 12, 1, 5, "stone_dark"),
-         B(-5, 1, 0, 1.4, 16, 1.4, "wood_dark"), B(5, 1, 0, 1.4, 16, 1.4, "wood_dark"),
-         B(0, 15, 0, 13, 1.4, 1.4, "wood"), B(0, 12, 0, 12, 0.8, 0.8, "wood_dark"),
-         B(-4, 6, 1, 1, 1, 1, "wood_dark"), B(4, 6, 1, 1, 1, 1, "wood_dark"),
-         B(6.6, 15.2, 0, 1, 1, 1, "wood_dark")]
-    # blue banner hanging from the crossbeam
-    b += [B(0, 7, 0, 7, 8, 0.4, "flag_blue"), B(-2.5, 6, 0, 2, 1, 0.4, "flag_blue"),
-          B(2.5, 6, 0, 2, 1, 0.4, "flag_blue"),
-          B(0, 10, 0, 3, 3, 0.6, "cloth"), B(0, 10.75, 0, 1.4, 1.5, 0.8, "flag_blue")]
-    # lantern hanging
-    b += [B(-3.5, 12.6, 0.6, 0.3, 2, 0.3, "metal"), B(-3.5, 11, 0.6, 1, 1.4, 1, "glow")]
-    return asset(b, lights=[(-3.5, 11.7, 0.6, "glow", 16, 1)])
+def torch():
+    return asset([B(0, 0, 0, 0.7, 4.5, 0.7, "wood_dark"), B(0, 4.5, 0, 1, 0.5, 1, "metal"),
+                  B(0, 5, 0, 0.8, 1.2, 0.8, "fire"), B(0, 5.4, 0, 0.45, 1.1, 0.45, "fire_core")],
+                 lights=[(0, 5.6, 0, "fire", 14, 1)])
 
 
-def fence(length=8):
-    b = []
-    for x in (-length / 2, 0, length / 2):
-        b.append(B(x, 0, 0, 0.8, 4, 0.8, "wood_dark"))
-    b += [B(0, 1.4, 0, length, 0.5, 0.4, "wood"), B(0, 3, 0, length, 0.5, 0.4, "wood")]
+def wood_frame():
+    """Wooden frame with two hanging lanterns (plaza decoration from the reference)."""
+    b = [B(-5, 0, 0, 1.2, 11, 1.2, "wood_dark"), B(5, 0, 0, 1.2, 11, 1.2, "wood_dark"),
+         B(0, 11, 0, 13, 1.2, 1.4, "wood"), B(-3.9, 9.8, 0, 1, 1.2, 1, "wood_dark"),
+         B(3.9, 9.8, 0, 1, 1.2, 1, "wood_dark"), B(-5, 0, 0, 2, 0.8, 2, "stone_dark"),
+         B(5, 0, 0, 2, 0.8, 2, "stone_dark")]
+    for x in (-2, 2):
+        b += [B(x, 8.6, 0, 0.25, 2.4, 0.25, "rope"), B(x, 7.2, 0, 1.2, 1.4, 1.2, "glow"),
+              B(x, 8.6, 0, 1.5, 0.3, 1.5, "metal"), B(x, 6.9, 0, 1.5, 0.3, 1.5, "metal")]
+    return asset(b, lights=[(-2, 7.9, 0, "glow", 16, 1.1), (2, 7.9, 0, "glow", 16, 1.1)])
+
+
+def statue():
+    return asset([B(0, 0, 0, 5, 1.5, 5, "stone_dark"), B(0, 1.5, 0, 4, 2, 4, "stone"),
+                  B(-0.7, 3.5, 0, 1.2, 3.5, 1.4, "stone"), B(0.7, 3.5, 0, 1.2, 3.5, 1.4, "stone"),
+                  B(0, 7, 0, 3.2, 3.8, 1.8, "stone"), B(0, 10.8, 0, 1.8, 1.8, 1.8, "stone"),
+                  B(0, 12.6, 0, 1.2, 0.6, 1.2, "stone_dark"),
+                  B(-2.1, 7.6, 0, 1, 3, 1, "stone"), B(2.1, 7.6, 0.3, 1, 3, 1, "stone"),
+                  B(2.1, 5, 1.1, 0.5, 7.5, 0.5, "stone_dark"), B(2.1, 9.6, 1.1, 1.8, 0.4, 0.5, "stone_dark"),
+                  B(-2.8, 6.8, 0.8, 0.5, 3.2, 2.6, "stone_dark"), B(-1.2, 1.5, 2.1, 1.6, 1, 0.3, "moss")])
+
+
+def signpost():
+    return asset([B(0, 0, 0, 0.8, 7, 0.8, "wood_dark"), B(1.6, 5.2, 0, 3.6, 1.1, 0.3, "plank"),
+                  B(3.6, 5.35, 0, 0.6, 0.8, 0.3, "plank"), B(-1.4, 3.8, 0.1, 3, 1, 0.3, "wood"),
+                  B(-3.1, 3.95, 0.1, 0.5, 0.7, 0.3, "wood"), B(0, 7, 0, 1.1, 0.4, 1.1, "wood")])
+
+
+def bench():
+    return asset([B(0, 1.4, 0, 5, 0.5, 1.6, "plank"), B(-2, 0, 0, 0.6, 1.4, 1.4, "wood_dark"),
+                  B(2, 0, 0, 0.6, 1.4, 1.4, "wood_dark"), B(0, 1.9, -0.65, 5, 1.6, 0.3, "wood")])
+
+
+def well():
+    b = [B(0, 0, -2.4, 6, 3, 1.2, "stone"), B(0, 0, 2.4, 6, 3, 1.2, "stone"),
+         B(-2.4, 0, 0, 1.2, 3, 3.6, "stone_dark"), B(2.4, 0, 0, 1.2, 3, 3.6, "stone_dark"),
+         B(0, 0, 0, 3.6, 2.2, 3.6, "flag_blue"),
+         B(-2.6, 3, 0, 0.8, 5, 0.8, "wood_dark"), B(2.6, 3, 0, 0.8, 5, 0.8, "wood_dark"),
+         B(0, 6.6, 0, 6, 0.5, 0.5, "wood"), B(0, 5, 0, 0.2, 1.6, 0.2, "rope"),
+         B(0, 4.2, 0, 1, 0.9, 1, "barrel")]
+    for k in range(3):
+        b.append(B(0, 8 + k * 0.6, 0, 8 - k * 2.4, 0.6, 4, "cloth_brown" if k % 2 else "wood_dark"))
     return asset(b)
+
+
+def flag_frame():
+    b = [B(0, 0, 0, 13, 1, 6, "stone_dark"), B(0, 1, 0, 11, 0.4, 4.4, "plank"),
+         B(-5, 1, 0, 1.4, 17, 1.4, "wood_dark"), B(5, 1, 0, 1.4, 17, 1.4, "wood_dark"),
+         B(0, 16, 0, 14, 1.4, 1.4, "wood"), B(0, 12.6, 0, 9, 0.8, 0.8, "wood_dark"),
+         B(-3.9, 14.8, 0, 1, 1.2, 1, "wood_dark"), B(3.9, 14.8, 0, 1, 1.2, 1, "wood_dark"),
+         B(7.2, 16.2, 0, 1, 1, 1, "wood_dark"), B(-7.2, 16.2, 0, 1, 1, 1, "wood_dark")]
+    b += [B(0.5, 7, 0, 6, 8.6, 0.4, "flag_blue"), B(-1.5, 6, 0, 2, 1, 0.4, "flag_blue"),
+          B(2.5, 6, 0, 2, 1, 0.4, "flag_blue"),
+          B(0.5, 10, 0, 3, 3, 0.6, "cloth"), B(0.5, 10.75, 0, 1.4, 1.5, 0.8, "flag_blue"),
+          B(0.5, 15.6, 0, 6.4, 0.4, 0.5, "rope")]
+    b += [B(-3.6, 13.4, 0.7, 0.3, 2.4, 0.3, "metal"), B(-3.6, 11.8, 0.7, 1.1, 1.5, 1.1, "glow"),
+          B(-3.6, 13.2, 0.7, 1.4, 0.3, 1.4, "metal")]
+    return asset(b, lights=[(-3.6, 12.5, 0.7, "glow", 18, 1.2)])
+
+
+def fence():
+    """4-stud fence segment along X (fits one map cell)."""
+    return asset([B(-2, 0, 0, 0.7, 3.6, 0.7, "wood_dark"), B(2, 0, 0, 0.7, 3.6, 0.7, "wood_dark"),
+                  B(0, 1.3, 0, 4, 0.5, 0.4, "wood"), B(0, 2.7, 0, 4, 0.5, 0.4, "wood")])
 
 
 def crate_stack():
     return asset([B(0, 0, 0, 3, 3, 3, "wood"), B(3.2, 0, 0.3, 3, 3, 3, "plank"),
-                  B(1.5, 3, 0.2, 3, 3, 3, "wood"), B(-2.6, 0, 2, 2.4, 3.4, 2.4, "wood_dark"),
-                  B(-2.6, 3.4, 2, 2, 0.3, 2, "metal")])
+                  B(1.5, 3, 0.2, 3, 3, 3, "wood"), B(-2.6, 0, 2, 2.4, 3.4, 2.4, "barrel"),
+                  B(-2.6, 3.4, 2, 2, 0.3, 2, "metal"), B(-2.6, 1, 2, 2.5, 0.25, 2.5, "metal"),
+                  B(0, 0.2, 0, 3.1, 0.4, 3.1, "wood_dark")])
+
+
+def barrels():
+    b = []
+    for x, z in ((0, 0), (2.3, 0.6), (1, 2.2)):
+        b += [B(x, 0, z, 2, 2.6, 2, "barrel"), B(x, 0.5, z, 2.1, 0.25, 2.1, "metal"),
+              B(x, 1.9, z, 2.1, 0.25, 2.1, "metal"), B(x, 2.6, z, 1.6, 0.15, 1.6, "wood_dark")]
+    return asset(b)
+
+
+def log_pile():
+    return asset([B(0, 0, -0.8, 6, 1.5, 1.5, "trunk"), B(0.3, 0, 0.8, 6, 1.5, 1.5, "trunk"),
+                  B(0.1, 1.5, 0, 6, 1.5, 1.5, "wood_dark"), B(-3.1, 0, -0.8, 0.2, 1.5, 1.5, "plank"),
+                  B(-2.8, 0, 0.8, 0.2, 1.5, 1.5, "plank")])
+
+
+def cave_entrance():
+    """Mine/cave mouth set against a cliff face. Origin = ground at the face; +Z = out of the cliff."""
+    return asset([B(0, 0, 0.1, 6, 8, 0.2, "cave_dark"),
+                  B(-3.6, 0, 0.6, 1.2, 9, 1.2, "wood_dark"), B(3.6, 0, 0.6, 1.2, 9, 1.2, "wood_dark"),
+                  B(0, 9, 0.6, 9, 1.4, 1.4, "wood"), B(0, 0, 0.6, 6, 0.3, 1.2, "plank"),
+                  B(4.9, 4, 1.4, 0.3, 4, 0.3, "metal"), B(4.9, 6.6, 1.4, 1.1, 1.5, 1.1, "glow"),
+                  B(4.9, 8.1, 1.4, 1.4, 0.3, 1.4, "metal"),
+                  B(-5.5, 0, 2, 2.2, 1.6, 2, "rock_gray"), B(-2, 0, 3, 1.6, 1.4, 1.2, "barrel"),
+                  B(2, 0, 3.4, 2.2, 0.5, 1.2, "plank")],
+                 lights=[(4.9, 7.3, 1.4, "glow", 18, 1.3)])
 
 
 def stairs(width=6, steps=6, rise=1.5, run=2):
-    """Wooden stairs climbing toward +Z, origin at the bottom front."""
     b = []
     for k in range(steps):
         b.append(B(0, 0, k * run + run / 2, width, (k + 1) * rise, run, "plank" if k % 2 else "wood"))
@@ -332,11 +556,18 @@ def stairs(width=6, steps=6, rise=1.5, run=2):
 
 
 ASSETS = {
-    "PineTree": pine(6, 3),
-    "PineTreeTall": pine(8, 4),
+    "PineTree": pine(6, 12, 1),
+    "PineTreeTall": pine(7, 14, 2),
+    "PineTreeSmall": pine(4, 8, 3, trunk=3),
     "Bush": bush(),
-    "Rock": rock(),
-    "RockSpire": rock_spire(),
+    "GrassTuft": grass_tuft(),
+    "Flowers": flowers(),
+    "Fern": fern(),
+    "Mushrooms": mushrooms(),
+    "SmallRock": small_rock(),
+    "RockOutcrop": asset(blob_rock(31, 8, 7, 18)),
+    "RockOutcropBig": asset(blob_rock(32, 11, 9, 26, shades=GRAY_ROCK_SHADES)),
+    "RockOutcropSmall": asset(blob_rock(33, 4.5, 4, 8)),
     "Boulder": boulder(),
     "Arch": arch(),
     "Seaweed": seaweed(),
@@ -353,9 +584,18 @@ ASSETS = {
     "MarketStall": market_stall(),
     "Campfire": campfire(),
     "LampPost": lamp_post(),
+    "Torch": torch(),
+    "WoodFrame": wood_frame(),
+    "Statue": statue(),
+    "Signpost": signpost(),
+    "Bench": bench(),
+    "Well": well(),
     "FlagFrame": flag_frame(),
     "Fence": fence(),
     "CrateStack": crate_stack(),
+    "Barrels": barrels(),
+    "LogPile": log_pile(),
+    "CaveEntrance": cave_entrance(),
     "WoodenStairs": stairs(),
 }
 
@@ -365,3 +605,8 @@ def bounds(name):
     mn = [min(b[i] for b in bx) for i in range(3)]
     mx = [max(b[i + 3] for b in bx) for i in range(3)]
     return mn, mx
+
+
+if __name__ == "__main__":
+    for n, a in ASSETS.items():
+        print(f"{n:18s} {len(a['boxes']):4d} boxes")

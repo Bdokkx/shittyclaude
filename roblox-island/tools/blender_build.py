@@ -13,6 +13,10 @@ import bpy
 argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 ROOT = os.path.abspath(argv[0] if argv else ".")
 RENDER = "--no-render" not in argv
+OPTS = dict(a[2:].split("=", 1) for a in argv if a.startswith("--") and "=" in a)
+ONLY = OPTS.get("only")          # assets | island | reef
+SAMPLES = int(OPTS["samples"]) if "samples" in OPTS else None
+RES = int(OPTS.get("res", 100))
 sys.path.insert(0, os.path.join(ROOT, "gen"))
 
 from assets import ASSETS, bounds  # noqa: E402
@@ -212,13 +216,13 @@ def setup_world(scene, strength=1.0):
 def setup_render(scene, w, h, samples=48):
     scene.render.engine = "CYCLES"
     scene.cycles.device = "CPU"
-    scene.cycles.samples = samples
+    scene.cycles.samples = SAMPLES or samples
     scene.cycles.max_bounces = 4
     scene.cycles.use_denoising = False  # distro Blender builds often lack OIDN
     scene.cycles.filter_width = 1.2
     scene.render.resolution_x = w
     scene.render.resolution_y = h
-    scene.render.resolution_percentage = 100
+    scene.render.resolution_percentage = RES
     scene.view_settings.view_transform = "Standard"
     scene.view_settings.exposure = -0.35
     scene.render.threads_mode = "AUTO"
@@ -268,72 +272,73 @@ def map_objects(m, coll, mats, ocean_mat, prefix):
 
 
 # ================================================================= 1. assets
-reset()
-scene = bpy.context.scene
-img = make_palette_image()
-mat, glow = palette_material(img), palette_material(img, glow=True)
-coll = bpy.data.collections.new("VoxelAssets")
-scene.collection.children.link(coll)
+if ONLY in (None, "assets"):
+    reset()
+    scene = bpy.context.scene
+    img = make_palette_image()
+    mat, glow = palette_material(img), palette_material(img, glow=True)
+    coll = bpy.data.collections.new("VoxelAssets")
+    scene.collection.children.link(coll)
 
-variants = []
-for name, a in ASSETS.items():
-    if a["tintable"]:
-        variants += [(name + "_" + t, name, k + 1) for k, t in enumerate(TINT_NAMES)]
-    else:
-        variants.append((name, name, 0))
+    variants = []
+    for name, a in ASSETS.items():
+        if a["tintable"]:
+            variants += [(name + "_" + t, name, k + 1) for k, t in enumerate(TINT_NAMES)]
+        else:
+            variants.append((name, name, 0))
 
-objects = {}
-for vname, name, tint in variants:
-    mb = MeshBuilder()
-    mb.asset(name, tint=tint)
-    objects[vname] = mb.to_object(vname, [mat, glow], coll)
-
-
-def export_one(ob, vname):
-    bpy.ops.object.select_all(action="DESELECT")
-    ob.select_set(True)
-    bpy.context.view_layer.objects.active = ob
-    bpy.ops.export_scene.fbx(filepath=os.path.join(EXP, "fbx", vname + ".fbx"), use_selection=True,
-                             path_mode="COPY", embed_textures=True, axis_forward="-Z", axis_up="Y",
-                             apply_scale_options="FBX_SCALE_ALL", mesh_smooth_type="FACE")
-    bpy.ops.export_scene.gltf(filepath=os.path.join(EXP, "glb", vname + ".glb"), use_selection=True,
-                              export_format="GLB")
-    bpy.ops.wm.obj_export(filepath=os.path.join(EXP, "obj", vname + ".obj"),
-                          export_selected_objects=True, path_mode="RELATIVE",
-                          forward_axis="NEGATIVE_Z", up_axis="Y")
+    objects = {}
+    for vname, name, tint in variants:
+        mb = MeshBuilder()
+        mb.asset(name, tint=tint)
+        objects[vname] = mb.to_object(vname, [mat, glow], coll)
 
 
-for vname, ob in objects.items():
-    export_one(ob, vname)
-print("exported", len(objects), "asset variants")
+    def export_one(ob, vname):
+        bpy.ops.object.select_all(action="DESELECT")
+        ob.select_set(True)
+        bpy.context.view_layer.objects.active = ob
+        bpy.ops.export_scene.fbx(filepath=os.path.join(EXP, "fbx", vname + ".fbx"), use_selection=True,
+                                 path_mode="COPY", embed_textures=True, axis_forward="-Z", axis_up="Y",
+                                 apply_scale_options="FBX_SCALE_ALL", mesh_smooth_type="FACE")
+        bpy.ops.export_scene.gltf(filepath=os.path.join(EXP, "glb", vname + ".glb"), use_selection=True,
+                                  export_format="GLB")
+        bpy.ops.wm.obj_export(filepath=os.path.join(EXP, "obj", vname + ".obj"),
+                              export_selected_objects=True, path_mode="RELATIVE",
+                              forward_axis="NEGATIVE_Z", up_axis="Y")
 
-# lay the base (untinted / pink) variants out on a grid for the contact sheet
-shown = [v for v in variants if v[2] in (0, 1) and v[0] != "Shipwreck"]
-cols = 6
-cell = 44
-for k, (vname, name, tint) in enumerate(shown):
-    ob = objects[vname]
-    r, c = divmod(k, cols)
-    ob.location = ((c - (cols - 1) / 2) * cell, -r * cell, -bounds(name)[0][1])
-    if name in ("Dock", "WoodenStairs"):
-        ob.rotation_euler = (0, 0, math.radians(90))
-rows = math.ceil(len(shown) / cols) + 1
-ship = objects["Shipwreck"]
-ship.location = (0, -(rows - 1) * cell - 4, 0)
-ship.rotation_euler = (0, 0, math.radians(90))
-shown.append(("Shipwreck", "Shipwreck", 0))
-for vname, ob in objects.items():
-    if vname not in [v[0] for v in shown]:
-        ob.hide_render = True
-        ob.location = (0, 0, -500)
-ground = MeshBuilder()
-ground.box((-170, -2, -60, 170, 0, 260, "reef_sand"))
-ground.to_object("Floor", [mat, glow], scene.collection)
-setup_world(scene)
-setup_render(scene, 1600, 1100, 64)
-add_camera(scene, (0, -rows * cell * 0.5 - 230, 200), (0, -rows * cell * 0.5 + 6, 0), lens=36)
-bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, "voxel_assets.blend"))
-render(scene, os.path.join(PREV, "assets_contact_sheet.png"))
+
+    for vname, ob in objects.items():
+        export_one(ob, vname)
+    print("exported", len(objects), "asset variants")
+
+    # lay the base (untinted / pink) variants out on a grid for the contact sheet
+    shown = [v for v in variants if v[2] in (0, 1) and v[0] != "Shipwreck"]
+    cols = 6
+    cell = 44
+    for k, (vname, name, tint) in enumerate(shown):
+        ob = objects[vname]
+        r, c = divmod(k, cols)
+        ob.location = ((c - (cols - 1) / 2) * cell, -r * cell, -bounds(name)[0][1])
+        if name in ("Dock", "WoodenStairs"):
+            ob.rotation_euler = (0, 0, math.radians(90))
+    rows = math.ceil(len(shown) / cols) + 1
+    ship = objects["Shipwreck"]
+    ship.location = (0, -(rows - 1) * cell - 4, 0)
+    ship.rotation_euler = (0, 0, math.radians(90))
+    shown.append(("Shipwreck", "Shipwreck", 0))
+    for vname, ob in objects.items():
+        if vname not in [v[0] for v in shown]:
+            ob.hide_render = True
+            ob.location = (0, 0, -500)
+    ground = MeshBuilder()
+    ground.box((-170, -2, -60, 170, 0, rows * cell + 40, "reef_sand"))
+    ground.to_object("Floor", [mat, glow], scene.collection)
+    setup_world(scene)
+    setup_render(scene, 1600, 1100, 64)
+    add_camera(scene, (0, -rows * cell * 0.5 - 250, 250), (0, -rows * cell * 0.5 + 4, 0), lens=33)
+    bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, "voxel_assets.blend"))
+    render(scene, os.path.join(PREV, "assets_contact_sheet.png"))
 
 # ================================================================= 2. maps
 reset()
@@ -346,27 +351,32 @@ setup_render(scene, 1700, 960, 64)
 
 isl_coll = bpy.data.collections.new("VoxelIsland")
 scene.collection.children.link(isl_coll)
-island = build_island()
-map_objects(island, isl_coll, [mat, glow], ocean, "Island")
-
 reef_coll = bpy.data.collections.new("CoralReef")
 scene.collection.children.link(reef_coll)
-reef = build_reef()
-reef_objs = map_objects(reef, reef_coll, [mat, glow], ocean, "Reef")
-REEF_OFFSET = (0, -700, 0)  # Roblox (0,0,700) -> Blender (0,-700,0)
-for ob in reef_objs:
-    ob.location = REEF_OFFSET
+if ONLY in (None, "island"):
+    map_objects(build_island(), isl_coll, [mat, glow], ocean, "Island")
+if ONLY in (None, "reef"):
+    reef_objs = map_objects(build_reef(), reef_coll, [mat, glow], ocean, "Reef")
+    REEF_OFFSET = (0, -700, 0)  # Roblox (0,0,700) -> Blender (0,-700,0)
+    for ob in reef_objs:
+        ob.location = REEF_OFFSET
 
-bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, "voxel_maps.blend"))
+if ONLY is None:
+    bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, "voxel_maps.blend"))
 
-# island view (from the south, like the reference shot)
-reef_coll.hide_render = True
-add_camera(scene, (40, -330, 230), (0, -10, 8), lens=32)
-render(scene, os.path.join(PREV, "island.png"))
+if ONLY in (None, "island"):
+    reef_coll.hide_render = True
+    isl_coll.hide_render = False
+    # overview from the south-east, like the reference shot
+    add_camera(scene, (60, -360, 250), (0, -5, 14), lens=30)
+    render(scene, os.path.join(PREV, "island.png"))
+    # close-up of the village and the stairs
+    add_camera(scene, (40, -175, 75), (2, -55, 18), lens=30)
+    render(scene, os.path.join(PREV, "island_village.png"))
 
-# reef view
-reef_coll.hide_render = False
-isl_coll.hide_render = True
-add_camera(scene, (-150, -700 - 260, 150), (10, -700 + 10, 0), lens=30)
-render(scene, os.path.join(PREV, "reef.png"))
+if ONLY in (None, "reef"):
+    reef_coll.hide_render = False
+    isl_coll.hide_render = True
+    add_camera(scene, (-150, -700 - 260, 150), (10, -700 + 10, 0), lens=30)
+    render(scene, os.path.join(PREV, "reef.png"))
 print("done")

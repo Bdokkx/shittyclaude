@@ -24,6 +24,7 @@ local CONFIG = {
 	-- true: fill real Roblox terrain water around the island (recommended)
 	-- false: use a translucent "Ocean" part instead
 	UseTerrainWater = true,
+	SetupLighting = true, -- bright, saturated lighting + clear turquoise water like the reference
 	ReefUnderwater = false, -- also flood the reef with terrain water
 
 	Studs = true, -- stud surfaces on every face, like the screenshots
@@ -140,7 +141,7 @@ local function addLights(model, def, cf, scale)
 		light.Color = color3(l[4])
 		light.Range = l[5] * scale
 		light.Brightness = l[6]
-		light.Shadows = true
+		light.Shadows = l[6] >= 2 -- only the big lights cast shadows (cheaper)
 		light.Parent = holder
 		holder.Parent = model
 	end
@@ -276,6 +277,56 @@ function Builder.buildMap(mapName, data, origin, parent)
 	return root
 end
 
+-- Lighting / water look used for the reference renders. Safe to run more than once.
+function Builder.setupLighting()
+	local Lighting = game:GetService("Lighting")
+	pcall(function()
+		Lighting.Technology = Enum.Technology.Future -- only settable from Studio / command bar
+	end)
+	Lighting.ClockTime = 14.2
+	Lighting.GeographicLatitude = 30
+	Lighting.Brightness = 3.2
+	Lighting.Ambient = Color3.fromRGB(96, 104, 128)
+	Lighting.OutdoorAmbient = Color3.fromRGB(150, 158, 182)
+	Lighting.EnvironmentDiffuseScale = 0.6
+	Lighting.EnvironmentSpecularScale = 0.3
+	Lighting.GlobalShadows = true
+	Lighting.ShadowSoftness = 0.25
+	local function ensure(class, name)
+		local o = Lighting:FindFirstChild(name) or Instance.new(class)
+		o.Name = name
+		o.Parent = Lighting
+		return o
+	end
+	local atmo = ensure("Atmosphere", "VoxelAtmosphere")
+	atmo.Density = 0.28
+	atmo.Offset = 0.15
+	atmo.Haze = 0.6
+	atmo.Glare = 0.2
+	atmo.Color = Color3.fromRGB(205, 225, 245)
+	atmo.Decay = Color3.fromRGB(120, 150, 190)
+	local cc = ensure("ColorCorrectionEffect", "VoxelColor")
+	cc.Saturation = 0.22
+	cc.Contrast = 0.1
+	cc.Brightness = 0.02
+	cc.TintColor = Color3.fromRGB(255, 251, 245)
+	local bloom = ensure("BloomEffect", "VoxelBloom")
+	bloom.Intensity = 0.35
+	bloom.Size = 22
+	bloom.Threshold = 1.6
+	local rays = ensure("SunRaysEffect", "VoxelSunRays")
+	rays.Intensity = 0.04
+	rays.Spread = 0.6
+	local terrain = workspace:FindFirstChildOfClass("Terrain")
+	if terrain then
+		terrain.WaterColor = Color3.fromRGB(24, 118, 168)
+		terrain.WaterTransparency = 0.75
+		terrain.WaterReflectance = 0.25
+		terrain.WaterWaveSize = 0.08
+		terrain.WaterWaveSpeed = 6
+	end
+end
+
 function Builder.buildReefWater(origin)
 	local terrain = workspace and workspace:FindFirstChildOfClass("Terrain")
 	if terrain then
@@ -315,6 +366,9 @@ end
 -- main
 ----------------------------------------------------------------------------
 local t0 = os.clock()
+if CONFIG.SetupLighting then
+	Builder.setupLighting()
+end
 if CONFIG.BuildIsland then
 	Builder.buildMap("VoxelIsland", MAPS.Island, CONFIG.IslandOrigin, workspace)
 end

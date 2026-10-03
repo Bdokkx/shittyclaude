@@ -11,7 +11,12 @@ import math
 import random
 
 from assets import ASSETS
+from island import ROCK as ROCK_FACADE
+from island import build_island  # noqa: F401  (re-exported)
+from island import facade_boxes
 from palette import TINT_NAMES
+
+REEF_LIP = [("reef_sand", 4), ("reef_sand_dk", 1.5), ("sand_light", 1)]
 
 CELL = 4  # studs per voxel column
 
@@ -74,226 +79,6 @@ def prop(name, x, y, z, rot=0, scale=1, tint=0, rx=0, rz=0):
             round(rx, 1), round(rz, 1))
 
 
-# ================================================================ ISLAND
-
-BED = -10          # bottom of every island column
-WATER_Y = 0
-BEACH_TOP = 4
-TIER_STEP = 8      # tier k top = 4 + 8k
-PLAZA_TOP = 20     # tier 2
-
-
-def tier_top(t):
-    return BEACH_TOP + TIER_STEP * t
-
-
-def build_island(seed=7):
-    rng = random.Random(seed)
-    N = 100
-    cx = cz = N / 2
-    R = 31.0
-
-    tier = {}  # (i,j) -> -2 deep, -1 shallow, 0 beach, 1..6 land
-    for j in range(N):
-        for i in range(N):
-            dx, dz = (i + 0.5 - cx) / R, (j + 0.5 - cz) / R
-            wob = (fbm(i / 9, j / 9, seed + 1) - 0.5) * 0.42
-            r = math.hypot(dx, dz) + wob
-            land = 1 - r
-            m = math.exp(-((i - cx) ** 2 + (j - (cz - 8)) ** 2) / (2 * 9 ** 2))
-            n = (fbm(i / 5, j / 5, seed + 2) - 0.5) * 0.35
-            v = land * 1.1 + m * 0.75 + n
-            if v < -0.12:
-                t = -2
-            elif v < 0:
-                t = -1
-            elif v < 0.07:
-                t = 0
-            else:
-                t = min(8, 1 + int((v - 0.07) / 0.19))
-            tier[(i, j)] = t
-
-    # ---- plaza (flattened, path-surfaced) south of the mountain
-    pci, pcj = int(cx), int(cz + 13)
-    plaza_r = 7.5
-    surf = {}
-    tops = {}
-    for (i, j), t in tier.items():
-        d = math.hypot(i - pci, j - pcj)
-        if d <= plaza_r:
-            tier[(i, j)] = 2
-            surf[(i, j)] = "path"
-        elif d <= plaza_r + 2.5 and tier[(i, j)] < 2:
-            tier[(i, j)] = 2
-
-    # ---- stair path from the plaza south to the beach
-    path_cells = set()
-    j = pcj + int(plaza_r)
-    shore_j = None
-    for jj in range(j, N):
-        if tier[(pci, jj)] < 0:
-            shore_j = jj
-            break
-    assert shore_j is not None
-    top = PLAZA_TOP
-    path_top = {}
-    for jj in range(j, shore_j):
-        if jj > j:
-            top = max(BEACH_TOP, top - 2)
-        for ii in (pci - 1, pci, pci + 1):
-            path_top[(ii, jj)] = top
-            path_cells.add((ii, jj))
-    # widen the beach around the landing
-    for jj in range(shore_j - 3, shore_j):
-        for ii in range(pci - 4, pci + 5):
-            if (ii, jj) not in path_cells and tier[(ii, jj)] >= 0:
-                tier[(ii, jj)] = 0
-
-    # ---- grid of column keys
-    grid = {}
-    for (i, j), t in tier.items():
-        if (i, j) in path_top:
-            pt = path_top[(i, j)]
-            kind = "beach" if pt == BEACH_TOP else "land"
-            grid[(i, j)] = (kind, pt, "sand" if kind == "beach" else "cobble")
-            tops[(i, j)] = pt
-            continue
-        if t == -2:
-            continue
-        if t == -1:
-            grid[(i, j)] = ("shallow", -4, "sand")
-            tops[(i, j)] = -4
-        elif t == 0:
-            grid[(i, j)] = ("beach", BEACH_TOP, "sand")
-            tops[(i, j)] = BEACH_TOP
-        else:
-            s = surf.get((i, j))
-            if s is None:
-                s = "grass_dark" if fbm(i / 6, j / 6, seed + 9) > 0.58 else "grass"
-            grid[(i, j)] = ("land", tier_top(t), s)
-            tops[(i, j)] = tier_top(t)
-
-    def wx(i):
-        return (i - N / 2 + 0.5) * CELL
-
-    terrain = []
-    for i0, j0, i1, j1, (kind, top, s) in greedy(grid, N, N):
-        x0, z0 = (i0 - N / 2) * CELL, (j0 - N / 2) * CELL
-        x1, z1 = (i1 + 1 - N / 2) * CELL, (j1 + 1 - N / 2) * CELL
-        if kind in ("shallow", "beach"):
-            terrain.append((x0, BED, z0, x1, top, z1, s))
-        else:
-            terrain.append((x0, BED, z0, x1, top - 3, z1, "rock"))
-            terrain.append((x0, top - 3, z0, x1, top - 1.5, z1, "sand"))
-            terrain.append((x0, top - 1.5, z0, x1, top, z1, s))
-    half = 300
-    terrain.append((-half, BED - 4, -half, half, BED, half, "seabed"))
-
-    # ---- props
-    props = []
-    blocked = set()
-
-    def block(ci, cj, r):
-        for jj in range(cj - r, cj + r + 1):
-            for ii in range(ci - r, ci + r + 1):
-                blocked.add((ii, jj))
-
-    for (i, j) in path_cells:
-        block(i, j, 1)
-    for (i, j), s in surf.items():
-        if s == "path":
-            block(i, j, 1)
-
-    px, pz = wx(pci), wx(pcj)
-    props.append(prop("Campfire", px, PLAZA_TOP, pz, 15))
-    props.append(prop("MarketStall", px - 14, PLAZA_TOP, pz - 12, 10))
-    props.append(prop("CrateStack", px + 13, PLAZA_TOP, pz - 13, -20))
-    props.append(prop("RuinPillar", px + 21, PLAZA_TOP, pz + 4, 30))
-    props.append(prop("RuinPillar", px - 22, PLAZA_TOP, pz + 2, -15, 0.9))
-    for a in (45, 135, 225, 315):
-        props.append(prop("LampPost", px + 24 * math.cos(math.radians(a)), PLAZA_TOP,
-                          pz + 24 * math.sin(math.radians(a)), -a))
-    props.append(prop("Fence", px - 10, PLAZA_TOP, pz - 27, 0))
-    props.append(prop("Fence", px + 10, PLAZA_TOP, pz - 27, 0))
-    spawn = (px, PLAZA_TOP, pz + 18)
-
-    # lamps along the stair path, alternating sides
-    rows = sorted({jj for (_, jj) in path_cells})
-    for k, jj in enumerate(rows[1::3]):
-        ii = pci - 1 if k % 2 else pci + 1
-        props.append(prop("LampPost", wx(ii) + (-1.2 if ii < pci else 1.2), path_top[(ii, jj)],
-                          wx(jj), 180 if ii < pci else 0, 0.8))
-
-    # dock + boat at the landing
-    dock_z = (shore_j - N / 2) * CELL - 6
-    props.append(prop("Dock", px, BEACH_TOP + 0.4, dock_z, 0))
-    props.append(prop("Rowboat", px + 12, WATER_Y, dock_z + 26, 12))
-    block(pci, shore_j, 3)
-
-    # flag frame on the highest flat spot on the east side
-    best = None
-    for (i, j), t in tier.items():
-        if i < cx + 10 or t < 2 or (i, j) in blocked:
-            continue
-        if all(tier.get((i + a, j + b)) == t for a in (-1, 0, 1) for b in (-1, 0, 1)):
-            if best is None or t > best[0]:
-                best = (t, i, j)
-    if best:
-        t, i, j = best
-        props.append(prop("FlagFrame", wx(i), tier_top(t), wx(j), 90))
-        block(i, j, 2)
-
-    # rock arch on the west side
-    for i in range(N):
-        t = tier[(i, int(cz) + 4)]
-        if t >= 1:
-            ai = i + 5
-            at = tier[(ai, int(cz) + 4)]
-            props.append(prop("Arch", wx(ai), tier_top(max(at, 1)), wx(int(cz) + 4), 90))
-            block(ai, int(cz) + 4, 3)
-            break
-
-    # trees, bushes, rocks
-    trees = set()
-    cells = sorted(tier.keys())
-    rng.shuffle(cells)
-    for (i, j) in cells:
-        t = tier[(i, j)]
-        if (i, j) in blocked or (i, j) in path_top:
-            continue
-        r = rng.random()
-        jitter = lambda: rng.uniform(-1.2, 1.2)
-        if t >= 1:
-            dense = fbm(i / 8, j / 8, seed + 4)
-            if r < 0.02 + dense * 0.075 and not any((i + a, j + b) in trees
-                                                    for a in (-1, 0, 1) for b in (-1, 0, 1)):
-                name = "PineTreeTall" if rng.random() < 0.3 else "PineTree"
-                props.append(prop(name, wx(i) + jitter(), tier_top(t), wx(j) + jitter(),
-                                  rng.choice((0, 90, 180, 270)) + rng.uniform(-8, 8),
-                                  rng.uniform(0.75, 1.25)))
-                trees.add((i, j))
-            elif r < 0.30 and r > 0.27:
-                props.append(prop("Bush", wx(i), tier_top(t), wx(j), rng.uniform(0, 360),
-                                  rng.uniform(0.7, 1.2)))
-            elif r > 0.992:
-                props.append(prop("Rock", wx(i), tier_top(t), wx(j), rng.uniform(0, 360),
-                                  rng.uniform(0.6, 1.0)))
-        elif t == 0 and r < 0.025:
-            props.append(prop("Rock", wx(i), BEACH_TOP, wx(j), rng.uniform(0, 360),
-                              rng.uniform(0.7, 1.3)))
-        elif t == -1 and r < 0.022:
-            if rng.random() < 0.55:
-                props.append(prop("RockSpire", wx(i), -4, wx(j), rng.uniform(0, 360),
-                                  rng.uniform(0.6, 1.05)))
-            else:
-                props.append(prop("Rock", wx(i), -4, wx(j), rng.uniform(0, 360),
-                                  rng.uniform(1.5, 2.4)))
-
-    water = (-half, BED - 4, -half, half, WATER_Y, half)
-    return {"terrain": terrain, "props": props, "water": water, "spawn": spawn,
-            "debug": (tier, path_top, N)}
-
-
 # ================================================================ REEF
 
 def build_reef(seed=11):
@@ -327,6 +112,21 @@ def build_reef(seed=11):
         else:
             terrain.append((x0, -8, z0, x1, -3, z1, "rock"))
             terrain.append((x0, -3, z0, x1, -2, z1, s))
+
+    # chunky multi-shade blocks on every exposed edge of the reef slab
+    frng = random.Random(seed + 3)
+    profile = {"main": (-4, 1, 2), "rim": (-8, -3, -2)}
+    for (i, j), (k, s, _) in kind.items():
+        bot, band, top = profile[k]
+        for d in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nb = kind.get((i + d[0], j + d[1]))
+            lo = bot if nb is None else profile[nb[0]][2]
+            if top - lo < 1:
+                continue
+            layers = [(lo, band, ROCK_FACADE, (0.25, 0.8), (1.5, 2, 2.5)),
+                      (max(band, lo), top, REEF_LIP, (0.15, 0.35), None)]
+            facade_boxes(terrain, frng, (i - W / 2) * CELL, (j - H / 2) * CELL, d,
+                         [ly for ly in layers if ly[1] - ly[0] > 0.3])
     FLOOR = 2
 
     def wx(i):
@@ -426,14 +226,6 @@ def build_reef(seed=11):
 
 
 if __name__ == "__main__":
-    isl = build_island()
-    tier, path_top, N = isl["debug"]
-    ch = {-2: " ", -1: ".", 0: ":"}
-    for j in range(N):
-        print("".join("#" if (i, j) in path_top else ch.get(tier[(i, j)], str(tier[(i, j)]))
-                      for i in range(N)))
-    reef = build_reef()
-    for name, m in (("island", isl), ("reef", reef)):
-        nparts = len(m["terrain"]) + sum(len(ASSETS[p[0]]["boxes"]) for p in m["props"]
-                                          if p[0] in ASSETS)
-        print(name, "terrain boxes", len(m["terrain"]), "props", len(m["props"]), "≈parts", nparts)
+    for name, m in (("island", build_island()), ("reef", build_reef())):
+        nparts = len(m["terrain"]) + sum(len(ASSETS[p[0]]["boxes"]) for p in m["props"])
+        print(name, "terrain boxes", len(m["terrain"]), "props", len(m["props"]), "parts", nparts)
