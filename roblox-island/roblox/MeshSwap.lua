@@ -1,5 +1,5 @@
--- MeshSwap: replaces the part-built rocks in VoxelIsland / CoralReef with the
--- deformed, stud-textured Blender meshes.
+-- MeshSwap: replaces the part-built reef rocks in CoralReef with the deformed,
+-- stud-textured Blender meshes. (The island keeps its blocky voxel rocks on purpose.)
 --
 -- 1. File > Import 3D > exports/meshes/VoxelRockMeshes.fbx  (it lands in Workspace)
 -- 2. Paste this whole file into the Command Bar (View > Command Bar) and press Enter.
@@ -31,27 +31,11 @@ local PIECES = {
 	Boulder = {
 		{ suffix = "_Rock", min = Vector3.new(-4.867, -0.417, -4.939), max = Vector3.new(5.059, 6.873, 4.983), color = Color3.fromRGB(168, 178, 222) },
 	},
-	RockOutcrop = {
-		{ suffix = "_Rock", min = Vector3.new(-8.593, -0.718, -7.56), max = Vector3.new(8.2, 16.981, 7.307), color = Color3.fromRGB(128, 134, 174) },
-		{ suffix = "_Top", min = Vector3.new(-8.054, 1.312, -7.542), max = Vector3.new(8.06, 16.981, 7.307), color = Color3.fromRGB(100, 154, 58) },
-	},
-	RockOutcropBig = {
-		{ suffix = "_Rock", min = Vector3.new(-11.272, -0.9, -9.076), max = Vector3.new(11.485, 29.647, 9.759), color = Color3.fromRGB(128, 134, 174) },
-		{ suffix = "_Top", min = Vector3.new(-10.898, 0.954, -8.775), max = Vector3.new(11.129, 29.647, 9.759), color = Color3.fromRGB(100, 154, 58) },
-	},
-	RockOutcropSmall = {
-		{ suffix = "_Rock", min = Vector3.new(-4.526, -0.445, -4.466), max = Vector3.new(3.944, 5.049, 4.446), color = Color3.fromRGB(128, 134, 174) },
-		{ suffix = "_Top", min = Vector3.new(-4.275, 1.783, -4.355), max = Vector3.new(3.832, 5.166, 4.122), color = Color3.fromRGB(100, 154, 58) },
-	},
-	Arch = {
-		{ suffix = "_Rock", min = Vector3.new(-13.899, -0.77, -5.98), max = Vector3.new(14.194, 24.482, 5.995), color = Color3.fromRGB(112, 138, 230) },
-		{ suffix = "_Top", min = Vector3.new(-13.441, 0.25, -5.652), max = Vector3.new(13.347, 25.05, 5.556), color = Color3.fromRGB(112, 182, 62) },
-	},
 	Seaweed = {
 		{ suffix = "_Rock", min = Vector3.new(-3.223, -0.041, -3.636), max = Vector3.new(3.679, 13.116, 2.195), color = Color3.fromRGB(60, 176, 66) },
 	},
 }
-local PRECISE = { ReefShelf = true, ReefArch = true, Arch = true, ReefPinnacle = true, ReefPinnacleTall = true }
+local PRECISE = { ReefShelf = true, ReefArch = true, ReefPinnacle = true, ReefPinnacleTall = true }
 local MAPS = { "VoxelIsland", "CoralReef" }
 
 local ServerStorage = game:GetService("ServerStorage")

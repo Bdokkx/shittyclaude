@@ -115,7 +115,8 @@ def roughen(boxes, seed, targets=("rock", "rock_dark"), tile=3.0, prot=(0.25, 0.
     return out
 
 
-def blob_rock(seed, rx, rz, height, vox=2.0, vh=2.5, moss=0.18, shades=GRAY_ROCK_SHADES):
+def blob_rock(seed, rx, rz, height, vox=2.0, vh=2.5, moss=0.18, shades=GRAY_ROCK_SHADES, peak=1.5,
+              tops=(("moss", 3), ("moss_dark", 2), ("grass", 1))):
     """Lumpy voxel rock built from 2-stud columns with per-voxel shading and mossy tops."""
     rng = random.Random(seed)
     ni, nk = int(round(2 * rx / vox)), int(round(2 * rz / vox))
@@ -127,7 +128,7 @@ def blob_rock(seed, rx, rz, height, vox=2.0, vh=2.5, moss=0.18, shades=GRAY_ROCK
             d = math.hypot(x / rx, z / rz)
             if d > 1:
                 continue
-            hh = height * (1 - d ** 1.5) * (0.6 + 0.7 * vnoise(i * 0.55, k * 0.55, seed))
+            hh = height * (1 - d ** peak) * (0.6 + 0.7 * vnoise(i * 0.55, k * 0.55, seed))
             cols[(i, k)] = max(1, int(round(hh / vh)))
     boxes = []
     for (i, k), L in cols.items():
@@ -136,7 +137,7 @@ def blob_rock(seed, rx, rz, height, vox=2.0, vh=2.5, moss=0.18, shades=GRAY_ROCK
         lowest = min(cols.get((i + a, k + b), 0) for a, b in ((1, 0), (-1, 0), (0, 1), (0, -1)))
         colors = [weighted(rng, shades) for _ in range(L)]
         if rng.random() < moss:
-            colors[-1] = weighted(rng, [("moss", 3), ("moss_dark", 2), ("grass", 1)])
+            colors[-1] = weighted(rng, list(tops))
         start = min(lowest, L - 1)
         if start > 0:  # hidden core of the column
             boxes.append((x0, 0, z0, x1, start * vh, z1, colors[0]))
@@ -573,6 +574,18 @@ def stairs(width=6, steps=6, rise=1.5, run=2):
 
 ASSETS_PLACEHOLDER = object()
 
+
+def shifted(boxes, dx, dz):
+    return [(b[0] + dx, b[1], b[2] + dz, b[3] + dx, b[4], b[5] + dz, b[6]) for b in boxes]
+
+
+GRASSY = (("grass", 3), ("grass_dark", 2), ("moss", 2))
+CLIFF_CRAG = blob_rock(41, 6.5, 5.5, 32, shades=ROCK_SHADES, peak=0.75, moss=0.35, tops=GRASSY)
+CLIFF_ROCKS = (blob_rock(42, 6.5, 6, 13, shades=ROCK_SHADES, moss=0.5, tops=GRASSY)
+               + shifted(blob_rock(43, 5, 4.5, 9, shades=ROCK_SHADES, moss=0.5, tops=GRASSY), 9, 3)
+               + shifted(blob_rock(44, 4, 4, 6, shades=ROCK_SHADES, moss=0.5, tops=GRASSY), -8, -4))
+LEDGE_ROCK = blob_rock(45, 8, 6, 9, shades=ROCK_SHADES, peak=2.5, moss=0.6, tops=GRASSY)
+
 ASSETS = {
     "PineTree": pine(6, 12, 1),
     "PineTreeTall": pine(7, 14, 2),
@@ -586,6 +599,10 @@ ASSETS = {
     "RockOutcrop": asset(blob_rock(31, 8, 7, 18)),
     "RockOutcropBig": asset(blob_rock(32, 11, 9, 26, shades=GRAY_ROCK_SHADES)),
     "RockOutcropSmall": asset(blob_rock(33, 4.5, 4, 8)),
+    # rocks that sit *in* the island: cliff colours, grassy tops
+    "CliffCrag": asset(CLIFF_CRAG),
+    "CliffRocks": asset(CLIFF_ROCKS),
+    "LedgeRock": asset(LEDGE_ROCK),
     "Boulder": asset(boulder_base()),
     "Arch": arch(),
     "Seaweed": seaweed(),
@@ -619,7 +636,8 @@ ASSETS = {
 }
 
 
-# Mesh versions (built by tools/blender_meshes.py). boxes = the un-roughened base
+# Mesh versions (built by tools/blender_meshes.py) - reef only: the island keeps its
+# blocky voxel rocks so they match the cliffs. boxes = the un-roughened base
 # shape; faces pointing up get the `top` colour, the rest `rock`.
 REEF_ROCK = (118, 136, 226)
 ISLE_ROCK = (122, 132, 196)
@@ -634,13 +652,6 @@ MESH_SOURCES = {
                      faces=480),
     "Boulder": dict(boxes=boulder_base(), rock="rock_light", top="rock_light", seed=5, disp=1.6, noise=5,
                     faces=110, voxel=0.9),
-    "RockOutcrop": dict(boxes=ASSETS_PLACEHOLDER, rock="rock_gray", top="moss", seed=6, disp=2.2, noise=6,
-                        faces=420),
-    "RockOutcropBig": dict(boxes=ASSETS_PLACEHOLDER, rock="rock_gray", top="moss", seed=7, disp=2.6, noise=7,
-                           faces=620),
-    "RockOutcropSmall": dict(boxes=ASSETS_PLACEHOLDER, rock="rock_gray", top="moss", seed=8, disp=1.4,
-                             noise=4, faces=160),
-    "Arch": dict(boxes=arch_base(), rock="mesh_rock", top="grass", seed=9, disp=2.6, noise=7, faces=700),
     "Seaweed": dict(kind="seaweed", rock="seaweed", top="seaweed", seed=10),
 }
 for _n, _src in MESH_SOURCES.items():

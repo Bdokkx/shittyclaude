@@ -4,10 +4,10 @@ Two blocky, studded maps based on the reference shots:
 
 | | |
 |---|---|
-| **VoxelIsland** | terraced rocky mountain with a winding stair path and summit lookout, two cliff mesas (west with a rock arch, east with a banner and a cave entrance below), an open cobblestone village plaza (campfire, market stall, lantern frame, well, statue, signpost, benches, lamps), wooden stairs with railings down to the dock, a rowboat, stepped turquoise shallows and mossy rock stacks offshore. Every cliff is covered in chunky multi-shade blocks with a yellow band and grass lip, and the ground has grass tufts, flowers, ferns, mushrooms, bushes, rocks, fences and torches everywhere |
+| **VoxelIsland** | terraced rocky mountain with a wide stair path spiralling to a summit lookout, two cliff mesas (banner on the east one, cave entrance below it), a blocky rock arch the west path walks through, an open cobblestone village plaza (campfire, market stall, lantern frame, well, statue, signpost, benches, lamps), wide wooden stairs with railings down to the dock, a rowboat, stepped turquoise shallows. Rock crags sit half-buried at the foot of the tall cliffs and up on the mountain, with rock clusters out in the terraces and sea stacks rising from the shallows at the shoreline. Everything is built from the same chunky multi-shade blocks as the cliffs, and there's clutter everywhere (tufts, flowers, ferns, mushrooms, bushes, rocks, fences, torches) |
 | **CoralReef** | sandy reef slab with sand-colour patches, rock shelves / pinnacles / arches, boulders, ruined pillars, a tilted shipwreck and ~190 corals (tube, branch, fan, seaweed) in 6 colours |
 
-Previews (rendered in Blender from the same data, with the mesh rocks): `previews/island.png`, `previews/island_village.png`, `previews/reef.png`, `previews/rock_meshes.png`, `previews/rock_meshes_closeup.png`, `previews/assets_contact_sheet.png`.
+Previews (rendered in Blender from the same data, reef shown with the mesh rocks): `previews/island.png`, `previews/island_village.png`, `previews/island_mountain.png`, `previews/island_arch.png`, `previews/island_shore.png`, `previews/reef.png`, `previews/rock_meshes.png`, `previews/rock_meshes_closeup.png`, `previews/assets_contact_sheet.png`.
 
 ## Use it in Roblox Studio
 
@@ -20,11 +20,11 @@ Previews (rendered in Blender from the same data, with the mesh rocks): `preview
    (Future lighting, atmosphere, color correction, bloom). **This makes a big difference.** Studio's default
    lighting washes the colors out.
 
-4. **Optional: deformed mesh rocks (the look from the reference screenshots).**
+4. **Optional: deformed mesh rocks for the reef (the look from the reef reference screenshots).**
    - **File → Import 3D** → `exports/meshes/VoxelRockMeshes.fbx` (keep the defaults; it lands in Workspace).
    - Paste everything from `roblox/MeshSwap.lua` into the Command Bar and press Enter.
-   - Every reef pinnacle, shelf, arch, boulder, seaweed, offshore rock and the island arch is swapped for its
-     Blender mesh. Each piece is placed from its exact size and centre, which Blender baked into the script,
+   - Every reef pinnacle, shelf, arch, boulder and seaweed is swapped for its Blender mesh. The island keeps its
+     blocky voxel rocks on purpose, so they match its cliffs. Each piece is placed from its exact size and centre, which Blender baked into the script,
      so the importer's scale, grouping and naming (`.001` suffixes) don't matter. If the importer laid the
      meshes on their side, MeshSwap stands them back up.
    - The old part versions go to `ServerStorage.VoxelPartRocks`. Running it again is safe. To put the part

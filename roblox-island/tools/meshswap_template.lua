@@ -1,5 +1,5 @@
--- MeshSwap: replaces the part-built rocks in VoxelIsland / CoralReef with the
--- deformed, stud-textured Blender meshes.
+-- MeshSwap: replaces the part-built reef rocks in CoralReef with the deformed,
+-- stud-textured Blender meshes. (The island keeps its blocky voxel rocks on purpose.)
 --
 -- 1. File > Import 3D > exports/meshes/VoxelRockMeshes.fbx  (it lands in Workspace)
 -- 2. Paste this whole file into the Command Bar (View > Command Bar) and press Enter.
@@ -14,7 +14,7 @@ local UNDO = false
 local PIECES = {
 --@@PIECES@@
 }
-local PRECISE = { ReefShelf = true, ReefArch = true, Arch = true, ReefPinnacle = true, ReefPinnacleTall = true }
+local PRECISE = { ReefShelf = true, ReefArch = true, ReefPinnacle = true, ReefPinnacleTall = true }
 local MAPS = { "VoxelIsland", "CoralReef" }
 
 local ServerStorage = game:GetService("ServerStorage")

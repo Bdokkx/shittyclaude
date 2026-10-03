@@ -408,11 +408,24 @@ if ONLY in (None, "island"):
     reef_coll.hide_render = True
     isl_coll.hide_render = False
     # overview from the south-east, like the reference shot
-    add_camera(scene, (80, -440, 300), (0, -10, 16), lens=30)
+    add_camera(scene, (235, -335, 165), (-5, 5, 22), lens=30)
     render(scene, os.path.join(PREV, "island.png"))
     # close-up of the village and the stairs
     add_camera(scene, (50, -205, 95), (2, -52, 20), lens=30)
     render(scene, os.path.join(PREV, "island_village.png"))
+    # the mountain with its crags and the stair path
+    add_camera(scene, (150, -70, 150), (0, 50, 62), lens=30)
+    render(scene, os.path.join(PREV, "island_mountain.png"))
+    # walking up the west path towards the arch gateway
+    arch = next((p for p in build_island()["props"] if p[0] == "Arch"), None)
+    if arch:
+        ax, ay, az, rot = arch[1], arch[2], arch[3], math.radians(arch[4])
+        dx, dz = math.sin(rot), math.cos(rot)
+        add_camera(scene, to_blender((ax - dx * 70, ay + 22, az - dz * 70)), to_blender((ax, ay + 14, az)), lens=28)
+        render(scene, os.path.join(PREV, "island_arch.png"))
+    # low along the shore, sea stacks and cliff-foot rocks
+    add_camera(scene, (-250, -250, 32), (-120, -70, 16), lens=30)
+    render(scene, os.path.join(PREV, "island_shore.png"))
 
 if ONLY in (None, "reef"):
     reef_coll.hide_render = False

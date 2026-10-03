@@ -457,16 +457,99 @@ def build_island(seed=7):
     flag = (east[0] + 1, east[1] - 3)
     props.append(prop("FlagFrame", wx(flag[0]), top[flag], wx(flag[1]), 90))
     block(flag[0], flag[1], 2)
-    arch_cell = None
-    for i in range(N):
-        cell = (i, west[1] + 6)
-        if tier.get(cell, -1) == 0 and tier.get((i + 3, west[1] + 6), 0) >= 3:
-            arch_cell = cell
+    # ---- the rock arch is a gateway the west/east path walks through: pick the spot
+    # where the path cuts between the highest ground on both sides
+    best = None
+    for idx in (2, 3, 1):
+        style, pts, h0, h1 = PATHS[idx]
+        samples, total = polyline_samples(pts, step=1.0)
+        for sx, sz, sdist, dx, dz in samples:
+            f = sdist / total
+            if not 0.3 < f < 0.8:
+                continue
+            h = h0 + (h1 - h0) * f
+            px_, pz_ = -dz, dx  # perpendicular
+            walls = []
+            for side in (-1, 1):
+                cx_ = int(sx + side * px_ * (PATH_R + 1.5))
+                cz_ = int(sz + side * pz_ * (PATH_R + 1.5))
+                walls.append(top.get((cx_, cz_), BED) - h)
+            score = min(walls) + (4 if idx == 2 else 0)
+            if best is None or score > best[0]:
+                best = (score, sx, sz, dx, dz, h)
+    _, sx, sz, dx, dz, h = best
+    ax, az = (sx - N / 2) * CELL, (sz - N / 2) * CELL
+    props.append(prop("Arch", ax, h - 0.5, az, math.degrees(math.atan2(dx, dz)), 1.65))
+    block(int(sx), int(sz), 3)
+    props[:] = [p for p in props if not (p[0] in ("Torch", "Fence") and math.hypot(p[1] - ax, p[3] - az) < 18)]
+
+    # ---- rocks that grow out of the island (cliff-coloured, grassy tops)
+    feature = []
+
+    def clear_of(x, z, r):
+        return all(math.hypot(x - a, z - b) > r + rr for a, b, rr in feature)
+
+    def near_path(cell, r):
+        return any((cell[0] + a, cell[1] + b) in path or (cell[0] + a, cell[1] + b) in plaza
+                   for a in range(-r, r + 1) for b in range(-r, r + 1))
+
+    # crags and clusters half-buried at the foot of tall cliffs
+    feet = []
+    for cell, t in tier.items():
+        if cell in blocked or near_path(cell, 1):
+            continue
+        for d in DIRS:
+            nb = (cell[0] + d[0], cell[1] + d[1])
+            if nb in top and nb not in path and top[nb] - top[cell] >= 9:
+                feet.append((top[nb] - top[cell] + rng.random() * 6, cell, d))
+    feet.sort(key=lambda f: -f[0])
+    placed_feet = 0
+    for score, cell, d in feet:
+        if placed_feet >= 22:
             break
-    if arch_cell:
-        h = tier_top(4) - BEACH_TOP
-        props.append(prop("Arch", wx(arch_cell[0]) + 2, BEACH_TOP, wx(arch_cell[1]), 90, h / 24))
-        block(arch_cell[0], arch_cell[1], 3)
+        drop = top[(cell[0] + d[0], cell[1] + d[1])] - top[cell]
+        x, z = wx(cell[0]) + d[0] * 1.5, wx(cell[1]) + d[1] * 1.5
+        if drop >= 16:
+            name, sc = "CliffCrag", max(0.6, min(1.5, drop / 30))
+        else:
+            name, sc = rng.choice(("CliffRocks", "LedgeRock")), rng.uniform(0.9, 1.3)
+        if not clear_of(x, z, 9 * sc + 8):
+            continue
+        props.append(prop(name, x, top[cell] - 1.5, z, rng.uniform(0, 360), sc))
+        feature.append((x, z, 9 * sc))
+        block(cell[0], cell[1], 1)
+        placed_feet += 1
+
+    # craggy spires up on the mountain
+    mcells = [cell for cell, t in tier.items()
+              if t >= 4 and math.hypot(cell[0] - c - MOUNT[0], cell[1] - c - MOUNT[1]) < 15
+              and cell not in blocked and not near_path(cell, 2)]
+    rng.shuffle(mcells)
+    for cell in mcells[:40]:
+        x, z = wx(cell[0]), wx(cell[1])
+        sc = rng.uniform(0.6, 1.0)
+        if clear_of(x, z, 9 * sc + 14):
+            props.append(prop("CliffCrag", x, top[cell] - 2, z, rng.uniform(0, 360), sc))
+            feature.append((x, z, 9 * sc))
+            block(cell[0], cell[1], 1)
+
+    # rock clusters out in the open terraces
+    fcells = [cell for cell, t in tier.items()
+              if 1 <= t <= 3 and surface.get(cell) == "grass" and cell not in blocked
+              and not near_path(cell, 2)]
+    rng.shuffle(fcells)
+    n_field = 0
+    for cell in fcells:
+        if n_field >= 12:
+            break
+        x, z = wx(cell[0]), wx(cell[1])
+        sc = rng.uniform(0.9, 1.4)
+        if clear_of(x, z, 9 * sc + 30):
+            props.append(prop(rng.choice(("CliffRocks", "LedgeRock")), x, top[cell] - 1.5, z,
+                              rng.uniform(0, 360), sc))
+            feature.append((x, z, 9 * sc))
+            block(cell[0], cell[1], 1)
+            n_field += 1
 
     # lookout on the summit
     props.append(prop("RuinPillar", wx(peak[0] + 2), top[peak], wx(peak[1] + 1), 20))
@@ -491,7 +574,7 @@ def build_island(seed=7):
         r = rng.random()
         if t >= 1 and surface[cell] == "grass":
             dense = fbm(i / 7, j / 7, seed + 4)
-            if (not near_path and r < 0.015 + max(0, dense - 0.45) * 0.28
+            if (not near_path and r < 0.03 + max(0, dense - 0.4) * 0.3
                     and not any((i + a, j + b) in trees for a in (-2, -1, 0, 1, 2) for b in (-2, -1, 0, 1, 2))):
                 name = weighted(rng, [("PineTree", 5), ("PineTreeTall", 3), ("PineTreeSmall", 2)])
                 props.append(prop(name, x, T, z, rng.choice((0, 90, 180, 270)) + rng.uniform(-6, 6),
@@ -538,24 +621,25 @@ def build_island(seed=7):
                 props.append(prop(rng.choice(("GrassTuft", "SmallRock", "Flowers", "Fern")), x, top[nb],
                                   z, rng.uniform(0, 360), 1, rng.choice((1, 3, 6))))
 
-    # offshore rock outcrops (stand on the stepped sea floor)
+    # a few sea stacks right at the shoreline, rising out of the shallows next to the land
     placed = []
-    for cell in sorted(depth):
-        d = depth[cell]
-        if d < 2 or d > 5 or rng.random() > 0.035:
-            continue
+    shore = [cell for cell in sorted(depth) if depth[cell] <= 2]
+    rng.shuffle(shore)
+    for cell in shore:
+        if len(placed) >= 7:
+            break
         x, z = wx(cell[0]), wx(cell[1])
-        if any(math.hypot(x - a, z - b) < 30 for a, b in placed):
-            continue
-        if abs(cell[0] - pi) < 8 and cell[1] > shore_j - 2:
+        if abs(cell[0] - pi) < 9 and cell[1] > shore_j - 3:
             continue  # keep the dock approach clear
-        name = weighted(rng, [("RockOutcrop", 4), ("RockOutcropBig", 2), ("RockOutcropSmall", 3)])
-        props.append(prop(name, x, SHALLOW_Y[d], z, rng.uniform(0, 360), rng.uniform(1.3, 1.9)))
+        if any(math.hypot(x - a, z - b) < 70 for a, b in placed) or not clear_of(x, z, 14):
+            continue
+        name = weighted(rng, [("RockOutcrop", 3), ("RockOutcropBig", 2)])
+        props.append(prop(name, x, SHALLOW_Y[depth[cell]] - 0.5, z, rng.uniform(0, 360), rng.uniform(1.1, 1.5)))
         placed.append((x, z))
-    for cell in sorted(depth):
-        if depth[cell] <= 2 and rng.random() < 0.03:
-            props.append(prop("RockOutcropSmall", wx(cell[0]), SHALLOW_Y[depth[cell]], wx(cell[1]),
-                              rng.uniform(0, 360), rng.uniform(1.0, 1.6)))
+    for cell in shore:
+        if depth[cell] == 1 and rng.random() < 0.02:
+            props.append(prop("RockOutcropSmall", wx(cell[0]), -1.5, wx(cell[1]), rng.uniform(0, 360),
+                              rng.uniform(1.0, 1.5)))
 
     water = (-1000, BED - 2, -1000, 1000, 0, 1000)
     debug = {"tier": tier, "path": path, "plaza": plaza, "N": N}
