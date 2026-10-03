@@ -530,9 +530,29 @@ def build_island(theme="voxel"):
     facade_rng = random.Random(seed + 50)
     props = []
 
+    STRATA = 3.5   # rock cliffs are stacked slab layers (like the reef shelves) that line up around the island
+
     def facade(cell, d, layers):
         x0, z0 = (cell[0] - N / 2) * CELL, (cell[1] - N / 2) * CELL
-        facade_boxes(cliffs, facade_rng, x0, z0, d, layers)
+        rest = []
+        for (y0, y1, pal, pr, chunks) in layers:
+            if pal is not ROCK:
+                rest.append((y0, y1, pal, pr, chunks))
+                continue
+            fx, fz = x0 + 2 + d[0] * 2, z0 + 2 + d[1] * 2
+            k = math.floor((y0 + 40) / STRATA)
+            y = y0
+            while y < y1 - 0.3:
+                yt = min(y1, (k + 1) * STRATA - 40)
+                if y1 - yt < 1.2:
+                    yt = y1
+                n = fbm(fx / 46 + k * 1.7, fz / 46 - k * 2.3, seed + 70 + k, octaves=2)
+                p = 0.3 + 1.9 * max(0.0, n - 0.25) * 1.6
+                lr = random.Random(hash((k, int(fx // 28), int(fz // 28), seed)) & 0xFFFFFFFF)
+                cliffs.append(face_box(x0, z0, d, 0, CELL, y, yt, 0, round(p, 2), weighted(lr, ROCK)))
+                y = yt
+                k += 1
+        facade_boxes(cliffs, facade_rng, x0, z0, d, rest)
 
     cave = None
     if theme == "voxel":   # cave entrance in a clean cliff face on the east side
@@ -600,7 +620,7 @@ def build_island(theme="voxel"):
                 continue
             x0, z0 = (cell[0] - N / 2) * CELL, (cell[1] - N / 2) * CELL
             r = acc_rng.random()
-            if r < 0.10:   # ledge slab with a cap, partly set into the cliff
+            if r < 0.06:   # ledge slab with a cap, partly set into the cliff
                 y = acc_rng.uniform(lo + 2, Tc - 4)
                 th = acc_rng.choice((1.5, 2, 2.5))
                 p = acc_rng.uniform(2.6, 3.8)
@@ -609,14 +629,14 @@ def build_island(theme="voxel"):
                                         weighted(acc_rng, ROCK)))
                 accents.append(face_box(x0, z0, d, u0 - 0.3, u1 + 0.3, y + th, y + th + 0.5, -0.6, p - 0.3,
                                         T["accent_top"]))
-            elif r < 0.16:  # block clump at the cliff foot
+            elif r < 0.08:  # block clump at the cliff foot
                 for k in range(acc_rng.choice((2, 3))):
                     s = acc_rng.uniform(2.2, 3.4)
                     u = acc_rng.uniform(0, 4 - s)
                     y = lo + (k * 1.2 if k else 0)
                     accents.append(face_box(x0, z0, d, u, u + s, y - 0.5, y + s, -1.0, s * 0.9 + 1.4,
                                             weighted(acc_rng, ROCK)))
-            elif r < 0.19 and height >= 10:  # big jutting block near the top edge
+            elif r < 0.10 and height >= 10:  # big jutting block near the top edge
                 s = acc_rng.uniform(3, 4.5)
                 accents.append(face_box(x0, z0, d, 0, 4, Tc - 3 - s, Tc - 3, -1.0, 3.2, weighted(acc_rng, ROCK)))
                 accents.append(face_box(x0, z0, d, 0, 4, Tc - 3, Tc - 2.4, -0.6, 3.0, T["accent_top"]))
@@ -641,7 +661,7 @@ def build_island(theme="voxel"):
                 return True
         return False
 
-    def safe_xy(cell, x, z, margin=2.8):
+    def safe_xy(cell, x, z, margin=1.4):
         """Keep a prop `margin` studs clear of edges that drop away (the terrain mesh pulls
         those edges in). None if the cell is too narrow."""
         cx, cz = wx(cell[0]), wx(cell[1])
@@ -792,28 +812,31 @@ def build_island(theme="voxel"):
             continue
         for d in DIRS:
             nb = (cell[0] + d[0], cell[1] + d[1])
-            if nb in top and nb not in path and top[nb] - top[cell] >= 9:
+            if nb in top and nb not in path and top[nb] - top[cell] >= 7:
                 feet.append((top[nb] - top[cell] + rng.random() * 6, cell, d))
     feet.sort(key=lambda f: -f[0])
     placed_feet = 0
     for score, cell, d in feet:
-        if placed_feet >= 22:
+        if placed_feet >= 70:
             break
         drop = top[(cell[0] + d[0], cell[1] + d[1])] - top[cell]
-        x, z = wx(cell[0]) + d[0] * 1.5, wx(cell[1]) + d[1] * 1.5
+        x, z = wx(cell[0]) + d[0] * 1.8, wx(cell[1]) + d[1] * 1.8   # big rock wraps into the cliff face
         if drop >= 16:
-            name, sc = R["crag"], max(0.6, min(1.5, drop / 30))
+            name, sc = R["crag"], max(0.7, min(1.6, drop / 24))
         else:
-            name, sc = rng.choice((R["rocks"], R["ledge"])), rng.uniform(0.9, 1.3)
-        if not clear_of(x, z, 9 * sc + 8):
+            name, sc = rng.choice((R["rocks"], R["ledge"])), max(0.9, min(1.7, drop / 8))
+        if not clear_of(x, z, 9 * sc + 2):
             continue
         props.append(prop(name, x, top[cell] - 1.5, z, rng.uniform(0, 360), sc))
         feature.append((x, z, 9 * sc))
         block(cell[0], cell[1], 1)
         placed_feet += 1
         if theme == "volcanic" and rng.random() < 0.5:   # basalt column clusters next to the crags
-            props.append(prop("BasaltColumns", x + rng.uniform(-6, 6), top[cell] - 1, z + rng.uniform(-6, 6),
-                              rng.uniform(0, 360), rng.uniform(0.7, 1.1)))
+            side = rng.choice((-1, 1)) * rng.uniform(6, 9)   # beside the crag, along the cliff foot
+            bx, bz = x + d[1] * side - d[0] * 1.5, z + d[0] * side - d[1] * 1.5
+            bc = (round((bx / CELL) + N / 2 - 0.5), round((bz / CELL) + N / 2 - 0.5))
+            if top.get(bc) == top[cell]:
+                props.append(prop("BasaltColumns", bx, top[cell] - 1, bz, rng.uniform(0, 360), rng.uniform(0.7, 1.1)))
 
     if "mount" in info:  # craggy spires up the mountain
         mcells = [cell for cell, t in tier.items()

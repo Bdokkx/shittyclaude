@@ -23,6 +23,7 @@ from assets import ASSETS, MESH_SOURCES, bounds  # noqa: E402
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 import mathutils  # noqa: E402
 USE_MESHES = OPTS.get("meshes", "1") != "0"   # show rocks as the Blender meshes (final look)
+TERRAIN_MESH = OPTS.get("terrain", "0") == "1"  # optional: whole-island deformed terrain mesh instead of parts
 MESH_LIB = {}
 from maps import build_island, build_reef  # noqa: E402
 from palette import COLORS, CORAL_TINTS, TINT_NAMES, darker  # noqa: E402
@@ -301,8 +302,8 @@ def map_objects(m, coll, mats, ocean_mat, prefix, offset=(0, 0, 0)):
     lib = mesh_library()
     ground = MeshBuilder()
     extra = []
-    if USE_MESHES and "groups" in m:
-        # final look: deformed terrain mesh instead of the Ground columns + Cliffs facades
+    if TERRAIN_MESH and USE_MESHES and "groups" in m:
+        # optional look: deformed terrain mesh instead of the Ground columns + Cliffs facades
         import terrainmesh
         for gname, boxes in m["groups"]:
             if gname in ("Shallows", "Paths", "Accents"):

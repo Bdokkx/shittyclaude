@@ -1,5 +1,5 @@
-"""Quality check (every island theme): drop a ray from the base of every island prop onto the deformed terrain
-mesh (+ path tiles) and report anything floating over a receded cliff edge.
+"""Quality check (every island theme): drop a ray from the base of every island prop onto the
+island's parts (ground, slab cliffs, paths, accents, shallows) and report anything floating.
 
     blender -b -P tools/qa_island.py -- <repo-root>
 """
@@ -14,7 +14,6 @@ argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 ROOT = os.path.abspath(argv[0] if argv else ".")
 sys.path.insert(0, os.path.join(ROOT, "gen"))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
-import terrainmesh  # noqa: E402
 from island import build_island  # noqa: E402
 from themes import ORDER, THEMES  # noqa: E402
 
@@ -24,13 +23,10 @@ def qa(theme):
     coll = bpy.data.collections.new("qa")
     bpy.context.scene.collection.children.link(coll)
     m = build_island(theme)
-    objs = terrainmesh.build_island_terrain(m, coll, "/tmp")
-    # path tiles + shallows as plain boxes
+    # the island is part terrain (ground columns, slab cliffs, paths, accents): ray-cast against all of it
     import bmesh  # noqa: E402
     bm = bmesh.new()
     for gname, boxes in m["groups"]:
-        if gname not in ("Paths", "Shallows"):
-            continue
         for (x0, y0, z0, x1, y1, z1, c) in boxes:
             if x1 - x0 > 500:
                 continue
@@ -71,17 +67,6 @@ def qa(theme):
     for k, v in bad.most_common():
         print("   %-14s %3d / %d" % (k, v, total[k]))
     print("   worst:", sorted(worst, reverse=True)[:8])
-    # how well do the mesh tops match the collision column heights?
-    cells = {(i, j): t for i, j, t, k, sf in m["mesh_cells"]}
-    errs = []
-    for (i, j), t in list(cells.items())[::7]:
-        x, z = (i - m["N"] / 2 + 0.5) * m["cell"], (j - m["N"] / 2 + 0.5) * m["cell"]
-        hit, loc, *_ = scene.ray_cast(dg, Vector((x, -z, t + 30)), Vector((0, 0, -1)), distance=200)
-        if hit and abs(loc.z - t) < 6:
-            errs.append(abs(loc.z - t))
-    errs.sort()
-    print("QA top height vs collision: median %.2f, 95%% %.2f studs (%d samples)" % (
-        errs[len(errs) // 2], errs[int(len(errs) * 0.95)], len(errs)))
 
 
 for theme in ([a for a in argv[1:] if a in THEMES] or ORDER):

@@ -1,5 +1,5 @@
 -- Offline test for roblox/MeshSwap.lua (run with Lune):
---   lune run tools/test_meshswap.luau [lying]
+--   lune run tools/test_meshswap.luau [lying] [terrain]
 -- Loads every map (.rbxm) into a fake DataModel, fakes the 3D imports (rock meshes + every
 -- island's terrain) with ".001" name suffixes and wrong units (optionally laid on their side),
 -- runs MeshSwap and checks every piece lands exactly where it should, the blocky ground turns
@@ -10,8 +10,9 @@ local roblox = require("@lune/roblox")
 local process = require("@lune/process")
 local Instance, CFrame, Vector3, Color3, Enum = roblox.Instance, roblox.CFrame, roblox.Vector3, roblox.Color3, roblox.Enum
 
-local LYING = process.args[1] == "lying"
-print(LYING and "== import laid on its side ==" or "== normal import ==")
+local LYING = table.find(process.args, "lying") ~= nil
+local TERRAIN_MODE = table.find(process.args, "terrain") ~= nil   -- optional whole-island terrain mesh mode
+print((LYING and "== import laid on its side ==" or "== normal import ==") .. (TERRAIN_MODE and " + terrain mesh" or ""))
 local ISLANDS = { "VoxelIsland", "DesertCoast", "FrostCoast", "VolcanicIsland" }
 
 local game = Instance.new("DataModel")
@@ -24,6 +25,9 @@ for _, name in { "VoxelIsland", "CoralReef", "DesertCoast", "FrostCoast", "Volca
 end
 
 local src = fs.readFile("roblox/MeshSwap.lua")
+if TERRAIN_MODE then
+	src = src:gsub("local TERRAIN_MESH = false", "local TERRAIN_MESH = true")
+end
 local warnings = {}
 local function env()
 	return {
@@ -94,6 +98,17 @@ local maxErr = 0
 for _, island in ISLANDS do
 	local map = ws[island]
 	local tm = map:FindFirstChild("TerrainMesh")
+	if not TERRAIN_MODE then
+		-- default: parts terrain stays exactly as built, only the rocks became meshes
+		assert(tm == nil, island .. ": terrain mesh placed although TERRAIN_MESH = false")
+		assert(map:FindFirstChild("Cliffs"), island .. ": part cliffs must stay")
+		for _, g in map.Ground:GetChildren() do
+			assert(g.Transparency == 0, island .. ": ground must stay visible")
+		end
+		assert(#map.Accents:GetChildren() == nAccents[island], island .. ": accents must stay")
+		print(("  %-15s part terrain kept (%d cliff parts)"):format(island, #map.Cliffs:GetDescendants()))
+		continue
+	end
 	local base = map.VoxelAnchor.CFrame
 	local n = 0
 	for _, t in TERRAIN do
@@ -121,6 +136,20 @@ for _, island in ISLANDS do
 	assert(#map.Accents:GetChildren() == nAccents[island], island .. ": accents must stay")
 	assert(map:FindFirstChild("Paths") and map:FindFirstChild("Shallows"), island .. ": paths/shallows must stay")
 	print(("  %-15s %3d terrain meshes, %4d accent parts kept"):format(island, n, nAccents[island]))
+end
+-- rock pieces: every mesh rock sits where its part version was
+for _, map in ws:GetChildren() do
+	for _, d in map:GetDescendants() do
+		if d:IsA("Model") and d:GetAttribute("VoxelMesh") and d:GetAttribute("VoxelAsset") then
+			local pieces = PIECES[d:GetAttribute("VoxelAsset")]
+			local cf, sc = d:GetAttribute("VoxelPivot"), d:GetAttribute("VoxelScale")
+			for _, piece in pieces do
+				local p = d:FindFirstChild(d:GetAttribute("VoxelAsset") .. piece.suffix)
+				assert(p, "missing rock piece")
+				maxErr = math.max(maxErr, (p.CFrame.Position - (cf * CFrame.new((piece.min + piece.max) * 0.5 * sc)).Position).Magnitude)
+			end
+		end
+	end
 end
 print(("max placement error %.5f studs"):format(maxErr))
 assert(maxErr < 1e-3)
