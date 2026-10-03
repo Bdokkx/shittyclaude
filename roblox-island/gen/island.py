@@ -18,7 +18,9 @@ from collections import deque
 from noise import fbm, weighted
 
 CELL = 4
-N = 104
+N = 124
+K = 1.2       # layout scale: everything spreads out by this much (roomier map)
+PATH_R = 2.3  # path half-width in cells (~5 cells / 20 studs wide)
 BED = -10
 BEACH_TOP = 3
 TIER = 10
@@ -82,7 +84,7 @@ def facade_boxes(out, rng, x0, z0, d, layers, size=CELL):
     a, b = d
     x1, z1 = x0 + size, z0 + size
     half = size / 2
-    splits = [(0, size)] if rng.random() < 0.6 else [(0, half), (half, size)]
+    splits = [(0, size)] if rng.random() < 0.7 else [(0, half), (half, size)]
     for u0, u1 in splits:
         for y0, y1, pal, (pmin, pmax), chunks in layers:
             y = y0
@@ -127,17 +129,17 @@ def build_island(seed=7):
     c = N / 2
 
     # ------------------------------------------------------------ 1. height field (tiers)
-    MESAS = [(-27, -3, 10.5, 4.4), (27, 2, 9.5, 4.4)]
-    MOUNT = (1, -11)
+    MESAS = [(-27 * K, -3 * K, 10.5 * K, 4.4), (27 * K, 2 * K, 9.5 * K, 4.4)]
+    MOUNT = (1, -11 * K)
     tier = {}
     for j in range(N):
         for i in range(N):
             dx, dz = i + 0.5 - c, j + 0.5 - c
-            r = math.hypot(dx, dz * 1.08) / 37.5 + (fbm(i / 10, j / 10, seed + 1) - 0.5) * 0.42
+            r = math.hypot(dx, dz * 1.08) / (37.5 * K) + (fbm(i / 12, j / 12, seed + 1) - 0.5) * 0.42
             land = 1 - r
-            n = (fbm(i / 6, j / 6, seed + 2) - 0.5) * 1.3
-            base = land * 4.6 + n
-            md = math.hypot(dx - MOUNT[0], dz - MOUNT[1]) / 20
+            n = (fbm(i / 7, j / 7, seed + 2) - 0.5) * 1.3
+            base = land * 6.0 + n
+            md = math.hypot(dx - MOUNT[0], dz - MOUNT[1]) / (20 * K)
             mount = 8.8 * max(0.0, 1 - md) ** 1.05 + n * 0.45
             mesa = 0.0
             for mx, mz, mr, mh in MESAS:
@@ -152,9 +154,10 @@ def build_island(seed=7):
             tier[(i, j)] = 0 if h < 0.5 else min(9, int(h))
 
     # ------------------------------------------------------------ 2. village plaza
-    pi, pj = int(c) + 1, int(c) + 11
+    pi, pj = int(c) + 1, int(c + 11 * K)
     PLAZA_T = 2
-    plaza_r = 6.6
+    plaza_r = 8.5
+    PS = plaza_r / 6.6  # spread the plaza furniture to match
     plaza = set()
     for (i, j) in list(tier):
         d = math.hypot(i - pi, j - pj)
@@ -170,31 +173,34 @@ def build_island(seed=7):
 
     # ------------------------------------------------------------ 3. paths
     shore_j = next(jj for jj in range(pj, N) if (pi, jj) not in tier)
-    peak = max(((i, j) for (i, j) in tier if abs(i - c - MOUNT[0]) < 4 and abs(j - c - MOUNT[1]) < 4),
+    peak = max(((i, j) for (i, j) in tier if abs(i - c - MOUNT[0]) < 5 and abs(j - c - MOUNT[1]) < 5),
                key=lambda k: tier[k])
-    west = (int(c - 27), int(c - 3))
-    east = (int(c + 27), int(c + 2))
+    west = (int(c - 27 * K), int(c - 3 * K))
+    east = (int(c + 27 * K), int(c + 2 * K))
     PATHS = [
         # (style, waypoints, start height, end height)
         ("wood", [(pi + 0.5, pj + plaza_r - 0.5), (pi + 0.5, shore_j - 1.5)], tier_top(PLAZA_T), BEACH_TOP),
-        ("cobble", [(pi + 0.5, pj - plaza_r + 0.5), (pi + 6.5, pj - 10), (pi + 6, pj - 15),
-                    (pi - 1, pj - 17.5), (pi - 7, pj - 20), (pi - 4, pj - 25),
+        ("cobble", [(pi + 0.5, pj - plaza_r + 0.5), (pi + 13, pj - 17), (pi + 10, pj - 31),
+                    (pi - 3, pj - 38), (peak[0] - 6.5, peak[1] - 3.5),
                     (peak[0] + 0.5, peak[1] + 0.5)], tier_top(PLAZA_T), top[peak]),
-        ("cobble", [(pi - plaza_r + 0.5, pj + 0.5), (pi - 12, pj - 1), (pi - 19, pj - 6),
+        ("cobble", [(pi - plaza_r + 0.5, pj + 0.5), (pi - 15, pj - 1), (pi - 23, pj - 7),
                     (west[0] + 0.5, west[1] + 0.5)], tier_top(PLAZA_T), top[west]),
-        ("cobble", [(pi + plaza_r - 0.5, pj + 1.5), (pi + 13, pj - 1), (pi + 19, pj - 6),
+        ("cobble", [(pi + plaza_r - 0.5, pj + 1.5), (pi + 16, pj - 1), (pi + 23, pj - 7),
                     (east[0] + 0.5, east[1] + 0.5)], tier_top(PLAZA_T), top[east]),
     ]
     path = {}       # cell -> (top, style, dir(dx,dz), dist-from-centre)
+    near = {}       # cells beside a path -> (dist, path height): their walls get cut back
     for style, pts, h0, h1 in PATHS:
         samples, total = polyline_samples(pts)
         for sx, sz, s, dx, dz in samples:
             h = h0 + (h1 - h0) * (s / total)
             h = round(h / (1.5 if style == "wood" else 2)) * (1.5 if style == "wood" else 2)
-            for jj in range(int(sz) - 2, int(sz) + 3):
-                for ii in range(int(sx) - 2, int(sx) + 3):
+            for jj in range(int(sz) - 6, int(sz) + 7):
+                for ii in range(int(sx) - 6, int(sx) + 7):
                     d = math.hypot(ii + 0.5 - sx, jj + 0.5 - sz)
-                    if d > 1.25 or (ii, jj) in plaza:
+                    if d <= 5.5 and ((ii, jj) not in near or d < near[(ii, jj)][0]):
+                        near[(ii, jj)] = (d, h)
+                    if d > PATH_R or (ii, jj) in plaza:
                         continue
                     old = path.get((ii, jj))
                     if old is None or d < old[3]:
@@ -202,10 +208,16 @@ def build_island(seed=7):
     for cell, (h, style, _, _) in path.items():
         tier.setdefault(cell, 0)
         top[cell] = h
+    # no narrow canyons: terrain right beside a path is at most one ledge (6 studs) above it
+    for cell, (d, h) in near.items():
+        if cell in tier and cell not in path and cell not in plaza:
+            limit = h + 6 + max(0.0, d - PATH_R - 2) * 4
+            if top[cell] > limit:
+                top[cell] = limit
 
     # beach landing around the dock
-    for jj in range(shore_j - 3, shore_j):
-        for ii in range(pi - 5, pi + 7):
+    for jj in range(shore_j - 4, shore_j):
+        for ii in range(pi - 7, pi + 9):
             if (ii, jj) not in path and (ii, jj) in tier and tier[(ii, jj)] > 0:
                 tier[(ii, jj)] = 0
                 top[(ii, jj)] = BEACH_TOP
@@ -255,6 +267,16 @@ def build_island(seed=7):
             return SHALLOW_Y[depth[cell]]
         return None
 
+    def patch(cell, pal, sd):
+        """Colour from smooth noise patches (neighbours merge into bigger parts) plus a
+        sprinkle of single-cell accents."""
+        if cobble_rng.random() < 0.08:
+            return weighted(cobble_rng, pal)
+        v = fbm(cell[0] / 4.5, cell[1] / 4.5, seed + sd)
+        k = min(len(pal) - 1, int(max(0.0, (v - 0.3) / 0.4) * len(pal)))
+        order = sorted(pal, key=lambda kv: -kv[1])
+        return order[min(k, 2)][0]
+
     # ------------------------------------------------------------ 6. terrain columns
     terrain = []
     body, band, cap = {}, {}, {}
@@ -279,26 +301,30 @@ def build_island(seed=7):
                     else:
                         tiles.append((x0, T - 1, z0 + 2 * k, x0 + 4, T + jit, z0 + 2 * k + 2, cc))
             else:
-                for a in range(2):
-                    for b in range(2):
-                        jit = cobble_rng.choice((0, 0, 0.12, 0.25))
-                        tiles.append((x0 + 2 * a, T - 1, z0 + 2 * b, x0 + 2 * a + 2, T + jit,
-                                      z0 + 2 * b + 2, weighted(cobble_rng, COBBLE)))
+                if cobble_rng.random() < 0.5:   # four 2x2 cobbles
+                    rects = [(2 * a, 2 * b, 2 * a + 2, 2 * b + 2) for a in range(2) for b in range(2)]
+                elif cobble_rng.random() < 0.5:  # two 4x2 slabs
+                    rects = [(0, 0, 4, 2), (0, 2, 4, 4)]
+                else:
+                    rects = [(0, 0, 2, 4), (2, 0, 4, 4)]
+                for u0, v0, u1, v1 in rects:
+                    jit = cobble_rng.choice((0, 0, 0.12, 0.25))
+                    tiles.append((x0 + u0, T - 1, z0 + v0, x0 + u1, T + jit, z0 + v1,
+                                  weighted(cobble_rng, COBBLE)))
             continue
         if t == 0:
             body[cell] = ("sand", T - 1)
-            cap[cell] = (weighted(cobble_rng, SAND_TOP), T - 1, T)
+            cap[cell] = (patch(cell, SAND_TOP, 21), T - 1, T)
         else:
             body[cell] = ("rock", T - 3)
-            band[cell] = (weighted(cobble_rng, BAND) if cobble_rng.random() < 0.25 else "sand",
-                          T - 3, T - 1.5)
+            band[cell] = ("sand", T - 3, T - 1.5)
             pal = ROCKTOP if surface[cell] == "rocktop" else GRASS
-            cap[cell] = (weighted(cobble_rng, pal), T - 1.5, T)
+            cap[cell] = (patch(cell, pal, 23), T - 1.5, T)
     for cell, d in depth.items():
         y = SHALLOW_Y[d]
         body[cell] = ("sand_wet" if d <= 2 else "sand" if d <= 4 else "sand_dark", y)
 
-    def emit(grid_items, lo_fn):
+    def emit(grid_items, lo_fn):  # noqa: E306
         grid = {cell: key for cell, key in grid_items.items()}
         for i0, j0, i1, j1, key in greedy(grid, N, N):
             terrain.append(cell_box(i0, j0, i1, j1, lo_fn(key), key[-1], key[0]))
@@ -348,7 +374,7 @@ def build_island(seed=7):
             if T - lo < 1.6:
                 continue
             if cell in path or cell in plaza:
-                layers = [(lo, T - 3, ROCK, (0.25, 1.0), (2, 3, 4)),
+                layers = [(lo, T - 3, ROCK, (0.25, 1.0), (3, 4, 5)),
                           (T - 3, T - 1, "path_dirt", (0.15, 0.35), None)]
                 facade(cell, d, [(max(y0, lo), y1, p, pr, ch) for (y0, y1, p, pr, ch) in layers
                                  if y1 - max(y0, lo) > 0.3])
@@ -357,10 +383,10 @@ def build_island(seed=7):
             else:
                 cap_col = cap[cell][0]
                 if facade_rng.random() < 0.3:  # grass lip draping over the band
-                    layers = [(lo, T - 3, ROCK, (0.25, 1.0), (2, 3, 4)),
+                    layers = [(lo, T - 3, ROCK, (0.25, 1.0), (3, 4, 5)),
                               (T - 3, T, cap_col, (0.45, 0.7), None)]
                 else:
-                    layers = [(lo, T - 3, ROCK, (0.25, 1.0), (2, 3, 4)),
+                    layers = [(lo, T - 3, ROCK, (0.25, 1.0), (3, 4, 5)),
                               (T - 3, T - 1.5, BAND, (0.2, 0.4), None),
                               (T - 1.5, T, cap_col, (0.12, 0.3), None)]
                 facade(cell, d, [(max(y0, lo), y1, p, pr, ch) for (y0, y1, p, pr, ch) in layers
@@ -381,21 +407,22 @@ def build_island(seed=7):
     PT = tier_top(PLAZA_T)
     px, pz = wx(pi), wx(pj)
     props += [
-        prop("Campfire", px, PT, pz + 2, 15),
-        prop("MarketStall", px - 13, PT, pz - 10, 12),
-        prop("CrateStack", px - 21, PT, pz - 4, -30),
-        prop("WoodFrame", px + 12, PT, pz - 13, -20),
-        prop("Barrels", px + 19, PT, pz - 6, 40),
-        prop("Statue", px - 18, PT, pz + 11, 35),
-        prop("Well", px + 17, PT, pz + 11, 0),
-        prop("Bench", px - 7, PT, pz + 14, 180),
-        prop("Signpost", px + 5, PT, pz + 22, 200),
-        prop("LogPile", px + 8, PT, pz - 21, 75),
+        prop("Campfire", px, PT, pz + 2 * PS, 15),
+        prop("MarketStall", px - 13 * PS, PT, pz - 10 * PS, 12),
+        prop("CrateStack", px - 21 * PS, PT, pz - 4 * PS, -30),
+        prop("WoodFrame", px + 12 * PS, PT, pz - 13 * PS, -20),
+        prop("Barrels", px + 19 * PS, PT, pz - 6 * PS, 40),
+        prop("Statue", px - 18 * PS, PT, pz + 11 * PS, 35),
+        prop("Well", px + 17 * PS, PT, pz + 11 * PS, 0),
+        prop("Bench", px - 7 * PS, PT, pz + 14 * PS, 180),
+        prop("Bench", px + 7 * PS, PT, pz + 9 * PS, 160),
+        prop("Signpost", px + 6 * PS, PT, pz + 22 * PS, 200),
+        prop("LogPile", px + 4 * PS, PT, pz - 20 * PS, 75),
     ]
     for a in (30, 150, 210, 330):
-        props.append(prop("LampPost", px + 23 * math.cos(math.radians(a)), PT,
-                          pz + 23 * math.sin(math.radians(a)), -a))
-    spawn = (px - 4, PT, pz + 18)
+        props.append(prop("LampPost", px + 23 * PS * math.cos(math.radians(a)), PT,
+                          pz + 23 * PS * math.sin(math.radians(a)), -a))
+    spawn = (px - 6, PT, pz + 18 * PS)
 
     # torches along the paths, fences where a path runs along a drop
     count = 0
@@ -414,7 +441,7 @@ def build_island(seed=7):
                 z = wx(j) + d[1] * 1.6
                 props.append(prop("Fence", x, h, z, 90 if d[0] else 0))
         count += 1
-        if style == "cobble" and count % 9 == 0 and dist > 0.6:
+        if style == "cobble" and count % 23 == 0 and dist > PATH_R - 0.8:
             props.append(prop("Torch", wx(i), h, wx(j), 0))
 
     # dock + boat + beach clutter
@@ -472,18 +499,18 @@ def build_island(seed=7):
                 trees.add(cell)
                 continue
             r = rng.random()
-            if r < 0.20:
+            if r < 0.13:
                 props.append(prop("GrassTuft", x, T, z, rng.uniform(0, 360), rng.uniform(0.9, 1.5)))
-            elif r < 0.26:
+            elif r < 0.165:
                 props.append(prop("Flowers", x, T, z, rng.uniform(0, 360), rng.uniform(0.9, 1.3),
                                   rng.choice((1, 2, 3, 6))))
-            elif r < 0.31:
+            elif r < 0.215:
                 props.append(prop("Fern", x, T, z, rng.uniform(0, 360), rng.uniform(1, 1.5)))
-            elif r < 0.35:
+            elif r < 0.255:
                 props.append(prop("Bush", x, T, z, rng.uniform(0, 360), rng.uniform(0.7, 1.1)))
-            elif r < 0.37:
+            elif r < 0.275:
                 props.append(prop("SmallRock", x, T, z, rng.uniform(0, 360), rng.uniform(0.9, 1.6)))
-            elif r < 0.385:
+            elif r < 0.29:
                 props.append(prop("Mushrooms", x, T, z, rng.uniform(0, 360), rng.uniform(0.9, 1.3)))
         elif t >= 1:  # bare rock tops on the mountain
             if r < 0.12:
@@ -505,7 +532,7 @@ def build_island(seed=7):
             nb = (i + d[0], j + d[1])
             if nb in path or nb in plaza or nb in blocked or nb not in tier:
                 continue
-            if rng.random() < 0.18 and abs(top[nb] - path[cell][0]) < 3:
+            if rng.random() < 0.08 and abs(top[nb] - path[cell][0]) < 3:
                 x = wx(i) + d[0] * 2.6 + rng.uniform(-1, 1) * (d[1] != 0)
                 z = wx(j) + d[1] * 2.6 + rng.uniform(-1, 1) * (d[0] != 0)
                 props.append(prop(rng.choice(("GrassTuft", "SmallRock", "Flowers", "Fern")), x, top[nb],

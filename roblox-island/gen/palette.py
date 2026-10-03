@@ -56,6 +56,8 @@ COLORS = {
     "mushroom_red": (212, 52, 46, "Plastic"),
     "barrel":      (132, 84, 46, "Plastic"),
     "rope":        (192, 162, 112, "Plastic"),
+    "mesh_sand":   (246, 226, 112, "Plastic"),
+    "mesh_rock":   (112, 138, 230, "Plastic"),
     # per-instance tint slots (resolved at build time)
     "accent":      (240, 110, 170, "Plastic"),
     "accent_dark": (190, 80, 130, "Plastic"),

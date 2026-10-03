@@ -7,7 +7,7 @@ Two blocky, studded maps based on the reference shots:
 | **VoxelIsland** | terraced rocky mountain with a winding stair path and summit lookout, two cliff mesas (west with a rock arch, east with a banner and a cave entrance below), an open cobblestone village plaza (campfire, market stall, lantern frame, well, statue, signpost, benches, lamps), wooden stairs with railings down to the dock, a rowboat, stepped turquoise shallows and mossy rock stacks offshore. Every cliff is covered in chunky multi-shade blocks with a yellow band and grass lip, and the ground has grass tufts, flowers, ferns, mushrooms, bushes, rocks, fences and torches everywhere |
 | **CoralReef** | sandy reef slab with sand-colour patches, rock shelves / pinnacles / arches, boulders, ruined pillars, a tilted shipwreck and ~190 corals (tube, branch, fan, seaweed) in 6 colours |
 
-Previews (rendered in Blender from the same data): `previews/island.png`, `previews/island_village.png`, `previews/reef.png`, `previews/assets_contact_sheet.png`.
+Previews (rendered in Blender from the same data, with the mesh rocks): `previews/island.png`, `previews/island_village.png`, `previews/reef.png`, `previews/rock_meshes.png`, `previews/rock_meshes_closeup.png`, `previews/assets_contact_sheet.png`.
 
 ## Use it in Roblox Studio
 
@@ -18,6 +18,14 @@ Previews (rendered in Blender from the same data): `previews/island.png`, `previ
    That swaps the placeholder ocean for real terrain water and sets up the bright, saturated lighting
    (Future lighting, atmosphere, color correction, bloom). **This makes a big difference.** Studio's default
    lighting washes the colors out.
+
+4. **Optional: deformed mesh rocks (the look from the reference screenshots).**
+   - **File → Import 3D** → `exports/meshes/VoxelRockMeshes.fbx` (keep the defaults; it lands in Workspace).
+   - Paste everything from `roblox/MeshSwap.lua` into the Command Bar and press Enter.
+   - It swaps every reef pinnacle, shelf, arch, boulder, seaweed, offshore rock and the island arch for the
+     Blender meshes. These are lumpy and faceted, with studs baked into the texture and sand/grass/moss tops.
+     The old part versions go to `ServerStorage.VoxelPartRocks`, and Ctrl+Z undoes it. Afterwards you can delete
+     the imported `VoxelRockMeshes` model.
 
 ### Option B: the builder script
 `roblox/VoxelIslandBuilder.server.lua` builds both maps from code (all asset shapes and the layout are inside it).
@@ -31,15 +39,14 @@ Previews (rendered in Blender from the same data): `previews/island.png`, `previ
 Option B rebuilds the map every time the game starts. If you want the map saved in your place
 file, use Option A (or press Play, copy the built models, Stop, and paste them).
 
-### Using the Blender meshes instead of parts
-Every asset is also a real mesh in `exports/` (FBX, GLB and OBJ, coloured by one small palette
-texture `voxel_palette.png`). Coral assets have a file per colour (`TubeCoral_Pink.fbx`, …).
-
-1. **File → Import 3D** in Studio and pick e.g. `exports/fbx/PineTree.fbx`.
-2. Put the imported models in a folder `ReplicatedStorage.IslandAssets`, each named exactly like the
-   asset (`PineTree`, `Dock`, `Shipwreck`, …).
-3. With `CONFIG.UseImportedMeshes = true` (default) the builder script clones your meshes instead of
-   building the part versions, so you get far fewer parts. (Tinted corals still use parts.)
+### How the mesh rocks are made
+`tools/blender_meshes.py` runs in Blender. It takes each rock's blocky base shape from `gen/assets.py`,
+fuses it with a voxel remesh, **deforms** it with two layers of noise displacement and decimates it into big
+facets. Faces pointing up become a separate sand, grass or moss mesh. Everything gets box-projected UVs
+(1 UV unit = 4 studs) on a tiling stud texture (`exports/meshes/studs_*.png`), so the studs line up across
+faces. Each rock is exported as `<Name>_Rock` + `<Name>_Top` mesh parts, both one by one and all together
+in `VoxelRockMeshes.fbx`. Tune `disp` (how lumpy), `noise` (size of the lumps) and `faces` (how faceted) in
+`MESH_SOURCES` in `gen/assets.py`.
 
 ## Assets
 
@@ -61,5 +68,5 @@ Then run `./build.sh` (needs `python3`, `blender` 4.x and [`lune`](https://githu
 It regenerates the Lua script, the `.rbxm` files (built by running the real Lua builder offline)
 and the Blender exports and renders. Change `seed` in `build_island()` / `build_reef()` to get a new layout.
 
-Part counts: island ≈ 25k, reef ≈ 11.6k (all anchored, static). That's fine on PC and console. On low-end phones, use
+Part counts: island ≈ 30k, reef ≈ 13k (all anchored, static; MeshSwap lowers them). That's fine on PC and console. On low-end phones, use
 StreamingEnabled, or swap trees and rocks for the imported meshes.

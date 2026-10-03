@@ -19,7 +19,11 @@ SAMPLES = int(OPTS["samples"]) if "samples" in OPTS else None
 RES = int(OPTS.get("res", 100))
 sys.path.insert(0, os.path.join(ROOT, "gen"))
 
-from assets import ASSETS, bounds  # noqa: E402
+from assets import ASSETS, MESH_SOURCES, bounds  # noqa: E402
+sys.path.insert(0, os.path.join(ROOT, "tools"))
+import mathutils  # noqa: E402
+USE_MESHES = OPTS.get("meshes", "1") != "0"   # show rocks as the Blender meshes (final look)
+MESH_LIB = {}
 from maps import build_island, build_reef  # noqa: E402
 from palette import COLORS, CORAL_TINTS, TINT_NAMES, darker  # noqa: E402
 
@@ -254,13 +258,49 @@ def render(scene, path):
     print("rendered", path)
 
 
-def map_objects(m, coll, mats, ocean_mat, prefix):
+def mesh_library():
+    """Build the deformed rock meshes once (hidden) so map renders can instance them."""
+    if MESH_LIB or not USE_MESHES:
+        return MESH_LIB
+    import rockmesh
+    lib = bpy.data.collections.new("RockMeshLibrary")
+    bpy.context.scene.collection.children.link(lib)
+    tex_dir = os.path.join(EXP, "meshes")
+    os.makedirs(tex_dir, exist_ok=True)
+    for name, src in MESH_SOURCES.items():
+        root, objs = rockmesh.build_rock(name, src, lib, tex_dir)
+        MESH_LIB[name] = objs
+    lib.hide_render = True
+    return MESH_LIB
+
+
+A = mathutils.Matrix(((1, 0, 0), (0, 0, -1), (0, 1, 0)))  # Roblox -> Blender axes
+
+
+def prop_matrix(x, y, z, rot, sc, rx, rz):
+    r = mul(rot_y(math.radians(rot)), mul(rot_x(math.radians(rx)), rot_z(math.radians(rz))))
+    rb = A @ mathutils.Matrix(r) @ A.transposed()
+    m = rb.to_4x4() @ mathutils.Matrix.Scale(sc, 4)
+    m.translation = to_blender((x, y, z))
+    return m
+
+
+def map_objects(m, coll, mats, ocean_mat, prefix, offset=(0, 0, 0)):
+    lib = mesh_library()
     ground = MeshBuilder()
     for b in m["terrain"]:
         ground.box(b)
     props = MeshBuilder()
     for (name, x, y, z, rot, sc, tint, rx, rz) in m["props"]:
-        props.asset(name, (x, y, z), rot, sc, tint, rx, rz)
+        if name in lib:
+            mat = prop_matrix(x, y, z, rot, sc, rx, rz)
+            for src in lib[name]:
+                ob = bpy.data.objects.new(prefix + "_" + src.name, src.data)
+                ob.matrix_world = mat
+                ob.matrix_world.translation += mathutils.Vector(offset)
+                coll.objects.link(ob)
+        else:
+            props.asset(name, (x, y, z), rot, sc, tint, rx, rz)
     objs = [ground.to_object(prefix + "_Ground", mats, coll), props.to_object(prefix + "_Props", mats, coll)]
     if m["water"]:
         x0, y0, z0, x1, y1, z1 = m["water"]
@@ -268,6 +308,8 @@ def map_objects(m, coll, mats, ocean_mat, prefix):
         wb.box((x0, y1 - 0.01, z0, x1, y1, z1, "ocean"))
         ob = wb.to_object(prefix + "_Ocean", [ocean_mat], coll)
         objs.append(ob)
+    for ob in objs:
+        ob.location = offset
     return objs
 
 
@@ -356,10 +398,8 @@ scene.collection.children.link(reef_coll)
 if ONLY in (None, "island"):
     map_objects(build_island(), isl_coll, [mat, glow], ocean, "Island")
 if ONLY in (None, "reef"):
-    reef_objs = map_objects(build_reef(), reef_coll, [mat, glow], ocean, "Reef")
-    REEF_OFFSET = (0, -700, 0)  # Roblox (0,0,700) -> Blender (0,-700,0)
-    for ob in reef_objs:
-        ob.location = REEF_OFFSET
+    # Roblox (0,0,700) -> Blender (0,-700,0)
+    map_objects(build_reef(), reef_coll, [mat, glow], ocean, "Reef", offset=(0, -700, 0))
 
 if ONLY is None:
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, "voxel_maps.blend"))
@@ -368,15 +408,15 @@ if ONLY in (None, "island"):
     reef_coll.hide_render = True
     isl_coll.hide_render = False
     # overview from the south-east, like the reference shot
-    add_camera(scene, (60, -360, 250), (0, -5, 14), lens=30)
+    add_camera(scene, (80, -440, 300), (0, -10, 16), lens=30)
     render(scene, os.path.join(PREV, "island.png"))
     # close-up of the village and the stairs
-    add_camera(scene, (40, -175, 75), (2, -55, 18), lens=30)
+    add_camera(scene, (50, -205, 95), (2, -52, 20), lens=30)
     render(scene, os.path.join(PREV, "island_village.png"))
 
 if ONLY in (None, "reef"):
     reef_coll.hide_render = False
     isl_coll.hide_render = True
-    add_camera(scene, (-150, -700 - 260, 150), (10, -700 + 10, 0), lens=30)
+    add_camera(scene, (-120, -700 - 250, 70), (20, -700 + 20, 6), lens=28)
     render(scene, os.path.join(PREV, "reef.png"))
 print("done")

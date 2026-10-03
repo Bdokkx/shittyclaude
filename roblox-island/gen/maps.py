@@ -83,7 +83,7 @@ def prop(name, x, y, z, rot=0, scale=1, tint=0, rx=0, rz=0):
 
 def build_reef(seed=11):
     rng = random.Random(seed)
-    W, H = 110, 84
+    W, H = 128, 100
     cx, cz = W / 2, H / 2
 
     kind = {}
@@ -181,11 +181,12 @@ def build_reef(seed=11):
                                     FLOOR + y1 * sc))
             n += 1
 
-    place_formation("ReefShelf", 5, 20, scale=(0.9, 1.2))
-    place_formation("ReefPinnacle", 6, 11, scale=(0.9, 1.3))
-    place_formation("ReefArch", 2, 16)
-    place_formation("Boulder", 7, 7, scale=(0.8, 1.4))
-    place_formation("RuinPillar", 5, 5, rot90=False, scale=(0.8, 1.2))
+    place_formation("ReefShelf", 5, 26, scale=(0.9, 1.2))
+    place_formation("ReefPinnacleTall", 4, 17, scale=(1.0, 1.3))
+    place_formation("ReefPinnacle", 5, 14, scale=(0.9, 1.3))
+    place_formation("ReefArch", 3, 20)
+    place_formation("Boulder", 8, 9, scale=(0.8, 1.4))
+    place_formation("RuinPillar", 6, 7, rot90=False, scale=(0.8, 1.2))
 
     def surface_at(x, z):
         top = FLOOR
@@ -197,7 +198,7 @@ def build_reef(seed=11):
     kinds = [("TubeCoral", 0.36), ("BranchCoral", 0.22), ("FanCoral", 0.12), ("Seaweed", 0.30)]
     coral_pts = []
     tries = 0
-    while len(coral_pts) < 190 and tries < 6000:
+    while len(coral_pts) < 170 and tries < 6000:
         tries += 1
         i, j = rng.choice(list(kind.keys()))
         if kind[(i, j)][0] != "main":
@@ -205,7 +206,7 @@ def build_reef(seed=11):
         x, z = wx(i) + rng.uniform(-1.5, 1.5), wz(j) + rng.uniform(-1.5, 1.5)
         if near_ship(x, z, 2):
             continue
-        if any(math.hypot(x - a, z - b) < 6 for a, b in coral_pts):
+        if any(math.hypot(x - a, z - b) < 8 for a, b in coral_pts):
             continue
         y = surface_at(x, z)
         if y == FLOOR and not free(x, z, 1):

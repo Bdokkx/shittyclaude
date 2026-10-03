@@ -263,50 +263,66 @@ def fan_coral():
 
 
 # ---------------------------------------------------------------- rocks
+#
+# Rocks exist twice: as part-built models (roughened boxes, work everywhere) and
+# as deformed, stud-textured meshes made in Blender from the *same base shapes*
+# (see MESH_SOURCES + tools/blender_meshes.py). The MeshSwap command swaps the
+# part versions in a placed map for the meshes once they're imported.
 
-def boulder():
-    return asset([B(0, 0, 0, 9, 2, 9, "rock_light"), B(0, 2, 0, 8, 2, 8, "rock_light"),
-                  B(0, 4, 0, 6.5, 1.5, 6.5, "rock_light"), B(0, 5.5, 0, 4.5, 1, 4.5, "rock_light"),
-                  B(0, 6.5, 0, 2, 0.6, 2, "rock_light"), B(3, 0, 3.5, 3, 1.5, 3, "rock_gray")])
+def boulder_base():
+    return [B(0, 0, 0, 9, 2, 9, "rock_light"), B(0, 2, 0, 8, 2, 8, "rock_light"),
+            B(0, 4, 0, 6.5, 1.5, 6.5, "rock_light"), B(0, 5.5, 0, 4.5, 1, 4.5, "rock_light"),
+            B(0, 6.5, 0, 2, 0.6, 2, "rock_light"), B(3, 0, 3.5, 3, 1.5, 3, "rock_gray")]
+
+
+def arch_base():
+    """Natural rock arch, 26 wide x 24 tall x 10 deep."""
+    return [B(-9.5, 0, 0, 7, 16, 10, "rock"), B(9.5, 0, 0, 7, 16, 10, "rock"),
+            B(0, 16, 0, 26, 5, 10, "rock_dark"), B(-5, 14, 0, 2, 2, 9, "rock"), B(5, 14, 0, 2, 2, 9, "rock"),
+            B(0, 21, 0, 26, 1.5, 10, "sand"), B(0, 22.5, 0, 26, 1.5, 10, "grass")]
 
 
 def arch():
-    """Natural rock arch, 26 wide x 24 tall x 10 deep, grassy top."""
-    b = [B(-9.5, 0, 0, 7, 16, 10, "rock"), B(9.5, 0, 0, 7, 16, 10, "rock"),
-         B(0, 16, 0, 26, 5, 10, "rock_dark"), B(-5, 14, 0, 2, 2, 9, "rock"), B(5, 14, 0, 2, 2, 9, "rock"),
-         B(0, 21, 0, 26, 1.5, 10, "sand"), B(0, 22.5, 0, 26, 1.5, 10, "grass")]
-    b = roughen(b, 11)
+    b = roughen(arch_base(), 11)
     b += [B(-8, 24, 1, 5, 2, 4, "leaf_dark"), B(7, 24, -2, 4, 2.5, 4, "leaf"),
           B(13.6, 18, 0, 1.4, 5, 3, "moss"), B(-13.8, 17, 2, 1.2, 6, 2, "moss_dark")]
     return asset(b)
 
 
-def reef_pinnacle():
+def stacked_slabs(layers, cap=True):
+    """Offset stacked slabs with small sand caps (reef pinnacles)."""
     b = []
     y = 0
-    for i, (sx, sz, h, ox, oz) in enumerate([(14, 12, 4, 0, 0), (10, 10, 4, 2, -1),
-                                              (12, 8, 3, -1, 1), (8, 9, 4, 1, 0),
-                                              (10, 7, 3, -2, -1), (6, 6, 4, 0, 1)]):
+    for i, (sx, sz, h, ox, oz) in enumerate(layers):
         b.append(B(ox, y, oz, sx, h, sz, "rock" if i % 2 == 0 else "rock_dark"))
         b.append(B(ox + sx * 0.15, y + h, oz, sx * 0.6, 0.6, sz * 0.6, "reef_sand"))
         y += h
-    b.append(B(0, y, 1, 6.4, 0.8, 6.4, "reef_sand"))
-    return asset(roughen(b, 21, tile=2.5, prot=(0.2, 0.7)))
+    if cap:
+        b.append(B(layers[-1][3], y, layers[-1][4], 6.4, 0.8, 6.4, "reef_sand"))
+    return b
 
 
-def reef_shelf():
-    b = [B(-7, 0, 0, 7, 8, 7, "rock"), B(8, 0, 1, 6, 8, 6, "rock_dark"),
-         B(0, 8, 0, 28, 3, 16, "rock"), B(2, 6, 0, 22, 2, 12, "rock_dark"),
-         B(0, 11, 0, 27, 0.8, 15, "reef_sand"),
-         B(-4, 11.8, 2, 10, 2, 8, "rock"), B(-4, 13.8, 2, 9, 0.6, 7, "reef_sand")]
-    return asset(roughen(b, 22, tile=2.5, prot=(0.2, 0.7)))
+PINNACLE_A = [(14, 12, 4, 0, 0), (10, 10, 4, 2, -1), (12, 8, 3, -1, 1), (8, 9, 4, 1, 0),
+              (10, 7, 3, -2, -1), (6, 6, 4, 0, 1)]
+PINNACLE_B = [(18, 14, 3, 0, 0), (12, 11, 5, -2, 1), (16, 10, 3, 2, -1), (9, 9, 5, -1, 0),
+              (13, 9, 3, 1, 2), (8, 7, 4, -2, 0), (11, 6, 2.5, 0, -1)]
 
 
-def reef_arch():
-    b = [B(-8, 0, 0, 6, 10, 7, "rock"), B(8, 0, 0, 6, 10, 7, "rock_dark"),
-         B(0, 10, 0, 22, 4, 8, "rock"), B(0, 14, 0, 21, 0.7, 7, "reef_sand"),
-         B(-5, 8, 0, 3, 2, 7, "rock_dark"), B(5, 8, 0, 3, 2, 7, "rock")]
-    return asset(roughen(b, 23, tile=2.5, prot=(0.2, 0.7)))
+def reef_shelf_base():
+    return [B(-7, 0, 0, 7, 8, 7, "rock"), B(8, 0, 1, 6, 8, 6, "rock_dark"),
+            B(0, 8, 0, 28, 3, 16, "rock"), B(2, 6, 0, 22, 2, 12, "rock_dark"),
+            B(0, 11, 0, 27, 0.8, 15, "reef_sand"),
+            B(-4, 11.8, 2, 10, 2, 8, "rock"), B(-4, 13.8, 2, 9, 0.6, 7, "reef_sand")]
+
+
+def reef_arch_base():
+    return [B(-8, 0, 0, 6, 10, 7, "rock"), B(8, 0, 0, 6, 10, 7, "rock_dark"),
+            B(0, 10, 0, 22, 4, 8, "rock"), B(0, 14, 0, 21, 0.7, 7, "reef_sand"),
+            B(-5, 8, 0, 3, 2, 7, "rock_dark"), B(5, 8, 0, 3, 2, 7, "rock")]
+
+
+def rough(base, seed):
+    return asset(roughen(base, seed, tile=2.5, prot=(0.2, 0.7)))
 
 
 def ruin_pillar():
@@ -555,6 +571,8 @@ def stairs(width=6, steps=6, rise=1.5, run=2):
     return asset(b)
 
 
+ASSETS_PLACEHOLDER = object()
+
 ASSETS = {
     "PineTree": pine(6, 12, 1),
     "PineTreeTall": pine(7, 14, 2),
@@ -568,15 +586,16 @@ ASSETS = {
     "RockOutcrop": asset(blob_rock(31, 8, 7, 18)),
     "RockOutcropBig": asset(blob_rock(32, 11, 9, 26, shades=GRAY_ROCK_SHADES)),
     "RockOutcropSmall": asset(blob_rock(33, 4.5, 4, 8)),
-    "Boulder": boulder(),
+    "Boulder": asset(boulder_base()),
     "Arch": arch(),
     "Seaweed": seaweed(),
     "TubeCoral": tube_coral(),
     "BranchCoral": branch_coral(),
     "FanCoral": fan_coral(),
-    "ReefPinnacle": reef_pinnacle(),
-    "ReefShelf": reef_shelf(),
-    "ReefArch": reef_arch(),
+    "ReefPinnacle": rough(stacked_slabs(PINNACLE_A), 21),
+    "ReefPinnacleTall": rough(stacked_slabs(PINNACLE_B), 24),
+    "ReefShelf": rough(reef_shelf_base(), 22),
+    "ReefArch": rough(reef_arch_base(), 23),
     "RuinPillar": ruin_pillar(),
     "Dock": dock(),
     "Rowboat": rowboat(),
@@ -598,6 +617,35 @@ ASSETS = {
     "CaveEntrance": cave_entrance(),
     "WoodenStairs": stairs(),
 }
+
+
+# Mesh versions (built by tools/blender_meshes.py). boxes = the un-roughened base
+# shape; faces pointing up get the `top` colour, the rest `rock`.
+REEF_ROCK = (118, 136, 226)
+ISLE_ROCK = (122, 132, 196)
+MESH_SOURCES = {
+    "ReefPinnacle": dict(boxes=stacked_slabs(PINNACLE_A, cap=False), rock="mesh_rock", top="mesh_sand",
+                         seed=1, disp=2.3, noise=6, faces=520),
+    "ReefPinnacleTall": dict(boxes=stacked_slabs(PINNACLE_B, cap=False), rock="mesh_rock", top="mesh_sand",
+                             seed=2, disp=2.4, noise=6, faces=600),
+    "ReefShelf": dict(boxes=reef_shelf_base(), rock="mesh_rock", top="mesh_sand", seed=3, disp=2.2,
+                      noise=6.5, faces=560),
+    "ReefArch": dict(boxes=reef_arch_base(), rock="mesh_rock", top="mesh_sand", seed=4, disp=2.0, noise=6,
+                     faces=480),
+    "Boulder": dict(boxes=boulder_base(), rock="rock_light", top="rock_light", seed=5, disp=1.6, noise=5,
+                    faces=110, voxel=0.9),
+    "RockOutcrop": dict(boxes=ASSETS_PLACEHOLDER, rock="rock_gray", top="moss", seed=6, disp=2.2, noise=6,
+                        faces=420),
+    "RockOutcropBig": dict(boxes=ASSETS_PLACEHOLDER, rock="rock_gray", top="moss", seed=7, disp=2.6, noise=7,
+                           faces=620),
+    "RockOutcropSmall": dict(boxes=ASSETS_PLACEHOLDER, rock="rock_gray", top="moss", seed=8, disp=1.4,
+                             noise=4, faces=160),
+    "Arch": dict(boxes=arch_base(), rock="mesh_rock", top="grass", seed=9, disp=2.6, noise=7, faces=700),
+    "Seaweed": dict(kind="seaweed", rock="seaweed", top="seaweed", seed=10),
+}
+for _n, _src in MESH_SOURCES.items():
+    if _src.get("boxes") is ASSETS_PLACEHOLDER:
+        _src["boxes"] = ASSETS[_n]["boxes"]
 
 
 def bounds(name):

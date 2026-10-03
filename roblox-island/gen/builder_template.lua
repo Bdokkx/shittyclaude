@@ -214,6 +214,11 @@ function Builder.spawnAsset(name, cf, scale, tintIndex, parent)
 	end
 	addLights(model, def, cf, scale)
 	model.WorldPivot = cf
+	-- tags used by the MeshSwap command to replace this model with the Blender mesh version
+	model:SetAttribute("VoxelAsset", name)
+	model:SetAttribute("VoxelScale", scale)
+	model:SetAttribute("AssetMin", Vector3.new(def.min[1], def.min[2], def.min[3]))
+	model:SetAttribute("AssetMax", Vector3.new(def.max[1], def.max[2], def.max[3]))
 	model.Parent = parent
 	return model
 end
@@ -285,7 +290,7 @@ function Builder.setupLighting()
 	end)
 	Lighting.ClockTime = 14.2
 	Lighting.GeographicLatitude = 30
-	Lighting.Brightness = 3.2
+	Lighting.Brightness = 2.6
 	Lighting.Ambient = Color3.fromRGB(96, 104, 128)
 	Lighting.OutdoorAmbient = Color3.fromRGB(150, 158, 182)
 	Lighting.EnvironmentDiffuseScale = 0.6
@@ -306,16 +311,16 @@ function Builder.setupLighting()
 	atmo.Color = Color3.fromRGB(205, 225, 245)
 	atmo.Decay = Color3.fromRGB(120, 150, 190)
 	local cc = ensure("ColorCorrectionEffect", "VoxelColor")
-	cc.Saturation = 0.22
+	cc.Saturation = 0.08
 	cc.Contrast = 0.1
 	cc.Brightness = 0.02
-	cc.TintColor = Color3.fromRGB(255, 251, 245)
+	cc.TintColor = Color3.fromRGB(255, 255, 255)
 	local bloom = ensure("BloomEffect", "VoxelBloom")
-	bloom.Intensity = 0.35
+	bloom.Intensity = 0.15
 	bloom.Size = 22
-	bloom.Threshold = 1.6
+	bloom.Threshold = 2
 	local rays = ensure("SunRaysEffect", "VoxelSunRays")
-	rays.Intensity = 0.04
+	rays.Intensity = 0.02
 	rays.Spread = 0.6
 	local terrain = workspace:FindFirstChildOfClass("Terrain")
 	if terrain then

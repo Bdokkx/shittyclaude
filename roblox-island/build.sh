@@ -5,4 +5,5 @@ set -euo pipefail
 cd "$(dirname "$0")"
 python3 gen/emit_lua.py                       # -> roblox/VoxelIslandBuilder.server.lua
 lune run tools/export_models.luau .           # -> roblox/*.rbxm + builder .rbxmx
-blender -b -P tools/blender_build.py -- . "$@" # -> exports/, blender/, previews/  (--no-render to skip renders)
+blender -b -P tools/blender_meshes.py -- . "$@" # -> exports/meshes/ (deformed stud-textured rock meshes)
+blender -b -P tools/blender_build.py -- . "$@"  # -> exports/, blender/, previews/  (--no-render to skip renders)
