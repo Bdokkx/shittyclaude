@@ -25,6 +25,7 @@ local CONFIG = {
 	-- false: use a translucent "Ocean" part instead
 	UseTerrainWater = true,
 	SetupLighting = true, -- bright, saturated lighting + clear turquoise water like the reference
+	RemoveBaseplate = true, -- the default Baseplate's top is at water level and flickers through the water
 	ReefUnderwater = false, -- also flood the reef with terrain water
 
 	Studs = true, -- stud surfaces on every face, like the screenshots
@@ -2179,7 +2180,7 @@ MAPS.Island = {
 		{12,2,160,16,3,162,22},{12,2,162,16,3,164,20},{-4,2,164,0,3,166,20},{-4,2,166,0,3.1,168,22},{0,2,164,4,3.1,166,22},{0,2,166,4,3,168,20},
 		{4,2,164,8,3.1,166,20},{4,2,166,8,3.1,168,22},{8,2,164,12,3,166,22},{8,2,166,12,3,168,20},{12,2,164,16,3,166,20},{12,2,166,16,3,168,22},
 		{8,2,168,12,3,170,20},{8,2,170,12,3,172,22},{4,2,168,8,3,170,22},{4,2,170,8,3.1,172,20},{0,2,168,4,3,170,20},{0,2,170,4,3.1,172,22},
-		{-260,-12,-260,260,-10,260,12},{35.794,-1,-176,36,0.5,-172,4},{35.777,0.5,-176,36,3,-172,41},{36,-1,-172,40,1,-171.845,5},{36,1,-172,40,3,-171.756,41},{36,-1,-176.287,40,1,-176,41},
+		{-1000,-12,-1000,1000,-10,1000,12},{35.794,-1,-176,36,0.5,-172,4},{35.777,0.5,-176,36,3,-172,41},{36,-1,-172,40,1,-171.845,5},{36,1,-172,40,3,-171.756,41},{36,-1,-176.287,40,1,-176,41},
 		{36,1,-176.291,40,3,-176,4},{44,-1,-176,44.353,0.5,-172,41},{44,0.5,-176,44.297,2,-172,4},{44,2,-176,44.209,3,-172,41},{40,-1,-172,44,0.5,-171.746,4},{40,0.5,-172,44,3,-171.739,41},
 		{40,-1,-176.26,44,1,-176,5},{40,1,-176.287,44,3,-176,4},{-28,-1,-168,-27.763,1,-164,4},{-28,1,-168,-27.845,3,-164,5},{-32.22,-1,-168,-32,1,-164,4},{-32.327,1,-168,-32,3,-164,4},
 		{-32,-1,-168.331,-28,0.5,-168,41},{-32,0.5,-168.218,-28,2,-168,4},{-32,2,-168.361,-28,3,-168,4},{36,-1,-168,36.294,0.5,-166,4},{36,0.5,-168,36.19,2,-166,5},{36,2,-168,36.284,3,-166,4},
@@ -4488,7 +4489,7 @@ MAPS.Island = {
 		{"RockOutcropSmall",118,-2,-102,207,1.36,0,0,0},{"RockOutcropSmall",150,-1,-74,341.3,1.3,0,0,0},{"RockOutcropSmall",174,-2,-62,47.6,1.02,0,0,0},
 		{"RockOutcropSmall",174,-2,42,153.6,1.03,0,0,0},{"RockOutcropSmall",198,-2,-6,315.8,1.49,0,0,0},
 	},
-	water = {-260,-12,-260,260,0,260},
+	water = {-1000,-12,-1000,1000,0,1000},
 	spawn = {0,24,77.182},
 }
 MAPS.Reef = {
@@ -6058,11 +6059,16 @@ function Builder.spawnAsset(name, cf, scale, tintIndex, parent)
 	model = Instance.new("Model")
 	model.Name = name
 	local tint = tintColors(tintIndex)
+	local ref
 	for _, box in ipairs(def.boxes) do
-		makeBox(model, box, cf, scale, tint)
+		local part = makeBox(model, box, cf, scale, tint)
+		ref = ref or part
 	end
 	addLights(model, def, cf, scale)
 	model.WorldPivot = cf
+	-- pivot relative to the model's first part, so it stays right if the map is moved
+	ref.Name = "VoxelRef"
+	model:SetAttribute("VoxelRefOffset", ref.CFrame:Inverse() * cf)
 	-- tags used by the MeshSwap command to replace this model with the Blender mesh version
 	model:SetAttribute("VoxelAsset", name)
 	model:SetAttribute("VoxelScale", scale)
@@ -6108,7 +6114,15 @@ function Builder.buildMap(mapName, data, origin, parent)
 		local center = origin + Vector3.new((w[1] + w[4]) / 2, (w[2] + w[5]) / 2, (w[3] + w[6]) / 2)
 		local terrain = workspace and workspace:FindFirstChildOfClass("Terrain")
 		if CONFIG.UseTerrainWater and terrain then
-			terrain:FillBlock(CFrame.new(center), size, Enum.Material.Water)
+			-- fill in tiles (one huge FillBlock can hit terrain limits)
+			local tiles = math.ceil(math.max(size.X, size.Z) / 512)
+			local tx, tz = size.X / tiles, size.Z / tiles
+			for a = 0, tiles - 1 do
+				for b = 0, tiles - 1 do
+					local c = center + Vector3.new((a + 0.5) * tx - size.X / 2, 0, (b + 0.5) * tz - size.Z / 2)
+					terrain:FillBlock(CFrame.new(c), Vector3.new(tx, size.Y, tz), Enum.Material.Water)
+				end
+			end
 		else
 			local ocean = makeBox(root, { w[1], w[2], w[3], w[4], w[5], w[6], PALETTE_INDEX.ocean },
 				base, 1, nil, "Ocean")
@@ -6220,6 +6234,13 @@ end
 -- main
 ----------------------------------------------------------------------------
 local t0 = os.clock()
+if CONFIG.RemoveBaseplate then
+	local bp = workspace:FindFirstChild("Baseplate")
+	if bp and bp:IsA("BasePart") then
+		bp.Parent = game:GetService("ServerStorage")
+		print("[VoxelIsland] moved the default Baseplate to ServerStorage (it z-fights with the water)")
+	end
+end
 if CONFIG.SetupLighting then
 	Builder.setupLighting()
 end

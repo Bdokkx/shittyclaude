@@ -232,6 +232,14 @@ def seaweed_object(name, seed, coll):
     return ob
 
 
+def roblox_bounds(ob):
+    """Bounding box of a mesh piece in Roblox asset space (x, y-up, z)."""
+    pts = [(v.co.x, v.co.z, -v.co.y) for v in ob.data.vertices]
+    mn = [round(min(p[k] for p in pts), 3) for k in range(3)]
+    mx = [round(max(p[k] for p in pts), 3) for k in range(3)]
+    return mn, mx
+
+
 def build_rock(name, src, coll, tex_dir):
     """Returns (root_empty, [mesh objects]) for one MESH_SOURCES entry."""
     root = bpy.data.objects.new(name, None)
@@ -254,5 +262,7 @@ def build_rock(name, src, coll, tex_dir):
         ob.data.materials.clear()
         ob.data.materials.append(stud_material(color, tex_dir))
         ob.parent = root
+        ob["voxel_color"] = color
+        ob.data.name = ob.name  # importer may name parts after the mesh data; keep them identical
         objs.append(ob)
     return root, objs

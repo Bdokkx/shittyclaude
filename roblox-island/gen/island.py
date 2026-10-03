@@ -333,7 +333,7 @@ def build_island(seed=7):
     emit(band, lambda key: key[1])
     emit(cap, lambda key: key[1])
     terrain.extend(tiles)
-    terrain.append((-260, BED - 2, -260, 260, BED, 260, "seabed"))
+    terrain.append((-1000, BED - 2, -1000, 1000, BED, 1000, "seabed"))
 
     # ------------------------------------------------------------ 7. cliff facades
     reserved = set()  # (cell, dir) faces kept clear for set pieces
@@ -557,7 +557,7 @@ def build_island(seed=7):
             props.append(prop("RockOutcropSmall", wx(cell[0]), SHALLOW_Y[depth[cell]], wx(cell[1]),
                               rng.uniform(0, 360), rng.uniform(1.0, 1.6)))
 
-    water = (-260, BED - 2, -260, 260, 0, 260)
+    water = (-1000, BED - 2, -1000, 1000, 0, 1000)
     debug = {"tier": tier, "path": path, "plaza": plaza, "N": N}
     return {"terrain": terrain, "props": props, "water": water, "spawn": spawn, "debug": debug}
 

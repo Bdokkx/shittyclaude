@@ -15,17 +15,24 @@ Previews (rendered in Blender from the same data, with the mesh rocks): `preview
 1. In Studio, right-click **Workspace** → **Insert from File…**
 2. Pick `roblox/VoxelIsland.rbxm`, then do the same for `roblox/CoralReef.rbxm` (the reef sits at Z = 700 so they don't overlap).
 3. Open **View → Command Bar**, paste in everything from `roblox/LightingAndWater.lua` and press Enter.
-   That swaps the placeholder ocean for real terrain water and sets up the bright, saturated lighting
+   That swaps the placeholder ocean for real terrain water, moves the default **Baseplate** to ServerStorage
+   (its top sits exactly at water level and makes the water flicker in a checker pattern), and sets up the lighting
    (Future lighting, atmosphere, color correction, bloom). **This makes a big difference.** Studio's default
    lighting washes the colors out.
 
 4. **Optional: deformed mesh rocks (the look from the reference screenshots).**
    - **File → Import 3D** → `exports/meshes/VoxelRockMeshes.fbx` (keep the defaults; it lands in Workspace).
    - Paste everything from `roblox/MeshSwap.lua` into the Command Bar and press Enter.
-   - It swaps every reef pinnacle, shelf, arch, boulder, seaweed, offshore rock and the island arch for the
-     Blender meshes. These are lumpy and faceted, with studs baked into the texture and sand/grass/moss tops.
-     The old part versions go to `ServerStorage.VoxelPartRocks`, and Ctrl+Z undoes it. Afterwards you can delete
-     the imported `VoxelRockMeshes` model.
+   - Every reef pinnacle, shelf, arch, boulder, seaweed, offshore rock and the island arch is swapped for its
+     Blender mesh. Each piece is placed from its exact size and centre, which Blender baked into the script,
+     so the importer's scale, grouping and naming (`.001` suffixes) don't matter. If the importer laid the
+     meshes on their side, MeshSwap stands them back up.
+   - The old part versions go to `ServerStorage.VoxelPartRocks`. Running it again is safe. To put the part
+     rocks back, set `UNDO = true` at the top and run it again.
+   - Afterwards you can delete the imported `VoxelRockMeshes` model.
+
+**Updating from an older version?** Delete the old `VoxelIsland`, `CoralReef`, the imported
+`VoxelRockMeshes` and `ServerStorage.VoxelPartRocks`, then do the steps above again.
 
 ### Option B: the builder script
 `roblox/VoxelIslandBuilder.server.lua` builds both maps from code (all asset shapes and the layout are inside it).
@@ -63,6 +70,8 @@ Everything comes from three Python files:
 - `gen/island.py`: island layout (height field, mesas, paths, cliff facades, prop scatter)
 - `gen/maps.py`: reef layout
 - `gen/palette.py`: colours
+
+`tools/test_meshswap.luau` (run with `lune run`) tests MeshSwap offline against both maps.
 
 Then run `./build.sh` (needs `python3`, `blender` 4.x and [`lune`](https://github.com/lune-org/lune)).
 It regenerates the Lua script, the `.rbxm` files (built by running the real Lua builder offline)

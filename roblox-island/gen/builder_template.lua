@@ -25,6 +25,7 @@ local CONFIG = {
 	-- false: use a translucent "Ocean" part instead
 	UseTerrainWater = true,
 	SetupLighting = true, -- bright, saturated lighting + clear turquoise water like the reference
+	RemoveBaseplate = true, -- the default Baseplate's top is at water level and flickers through the water
 	ReefUnderwater = false, -- also flood the reef with terrain water
 
 	Studs = true, -- stud surfaces on every face, like the screenshots
@@ -209,11 +210,16 @@ function Builder.spawnAsset(name, cf, scale, tintIndex, parent)
 	model = Instance.new("Model")
 	model.Name = name
 	local tint = tintColors(tintIndex)
+	local ref
 	for _, box in ipairs(def.boxes) do
-		makeBox(model, box, cf, scale, tint)
+		local part = makeBox(model, box, cf, scale, tint)
+		ref = ref or part
 	end
 	addLights(model, def, cf, scale)
 	model.WorldPivot = cf
+	-- pivot relative to the model's first part, so it stays right if the map is moved
+	ref.Name = "VoxelRef"
+	model:SetAttribute("VoxelRefOffset", ref.CFrame:Inverse() * cf)
 	-- tags used by the MeshSwap command to replace this model with the Blender mesh version
 	model:SetAttribute("VoxelAsset", name)
 	model:SetAttribute("VoxelScale", scale)
@@ -259,7 +265,15 @@ function Builder.buildMap(mapName, data, origin, parent)
 		local center = origin + Vector3.new((w[1] + w[4]) / 2, (w[2] + w[5]) / 2, (w[3] + w[6]) / 2)
 		local terrain = workspace and workspace:FindFirstChildOfClass("Terrain")
 		if CONFIG.UseTerrainWater and terrain then
-			terrain:FillBlock(CFrame.new(center), size, Enum.Material.Water)
+			-- fill in tiles (one huge FillBlock can hit terrain limits)
+			local tiles = math.ceil(math.max(size.X, size.Z) / 512)
+			local tx, tz = size.X / tiles, size.Z / tiles
+			for a = 0, tiles - 1 do
+				for b = 0, tiles - 1 do
+					local c = center + Vector3.new((a + 0.5) * tx - size.X / 2, 0, (b + 0.5) * tz - size.Z / 2)
+					terrain:FillBlock(CFrame.new(c), Vector3.new(tx, size.Y, tz), Enum.Material.Water)
+				end
+			end
 		else
 			local ocean = makeBox(root, { w[1], w[2], w[3], w[4], w[5], w[6], PALETTE_INDEX.ocean },
 				base, 1, nil, "Ocean")
@@ -371,6 +385,13 @@ end
 -- main
 ----------------------------------------------------------------------------
 local t0 = os.clock()
+if CONFIG.RemoveBaseplate then
+	local bp = workspace:FindFirstChild("Baseplate")
+	if bp and bp:IsA("BasePart") then
+		bp.Parent = game:GetService("ServerStorage")
+		print("[VoxelIsland] moved the default Baseplate to ServerStorage (it z-fights with the water)")
+	end
+end
 if CONFIG.SetupLighting then
 	Builder.setupLighting()
 end

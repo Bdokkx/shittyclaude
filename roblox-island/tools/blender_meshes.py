@@ -37,6 +37,8 @@ roots = {}
 for name, src in MESH_SOURCES.items():
     root, objs = rockmesh.build_rock(name, src, coll, OUT)
     roots[name] = (root, objs)
+    for o in objs:
+        assert o.name.startswith(name + "_") and "." not in o.name, o.name
     tris = sum(len(o.data.polygons) for o in objs)
     print("built %-18s %5d faces in %d mesh(es)" % (name, tris, len(objs)))
 
@@ -73,6 +75,24 @@ for root, objs in roots.values():
         o.select_set(True)
 export_fbx(os.path.join(OUT, "VoxelRockMeshes.fbx"))
 print("exported", len(roots), "rock meshes")
+
+# MeshSwap.lua gets the exact size/centre of every mesh piece, so Roblox can place each
+# MeshPart directly instead of guessing from bounding boxes.
+from palette import COLORS  # noqa: E402
+rows = []
+for name, (root, objs) in roots.items():
+    pieces = []
+    for o in objs:
+        mn, mx = rockmesh.roblox_bounds(o)
+        r, g, b, _ = COLORS[o["voxel_color"]]
+        suffix = o.name[len(name):]
+        pieces.append('{ suffix = "%s", min = Vector3.new(%s, %s, %s), max = Vector3.new(%s, %s, %s), '
+                      'color = Color3.fromRGB(%d, %d, %d) }' % (suffix, *mn, *mx, r, g, b))
+    rows.append('\t%s = {\n\t\t%s,\n\t},' % (name, ",\n\t\t".join(pieces)))
+tmpl = open(os.path.join(ROOT, "tools", "meshswap_template.lua")).read()
+with open(os.path.join(ROOT, "roblox", "MeshSwap.lua"), "w") as f:
+    f.write(tmpl.replace("--@@PIECES@@", "\n".join(rows)))
+print("wrote roblox/MeshSwap.lua")
 
 # contact sheet
 cols = 5

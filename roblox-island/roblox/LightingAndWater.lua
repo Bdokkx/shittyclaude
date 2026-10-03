@@ -1,11 +1,23 @@
 -- Paste this whole thing into Studio's Command Bar (View > Command Bar) after
 -- inserting VoxelIsland.rbxm / CoralReef.rbxm. It:
---   1. removes the placeholder Ocean part and fills real terrain water around the island
+--   1. removes the placeholder Ocean part (and moves the default Baseplate out of the way)
+--      and fills real terrain water around the island
 --   2. sets up bright, saturated lighting + clear turquoise water like the reference
 local island = workspace:FindFirstChild("VoxelIsland")
 if island and island:FindFirstChild("Ocean") then island.Ocean:Destroy() end
+-- the default Baseplate's top sits exactly at water level and flickers through the water
+local bp = workspace:FindFirstChild("Baseplate")
+if bp and bp:IsA("BasePart") then
+	bp.Parent = game:GetService("ServerStorage")
+	print("[VoxelIsland] moved the default Baseplate to ServerStorage")
+end
 local origin = island and island:GetPivot().Position or Vector3.zero
-workspace.Terrain:FillBlock(CFrame.new(origin + Vector3.new(0, -6, 0)), Vector3.new(520, 12, 520), Enum.Material.Water)
+for a = -2, 1 do
+	for b = -2, 1 do
+		local c = origin + Vector3.new((a + 0.5) * 500, -6, (b + 0.5) * 500)
+		workspace.Terrain:FillBlock(CFrame.new(c), Vector3.new(500, 12, 500), Enum.Material.Water)
+	end
+end
 
 local Lighting = game:GetService("Lighting")
 Lighting.Technology = Enum.Technology.Future
