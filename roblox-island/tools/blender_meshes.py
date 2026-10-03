@@ -89,9 +89,32 @@ for name, (root, objs) in roots.items():
         pieces.append('{ suffix = "%s", min = Vector3.new(%s, %s, %s), max = Vector3.new(%s, %s, %s), '
                       'color = Color3.fromRGB(%d, %d, %d) }' % (suffix, *mn, *mx, r, g, b))
     rows.append('\t%s = {\n\t\t%s,\n\t},' % (name, ",\n\t\t".join(pieces)))
+# the island terrain itself as deformed, chunked meshes
+import terrainmesh  # noqa: E402
+from island import build_island  # noqa: E402
+tcoll = bpy.data.collections.new("IslandTerrain")
+scene.collection.children.link(tcoll)
+terrain_objs = terrainmesh.build_island_terrain(build_island(), tcoll, OUT)
+bpy.ops.object.select_all(action="DESELECT")
+for o in terrain_objs:
+    o.data.name = o.name
+    o.select_set(True)
+export_fbx(os.path.join(OUT, "IslandTerrain.fbx"))
+tris = sum(len(o.data.polygons) for o in terrain_objs)
+print("exported island terrain: %d meshes, %d triangles (max %d per mesh)" % (
+    len(terrain_objs), tris, max(len(o.data.polygons) for o in terrain_objs)))
+trows = []
+for o in terrain_objs:
+    mn, mx = rockmesh.roblox_bounds(o)
+    r, g, b, _ = COLORS[o["voxel_color"]]
+    trows.append('\t{ name = "%s", min = Vector3.new(%s, %s, %s), max = Vector3.new(%s, %s, %s), '
+                 'color = Color3.fromRGB(%d, %d, %d) },' % (o.name, *mn, *mx, r, g, b))
+for o in terrain_objs:
+    o.hide_render = True
+
 tmpl = open(os.path.join(ROOT, "tools", "meshswap_template.lua")).read()
 with open(os.path.join(ROOT, "roblox", "MeshSwap.lua"), "w") as f:
-    f.write(tmpl.replace("--@@PIECES@@", "\n".join(rows)))
+    f.write(tmpl.replace("--@@PIECES@@", "\n".join(rows)).replace("--@@TERRAIN@@", "\n".join(trows)))
 print("wrote roblox/MeshSwap.lua")
 
 # contact sheet

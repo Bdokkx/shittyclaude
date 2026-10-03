@@ -244,13 +244,27 @@ function Builder.buildMap(mapName, data, origin, parent)
 	root.Name = mapName
 	root.Parent = parent
 
-	local ground = Instance.new("Model")
-	ground.Name = "Ground"
-	ground.Parent = root
 	local base = CFrame.new(origin)
-	for _, box in ipairs(data.terrain) do
-		makeBox(ground, box, base, 1, nil, "Ground")
+	local groups = data.groups or { { name = "Ground", boxes = data.terrain } }
+	for _, g in ipairs(groups) do
+		local model = Instance.new("Model")
+		model.Name = g.name
+		model.Parent = root
+		for _, box in ipairs(g.boxes) do
+			makeBox(model, box, base, 1, nil, g.name)
+		end
 	end
+	-- invisible marker at the map origin: MeshSwap places the terrain mesh relative to it
+	local anchor = Instance.new("Part")
+	anchor.Name = "VoxelAnchor"
+	anchor.Anchored = true
+	anchor.CanCollide = false
+	anchor.CanQuery = false
+	anchor.CanTouch = false
+	anchor.Transparency = 1
+	anchor.Size = Vector3.new(1, 1, 1)
+	anchor.CFrame = base
+	anchor.Parent = root
 
 	local propsFolder = Instance.new("Folder")
 	propsFolder.Name = "Props"

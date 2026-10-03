@@ -320,20 +320,26 @@ def build_island(seed=7):
             band[cell] = ("sand", T - 3, T - 1.5)
             pal = ROCKTOP if surface[cell] == "rocktop" else GRASS
             cap[cell] = (patch(cell, pal, 23), T - 1.5, T)
+    shallow_body = {}
     for cell, d in depth.items():
         y = SHALLOW_Y[d]
-        body[cell] = ("sand_wet" if d <= 2 else "sand" if d <= 4 else "sand_dark", y)
+        shallow_body[cell] = ("sand_wet" if d <= 2 else "sand" if d <= 4 else "sand_dark", y)
 
-    def emit(grid_items, lo_fn):  # noqa: E306
+    def emit(grid_items, lo_fn, out):  # noqa: E306
         grid = {cell: key for cell, key in grid_items.items()}
         for i0, j0, i1, j1, key in greedy(grid, N, N):
-            terrain.append(cell_box(i0, j0, i1, j1, lo_fn(key), key[-1], key[0]))
+            out.append(cell_box(i0, j0, i1, j1, lo_fn(key), key[-1], key[0]))
 
-    emit(body, lambda key: BED)
-    emit(band, lambda key: key[1])
-    emit(cap, lambda key: key[1])
-    terrain.extend(tiles)
-    terrain.append((-1000, BED - 2, -1000, 1000, BED, 1000, "seabed"))
+    # Ground = land/beach columns (swapped for the deformed terrain mesh later, kept as
+    # invisible collision); Shallows = underwater sand; Paths = cobbles/planks; Cliffs = facades
+    shallows = []
+    emit(body, lambda key: BED, terrain)
+    emit(band, lambda key: key[1], terrain)
+    emit(cap, lambda key: key[1], terrain)
+    emit(shallow_body, lambda key: BED, shallows)
+    shallows.append((-1000, BED - 2, -1000, 1000, BED, 1000, "seabed"))
+    paths = list(tiles)
+    cliffs = []
 
     # ------------------------------------------------------------ 7. cliff facades
     reserved = set()  # (cell, dir) faces kept clear for set pieces
@@ -341,7 +347,7 @@ def build_island(seed=7):
 
     def facade(cell, d, layers):
         x0, z0 = (cell[0] - N / 2) * CELL, (cell[1] - N / 2) * CELL
-        facade_boxes(terrain, facade_rng, x0, z0, d, layers)
+        facade_boxes(cliffs, facade_rng, x0, z0, d, layers)
 
     # set pieces that need a clean cliff face: cave entrance on the east side
     props = []
@@ -424,6 +430,40 @@ def build_island(seed=7):
                           pz + 23 * PS * math.sin(math.radians(a)), -a))
     spawn = (px - 6, PT, pz + 18 * PS)
 
+    def edge_cell(cell):
+        t = top[cell]
+        for d in DIRS:
+            nt = top_of((cell[0] + d[0], cell[1] + d[1]))
+            if nt is None or nt < t - 1.5:
+                return True
+        return False
+
+    def safe_xy(cell, x, z, margin=2.8):
+        """Move a prop inside its cell so it stays `margin` studs clear of every edge that
+        drops away (the terrain mesh pulls those edges in). None if the cell is too narrow."""
+        cx, cz = wx(cell[0]), wx(cell[1])
+        t = top[cell]
+        for d in DIRS:
+            nt = top_of((cell[0] + d[0], cell[1] + d[1]))
+            if nt is None or nt < t - 1.5:
+                limit = 2 - margin               # max offset from centre towards that edge
+                if d[0]:
+                    off = (x - cx) * d[0]
+                    if off > limit:
+                        x = cx + limit * d[0]
+                else:
+                    off = (z - cz) * d[1]
+                    if off > limit:
+                        z = cz + limit * d[1]
+        # opposite drops can't both be satisfied
+        for d in DIRS:
+            nt = top_of((cell[0] + d[0], cell[1] + d[1]))
+            if nt is None or nt < t - 1.5:
+                off = ((x - cx) * d[0]) if d[0] else ((z - cz) * d[1])
+                if off > 2 - margin + 1e-6:
+                    return None
+        return x, z
+
     # torches along the paths, fences where a path runs along a drop
     count = 0
     for cell in sorted(path):
@@ -442,7 +482,9 @@ def build_island(seed=7):
                 props.append(prop("Fence", x, h, z, 90 if d[0] else 0))
         count += 1
         if style == "cobble" and count % 23 == 0 and dist > PATH_R - 0.8:
-            props.append(prop("Torch", wx(i), h, wx(j), 0))
+            spot = safe_xy(cell, wx(i), wx(j))
+            if spot:
+                props.append(prop("Torch", spot[0], h, spot[1], 0))
 
     # dock + boat + beach clutter
     dock_z = (shore_j - N / 2) * CELL - 6
@@ -479,11 +521,13 @@ def build_island(seed=7):
                 best = (score, sx, sz, dx, dz, h)
     _, sx, sz, dx, dz, h = best
     ax, az = (sx - N / 2) * CELL, (sz - N / 2) * CELL
-    props.append(prop("Arch", ax, h - 0.5, az, math.degrees(math.atan2(dx, dz)), 1.65))
+    props.append(prop("Arch", ax, h - 0.5, az, math.degrees(math.atan2(dx, dz)), 1.1))
     block(int(sx), int(sz), 3)
     props[:] = [p for p in props if not (p[0] in ("Torch", "Fence") and math.hypot(p[1] - ax, p[3] - az) < 18)]
 
     # ---- rocks that grow out of the island (cliff-coloured, grassy tops)
+    # (edge_cell: the deformed terrain mesh pulls cliff edges in by up to ~2.5 studs, so nothing
+    # small gets placed on a cell that drops off on any side - it would float)
     feature = []
 
     def clear_of(x, z, r):
@@ -496,7 +540,7 @@ def build_island(seed=7):
     # crags and clusters half-buried at the foot of tall cliffs
     feet = []
     for cell, t in tier.items():
-        if cell in blocked or near_path(cell, 1):
+        if cell in blocked or near_path(cell, 1) or edge_cell(cell):
             continue
         for d in DIRS:
             nb = (cell[0] + d[0], cell[1] + d[1])
@@ -553,7 +597,9 @@ def build_island(seed=7):
 
     # lookout on the summit
     props.append(prop("RuinPillar", wx(peak[0] + 2), top[peak], wx(peak[1] + 1), 20))
-    props.append(prop("Torch", wx(peak[0] - 1), top[peak], wx(peak[1] - 1), 0))
+    spot = safe_xy(peak, wx(peak[0]) - 1.5, wx(peak[1]) - 1.5, margin=3.2)
+    if spot:
+        props.append(prop("Torch", spot[0], top[peak], spot[1], 0))
     props.append(prop("Signpost", wx(peak[0] + 1), top[peak], wx(peak[1] - 2), 120))
     block(peak[0], peak[1], 2)
 
@@ -568,7 +614,10 @@ def build_island(seed=7):
         t = tier[cell]
         T = top[cell]
         jx, jz = rng.uniform(-1.1, 1.1), rng.uniform(-1.1, 1.1)
-        x, z = wx(i) + jx, wx(j) + jz
+        safe = safe_xy(cell, wx(i) + jx, wx(j) + jz)
+        if safe is None:
+            continue
+        x, z = safe
         near_path = any((i + a, j + b) in path or (i + a, j + b) in plaza
                         for a in (-2, -1, 0, 1, 2) for b in (-2, -1, 0, 1, 2))
         r = rng.random()
@@ -616,8 +665,11 @@ def build_island(seed=7):
             if nb in path or nb in plaza or nb in blocked or nb not in tier:
                 continue
             if rng.random() < 0.08 and abs(top[nb] - path[cell][0]) < 3:
-                x = wx(i) + d[0] * 2.6 + rng.uniform(-1, 1) * (d[1] != 0)
-                z = wx(j) + d[1] * 2.6 + rng.uniform(-1, 1) * (d[0] != 0)
+                safe = safe_xy(nb, wx(i) + d[0] * 2.6 + rng.uniform(-1, 1) * (d[1] != 0),
+                               wx(j) + d[1] * 2.6 + rng.uniform(-1, 1) * (d[0] != 0))
+                if safe is None:
+                    continue
+                x, z = safe
                 props.append(prop(rng.choice(("GrassTuft", "SmallRock", "Flowers", "Fern")), x, top[nb],
                                   z, rng.uniform(0, 360), 1, rng.choice((1, 3, 6))))
 
@@ -643,7 +695,16 @@ def build_island(seed=7):
 
     water = (-1000, BED - 2, -1000, 1000, 0, 1000)
     debug = {"tier": tier, "path": path, "plaza": plaza, "N": N}
-    return {"terrain": terrain, "props": props, "water": water, "spawn": spawn, "debug": debug}
+    # what the Blender terrain mesh is built from: every non-underwater column
+    mesh_cells = []
+    for cell in tier:
+        kind = "path" if (cell in path or cell in plaza) else ("beach" if tier[cell] == 0 else "land")
+        mesh_cells.append((cell[0], cell[1], top[cell] - (1 if kind == "path" else 0), kind,
+                           surface.get(cell, "")))
+    groups = [("Ground", terrain), ("Shallows", shallows), ("Paths", paths), ("Cliffs", cliffs)]
+    return {"terrain": terrain + shallows + paths + cliffs, "groups": groups, "props": props,
+            "water": water, "spawn": spawn, "debug": debug, "mesh_cells": mesh_cells, "N": N,
+            "cell": CELL}
 
 
 if __name__ == "__main__":

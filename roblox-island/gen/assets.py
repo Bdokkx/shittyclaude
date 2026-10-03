@@ -60,6 +60,8 @@ def dezfight(boxes):
 
 
 def asset(boxes, lights=(), fires=(), tintable=False):
+    for b in boxes:
+        assert min(b[3] - b[0], b[4] - b[1], b[5] - b[2]) > 0.01, "zero-size box %r" % (b,)
     return {"boxes": dezfight(boxes), "lights": list(lights), "fires": list(fires),
             "tintable": tintable}
 
@@ -160,6 +162,9 @@ def pine(tiers, base, seed, trunk=4):
     s, y = base, trunk
     for i in range(tiers):
         b.append(B(0, y, 0, s, 1.5, s, "leaf_dark"))
+        if s <= 2:  # top tier: just the skirt, the crown sits right on it
+            y += 1.5
+            break
         b.append(B(0, y + 1.5, 0, s - 2, 1.5, s - 2, "leaf"))
         w = 2 if s >= 6 else 1
         for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)):
@@ -277,16 +282,16 @@ def boulder_base():
 
 
 def arch_base():
-    """Natural rock arch, 26 wide x 24 tall x 10 deep."""
-    return [B(-9.5, 0, 0, 7, 16, 10, "rock"), B(9.5, 0, 0, 7, 16, 10, "rock"),
-            B(0, 16, 0, 26, 5, 10, "rock_dark"), B(-5, 14, 0, 2, 2, 9, "rock"), B(5, 14, 0, 2, 2, 9, "rock"),
-            B(0, 21, 0, 26, 1.5, 10, "sand"), B(0, 22.5, 0, 26, 1.5, 10, "grass")]
+    """Natural rock arch, 32 wide x 24 tall x 9 deep, 20-stud opening (fits a path)."""
+    return [B(-13, 0, 0, 6, 16, 9, "rock"), B(13, 0, 0, 6, 16, 9, "rock"),
+            B(0, 16, 0, 32, 5, 9, "rock_dark"), B(-8.5, 14, 0, 3, 2, 8, "rock"), B(8.5, 14, 0, 3, 2, 8, "rock"),
+            B(0, 21, 0, 32, 1.5, 9, "sand"), B(0, 22.5, 0, 32, 1.5, 9, "grass")]
 
 
 def arch():
     b = roughen(arch_base(), 11)
     b += [B(-8, 24, 1, 5, 2, 4, "leaf_dark"), B(7, 24, -2, 4, 2.5, 4, "leaf"),
-          B(13.6, 18, 0, 1.4, 5, 3, "moss"), B(-13.8, 17, 2, 1.2, 6, 2, "moss_dark")]
+          B(16.6, 18, 0, 1.4, 5, 3, "moss"), B(-16.8, 17, 2, 1.2, 6, 2, "moss_dark")]
     return asset(b)
 
 
@@ -636,8 +641,7 @@ ASSETS = {
 }
 
 
-# Mesh versions (built by tools/blender_meshes.py) - reef only: the island keeps its
-# blocky voxel rocks so they match the cliffs. boxes = the un-roughened base
+# Mesh versions (built by tools/blender_meshes.py). boxes = the un-roughened base
 # shape; faces pointing up get the `top` colour, the rest `rock`.
 REEF_ROCK = (118, 136, 226)
 ISLE_ROCK = (122, 132, 196)
@@ -653,6 +657,16 @@ MESH_SOURCES = {
     "Boulder": dict(boxes=boulder_base(), rock="rock_light", top="rock_light", seed=5, disp=1.6, noise=5,
                     faces=110, voxel=0.9),
     "Seaweed": dict(kind="seaweed", rock="seaweed", top="seaweed", seed=10),
+    # island rocks: same deformation + same rock/grass textures as the island terrain mesh
+    "Arch": dict(boxes=arch_base(), rock="rock", top="grass", seed=9, disp=2.4, noise=7, faces=700),
+    "CliffCrag": dict(boxes=ASSETS_PLACEHOLDER, rock="rock", top="grass", seed=11, disp=2.2, noise=6, faces=480),
+    "CliffRocks": dict(boxes=ASSETS_PLACEHOLDER, rock="rock", top="grass", seed=12, disp=2.0, noise=6, faces=480),
+    "LedgeRock": dict(boxes=ASSETS_PLACEHOLDER, rock="rock", top="grass", seed=13, disp=1.7, noise=5, faces=300),
+    "RockOutcrop": dict(boxes=ASSETS_PLACEHOLDER, rock="rock", top="moss", seed=6, disp=2.2, noise=6, faces=420),
+    "RockOutcropBig": dict(boxes=ASSETS_PLACEHOLDER, rock="rock", top="moss", seed=7, disp=2.6, noise=7,
+                           faces=620),
+    "RockOutcropSmall": dict(boxes=ASSETS_PLACEHOLDER, rock="rock", top="moss", seed=8, disp=1.4, noise=4,
+                             faces=160),
 }
 for _n, _src in MESH_SOURCES.items():
     if _src.get("boxes") is ASSETS_PLACEHOLDER:

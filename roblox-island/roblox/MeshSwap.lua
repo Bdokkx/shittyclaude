@@ -1,8 +1,11 @@
--- MeshSwap: replaces the part-built reef rocks in CoralReef with the deformed,
--- stud-textured Blender meshes. (The island keeps its blocky voxel rocks on purpose.)
+-- MeshSwap: swaps the part-built rocks (island + reef) AND the island's blocky cliffs for
+-- the deformed, stud-textured Blender meshes.
 --
--- 1. File > Import 3D > exports/meshes/VoxelRockMeshes.fbx  (it lands in Workspace)
--- 2. Paste this whole file into the Command Bar (View > Command Bar) and press Enter.
+-- 1. File > Import 3D > exports/meshes/VoxelRockMeshes.fbx   (rocks, it lands in Workspace)
+-- 2. File > Import 3D > exports/meshes/IslandTerrain.fbx     (the island's deformed cliffs)
+-- 3. Paste this whole file into the Command Bar (View > Command Bar) and press Enter.
+--
+-- The island's blocky ground stays underneath as invisible collision, so walking is unchanged.
 --
 -- Every mesh piece is placed from its exact size/centre (baked in below by Blender),
 -- so it doesn't matter how the importer scaled or grouped the meshes.
@@ -34,8 +37,208 @@ local PIECES = {
 	Seaweed = {
 		{ suffix = "_Rock", min = Vector3.new(-3.223, -0.041, -3.636), max = Vector3.new(3.679, 13.116, 2.195), color = Color3.fromRGB(60, 176, 66) },
 	},
+	Arch = {
+		{ suffix = "_Rock", min = Vector3.new(-16.704, -0.555, -5.381), max = Vector3.new(17.089, 24.564, 5.406), color = Color3.fromRGB(124, 137, 214) },
+		{ suffix = "_Top", min = Vector3.new(-16.048, 23.219, -5.35), max = Vector3.new(16.74, 24.956, 4.817), color = Color3.fromRGB(112, 182, 62) },
+	},
+	CliffCrag = {
+		{ suffix = "_Rock", min = Vector3.new(-6.846, -0.418, -5.665), max = Vector3.new(6.217, 29.44, 4.975), color = Color3.fromRGB(124, 137, 214) },
+		{ suffix = "_Top", min = Vector3.new(-6.475, 1.955, -5.373), max = Vector3.new(5.583, 29.44, 4.837), color = Color3.fromRGB(112, 182, 62) },
+	},
+	CliffRocks = {
+		{ suffix = "_Rock", min = Vector3.new(-12.205, -0.694, -8.747), max = Vector3.new(14.153, 12.116, 6.747), color = Color3.fromRGB(124, 137, 214) },
+		{ suffix = "_Top", min = Vector3.new(-12.078, 1.823, -8.166), max = Vector3.new(13.982, 12.255, 6.54), color = Color3.fromRGB(112, 182, 62) },
+	},
+	LedgeRock = {
+		{ suffix = "_Rock", min = Vector3.new(-8.217, -0.672, -5.861), max = Vector3.new(8.31, 9.965, 6.582), color = Color3.fromRGB(124, 137, 214) },
+		{ suffix = "_Top", min = Vector3.new(-7.786, 1.307, -5.763), max = Vector3.new(8.118, 10.134, 6.094), color = Color3.fromRGB(112, 182, 62) },
+	},
+	RockOutcrop = {
+		{ suffix = "_Rock", min = Vector3.new(-8.593, -0.718, -7.56), max = Vector3.new(8.2, 16.981, 7.307), color = Color3.fromRGB(124, 137, 214) },
+		{ suffix = "_Top", min = Vector3.new(-8.054, 1.312, -7.542), max = Vector3.new(8.06, 16.981, 7.307), color = Color3.fromRGB(100, 154, 58) },
+	},
+	RockOutcropBig = {
+		{ suffix = "_Rock", min = Vector3.new(-11.272, -0.9, -9.076), max = Vector3.new(11.485, 29.647, 9.759), color = Color3.fromRGB(124, 137, 214) },
+		{ suffix = "_Top", min = Vector3.new(-10.898, 0.954, -8.775), max = Vector3.new(11.129, 29.647, 9.759), color = Color3.fromRGB(100, 154, 58) },
+	},
+	RockOutcropSmall = {
+		{ suffix = "_Rock", min = Vector3.new(-4.526, -0.445, -4.466), max = Vector3.new(3.944, 5.049, 4.446), color = Color3.fromRGB(124, 137, 214) },
+		{ suffix = "_Top", min = Vector3.new(-4.275, 1.783, -4.355), max = Vector3.new(3.832, 5.166, 4.122), color = Color3.fromRGB(100, 154, 58) },
+	},
 }
-local PRECISE = { ReefShelf = true, ReefArch = true, ReefPinnacle = true, ReefPinnacleTall = true }
+-- generated: island terrain mesh pieces (island space, studs)
+local TERRAIN = {
+	{ name = "IslandTerrain_5_6_Band", min = Vector3.new(-144.341, 9.327, -93.219), max = Vector3.new(-127.648, 24.0, -63.827), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_5_6_Beach", min = Vector3.new(-164.607, -2.768, -112.14), max = Vector3.new(-124.427, 14.001, -59.829), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_5_6_Grass", min = Vector3.new(-141.872, 14.0, -70.412), max = Vector3.new(-132.248, 14.0, -62.576), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_5_6_GrassDark", min = Vector3.new(-144.341, 3.984, -93.24), max = Vector3.new(-124.123, 24.0, -62.576), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_5_6_Rock", min = Vector3.new(-164.256, -3.002, -112.041), max = Vector3.new(-122.484, 20.428, -60.034), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_5_7_Band", min = Vector3.new(-180.406, 8.959, -64.091), max = Vector3.new(-128.014, 46.002, 0.821), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_5_7_Beach", min = Vector3.new(-184.723, -2.768, -64.855), max = Vector3.new(-143.62, 24.375, 0.496), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_5_7_Dirt", min = Vector3.new(-140.516, 41.0, -24.327), max = Vector3.new(-123.693, 44.004, 0.003), color = Color3.fromRGB(150, 116, 78) },
+	{ name = "IslandTerrain_5_7_Grass", min = Vector3.new(-179.834, 4.037, -64.077), max = Vector3.new(-112.733, 46.002, 8.518), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_5_7_GrassDark", min = Vector3.new(-174.827, 3.987, -64.015), max = Vector3.new(-123.035, 46.001, 8.518), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_5_7_Rock", min = Vector3.new(-184.723, -3.008, -70.013), max = Vector3.new(-124.72, 44.0, 9.317), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_5_8_Band", min = Vector3.new(-171.317, 8.739, -0.23), max = Vector3.new(-127.549, 46.0, 61.707), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_5_8_Beach", min = Vector3.new(-184.017, -2.768, -0.418), max = Vector3.new(-127.693, 24.375, 66.295), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_5_8_Grass", min = Vector3.new(-156.593, 10.604, -5.829), max = Vector3.new(-125.206, 46.0, 61.804), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_5_8_GrassDark", min = Vector3.new(-171.317, 4.0, -4.226), max = Vector3.new(-124.742, 46.0, 56.819), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_5_8_Rock", min = Vector3.new(-183.281, -3.009, -3.95), max = Vector3.new(-123.568, 44.0, 74.398), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_5_9_Beach", min = Vector3.new(-164.395, -2.781, 60.86), max = Vector3.new(-123.207, 4.35, 108.209), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_5_9_Rock", min = Vector3.new(-164.307, -3.011, 54.544), max = Vector3.new(-125.191, 3.0, 100.254), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_6_5_Band", min = Vector3.new(-76.908, 10.421, -132.776), max = Vector3.new(-63.021, 14.0, -127.83), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_6_5_Beach", min = Vector3.new(-107.983, -2.756, -152.77), max = Vector3.new(-61.234, 14.0, -125.995), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_6_5_Grass", min = Vector3.new(-77.199, 10.751, -132.776), max = Vector3.new(-63.021, 14.0, -128.005), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_6_5_Rock", min = Vector3.new(-105.641, -3.002, -152.287), max = Vector3.new(-56.9, 12.387, -122.687), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_6_6_Band", min = Vector3.new(-128.109, 8.91, -128.47), max = Vector3.new(-63.116, 24.001, -63.626), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_6_6_Beach", min = Vector3.new(-129.523, -2.773, -128.695), max = Vector3.new(-83.766, 14.003, -71.519), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_6_6_Grass", min = Vector3.new(-127.966, 10.637, -132.776), max = Vector3.new(-56.114, 24.001, -56.921), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_6_6_GrassDark", min = Vector3.new(-131.273, 3.977, -123.825), max = Vector3.new(-54.984, 24.001, -56.921), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_6_6_Rock", min = Vector3.new(-134.784, -3.004, -131.109), max = Vector3.new(-61.453, 24.001, -46.679), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_6_7_Band", min = Vector3.new(-128.789, 19.14, -63.626), max = Vector3.new(-63.712, 46.005, 1.103), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_6_7_Dirt", min = Vector3.new(-135.757, 39.0, -24.535), max = Vector3.new(-103.396, 44.001, 2.406), color = Color3.fromRGB(150, 116, 78) },
+	{ name = "IslandTerrain_6_7_Grass", min = Vector3.new(-136.106, 23.998, -60.515), max = Vector3.new(-60.626, 46.001, 2.496), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_6_7_GrassDark", min = Vector3.new(-136.921, 13.995, -68.09), max = Vector3.new(-56.487, 46.005, 1.412), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_6_7_Rock", min = Vector3.new(-131.087, -3.004, -78.853), max = Vector3.new(-61.686, 44.556, 17.843), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_6_8_Band", min = Vector3.new(-129.545, 9.586, -0.863), max = Vector3.new(-63.636, 46.0, 64.252), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_6_8_Beach", min = Vector3.new(-124.822, 3.0, 58.968), max = Vector3.new(-119.627, 14.0, 64.552), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_6_8_Dirt", min = Vector3.new(-127.926, 25.514, -3.035), max = Vector3.new(-59.354, 44.0, 52.412), color = Color3.fromRGB(150, 116, 78) },
+	{ name = "IslandTerrain_6_8_Grass", min = Vector3.new(-131.847, 4.184, -3.891), max = Vector3.new(-60.53, 46.0, 65.798), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_6_8_GrassDark", min = Vector3.new(-131.507, 13.996, -4.064), max = Vector3.new(-60.53, 46.0, 65.761), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_6_8_Rock", min = Vector3.new(-132.569, -3.005, -15.601), max = Vector3.new(-60.989, 44.0, 72.214), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_6_9_Band", min = Vector3.new(-126.558, 8.217, 63.754), max = Vector3.new(-63.637, 34.0, 127.813), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_6_9_Beach", min = Vector3.new(-132.609, -2.773, 60.86), max = Vector3.new(-63.4, 16.001, 130.071), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_6_9_Grass", min = Vector3.new(-127.583, 3.977, 62.275), max = Vector3.new(-55.703, 34.0, 128.013), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_6_9_GrassDark", min = Vector3.new(-112.053, 10.534, 63.781), max = Vector3.new(-55.703, 34.0, 124.236), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_6_9_Rock", min = Vector3.new(-132.569, -3.009, 58.46), max = Vector3.new(-62.416, 31.809, 134.235), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_6_10_Beach", min = Vector3.new(-84.249, -2.774, 123.521), max = Vector3.new(-56.91, 4.35, 159.584), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_6_10_Rock", min = Vector3.new(-84.249, -3.001, 120.452), max = Vector3.new(-63.389, 3.0, 157.926), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_7_5_Band", min = Vector3.new(-64.183, 9.113, -140.164), max = Vector3.new(0.777, 14.001, -127.96), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_7_5_Beach", min = Vector3.new(-67.172, -2.773, -168.726), max = Vector3.new(0.883, 14.001, -127.778), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_7_5_Grass", min = Vector3.new(-63.021, 4.0, -140.455), max = Vector3.new(11.255, 14.002, -115.267), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_7_5_GrassDark", min = Vector3.new(-48.0, 11.727, -136.336), max = Vector3.new(-0.602, 14.0, -131.189), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_7_5_Rock", min = Vector3.new(-68.931, -3.01, -168.365), max = Vector3.new(11.811, 14.001, -116.059), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_7_6_Band", min = Vector3.new(-64.532, 14.0, -124.984), max = Vector3.new(0.729, 74.0, -62.888), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_7_6_Dirt", min = Vector3.new(-40.722, 34.981, -108.95), max = Vector3.new(2.818, 83.0, -60.043), color = Color3.fromRGB(150, 116, 78) },
+	{ name = "IslandTerrain_7_6_Grass", min = Vector3.new(-66.885, 12.187, -136.203), max = Vector3.new(11.086, 75.0, -63.201), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_7_6_GrassDark", min = Vector3.new(-64.948, 14.0, -132.513), max = Vector3.new(11.086, 75.54, -67.827), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_7_6_Rock", min = Vector3.new(-66.915, -3.004, -137.934), max = Vector3.new(3.996, 81.0, -46.785), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_7_6_Stone", min = Vector3.new(-56.567, 24.0, -112.928), max = Vector3.new(1.043, 81.0, -60.316), color = Color3.fromRGB(100, 154, 58) },
+	{ name = "IslandTerrain_7_7_Band", min = Vector3.new(-64.706, 29.013, -64.763), max = Vector3.new(0.816, 76.0, 0.959), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_7_7_Dirt", min = Vector3.new(-30.016, 73.659, -67.38), max = Vector3.new(3.039, 83.003, -47.909), color = Color3.fromRGB(150, 116, 78) },
+	{ name = "IslandTerrain_7_7_Grass", min = Vector3.new(-68.242, 23.998, -67.827), max = Vector3.new(0.398, 82.995, 3.459), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_7_7_GrassDark", min = Vector3.new(-65.504, 23.999, -67.827), max = Vector3.new(4.622, 80.998, 0.654), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_7_7_Rock", min = Vector3.new(-68.059, -3.005, -75.803), max = Vector3.new(13.816, 81.914, 15.381), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_7_7_Stone", min = Vector3.new(-63.712, 30.771, -67.827), max = Vector3.new(4.622, 81.0, 0.727), color = Color3.fromRGB(100, 154, 58) },
+	{ name = "IslandTerrain_7_8_Band", min = Vector3.new(-64.427, 25.576, -0.363), max = Vector3.new(-0.196, 64.0, 64.194), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_7_8_Dirt", min = Vector3.new(-68.582, 22.999, 15.525), max = Vector3.new(0.581, 34.001, 66.668), color = Color3.fromRGB(150, 116, 78) },
+	{ name = "IslandTerrain_7_8_Grass", min = Vector3.new(-64.877, 27.95, -7.047), max = Vector3.new(-3.082, 54.0, 65.174), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_7_8_GrassDark", min = Vector3.new(-66.808, 23.0, -0.055), max = Vector3.new(-0.218, 64.0, 63.945), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_7_8_Rock", min = Vector3.new(-66.855, -3.011, -11.05), max = Vector3.new(0.822, 60.808, 74.441), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_7_8_Stone", min = Vector3.new(-38.856, 28.125, -4.824), max = Vector3.new(2.054, 63.993, 16.917), color = Color3.fromRGB(100, 154, 58) },
+	{ name = "IslandTerrain_7_9_Band", min = Vector3.new(-64.365, 10.533, 63.736), max = Vector3.new(-3.154, 34.0, 128.416), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_7_9_Dirt", min = Vector3.new(-24.098, 11.0, 61.094), max = Vector3.new(7.7, 34.0, 128.157), color = Color3.fromRGB(150, 116, 78) },
+	{ name = "IslandTerrain_7_9_Grass", min = Vector3.new(-68.556, 11.875, 62.258), max = Vector3.new(-3.166, 34.001, 132.413), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_7_9_GrassDark", min = Vector3.new(-65.265, 14.0, 63.781), max = Vector3.new(-3.445, 34.0, 109.32), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_7_9_Rock", min = Vector3.new(-64.572, -3.004, 49.238), max = Vector3.new(2.471, 34.0, 136.968), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_7_10_Band", min = Vector3.new(-63.453, 9.036, 127.739), max = Vector3.new(-3.777, 16.0, 132.966), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_7_10_Beach", min = Vector3.new(-71.867, -2.769, 127.266), max = Vector3.new(-3.526, 14.0, 159.995), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_7_10_Dirt", min = Vector3.new(-5.142, -0.825, 127.369), max = Vector3.new(2.108, 12.254, 168.919), color = Color3.fromRGB(150, 116, 78) },
+	{ name = "IslandTerrain_7_10_Grass", min = Vector3.new(-63.754, 3.966, 121.181), max = Vector3.new(-3.502, 16.0, 132.798), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_7_10_Rock", min = Vector3.new(-64.866, -3.01, 114.019), max = Vector3.new(4.605, 14.0, 169.431), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_8_5_Band", min = Vector3.new(-0.831, 9.127, -148.452), max = Vector3.new(64.193, 15.044, -130.858), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_8_5_Beach", min = Vector3.new(-1.003, -2.788, -176.711), max = Vector3.new(67.484, 14.0, -131.895), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_8_5_Grass", min = Vector3.new(-12.562, 3.0, -148.25), max = Vector3.new(70.406, 14.002, -128.223), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_8_5_GrassDark", min = Vector3.new(6.727, 4.035, -141.03), max = Vector3.new(38.68, 16.0, -120.21), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_8_5_Rock", min = Vector3.new(-4.793, -3.006, -175.656), max = Vector3.new(71.173, 14.0, -118.566), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_8_6_Band", min = Vector3.new(-1.079, 14.0, -124.773), max = Vector3.new(64.815, 74.0, -63.518), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_8_6_Dirt", min = Vector3.new(-2.009, 34.0, -104.842), max = Vector3.new(56.664, 83.0, -63.412), color = Color3.fromRGB(150, 116, 78) },
+	{ name = "IslandTerrain_8_6_Grass", min = Vector3.new(-0.935, 13.997, -132.414), max = Vector3.new(72.25, 83.0, -60.861), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_8_6_GrassDark", min = Vector3.new(-0.935, 13.999, -131.902), max = Vector3.new(67.636, 74.0, -56.584), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_8_6_Rock", min = Vector3.new(-1.777, -3.007, -136.715), max = Vector3.new(65.564, 81.976, -48.634), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_8_6_Stone", min = Vector3.new(-2.479, 25.122, -112.163), max = Vector3.new(64.264, 74.0, -62.355), color = Color3.fromRGB(100, 154, 58) },
+	{ name = "IslandTerrain_8_7_Band", min = Vector3.new(-0.216, 31.875, -63.943), max = Vector3.new(64.161, 84.0, 0.243), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_8_7_Dirt", min = Vector3.new(-1.455, 29.0, -67.38), max = Vector3.new(64.611, 84.0, 0.784), color = Color3.fromRGB(150, 116, 78) },
+	{ name = "IslandTerrain_8_7_Grass", min = Vector3.new(-0.476, 33.998, -69.11), max = Vector3.new(68.34, 84.0, 4.127), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_8_7_GrassDark", min = Vector3.new(-0.671, 33.125, -69.11), max = Vector3.new(16.47, 83.0, 0.253), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_8_7_Rock", min = Vector3.new(-4.566, -3.01, -76.605), max = Vector3.new(65.059, 81.945, 4.534), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_8_7_Stone", min = Vector3.new(-3.346, 33.998, -67.678), max = Vector3.new(65.059, 84.0, 0.473), color = Color3.fromRGB(100, 154, 58) },
+	{ name = "IslandTerrain_8_8_Band", min = Vector3.new(-0.454, 25.625, -0.195), max = Vector3.new(64.209, 44.002, 64.664), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_8_8_Dirt", min = Vector3.new(-4.847, 22.995, -0.861), max = Vector3.new(70.212, 40.0, 66.668), color = Color3.fromRGB(150, 116, 78) },
+	{ name = "IslandTerrain_8_8_Grass", min = Vector3.new(1.755, 23.977, -1.733), max = Vector3.new(64.802, 44.002, 64.197), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_8_8_GrassDark", min = Vector3.new(-3.157, 32.0, -0.585), max = Vector3.new(64.71, 44.0, 31.172), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_8_8_Rock", min = Vector3.new(-0.935, -3.012, -2.961), max = Vector3.new(68.956, 44.002, 76.03), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_8_8_Stone", min = Vector3.new(-0.948, 27.936, -2.863), max = Vector3.new(46.83, 40.0, 12.893), color = Color3.fromRGB(100, 154, 58) },
+	{ name = "IslandTerrain_8_9_Band", min = Vector3.new(15.016, 11.0, 63.562), max = Vector3.new(64.883, 36.0, 128.984), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_8_9_Dirt", min = Vector3.new(-4.847, 11.0, 63.711), max = Vector3.new(55.374, 32.9, 128.984), color = Color3.fromRGB(150, 116, 78) },
+	{ name = "IslandTerrain_8_9_Grass", min = Vector3.new(15.331, 12.5, 61.052), max = Vector3.new(72.033, 34.001, 131.42), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_8_9_GrassDark", min = Vector3.new(15.647, 13.997, 61.121), max = Vector3.new(66.251, 36.0, 120.77), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_8_9_Rock", min = Vector3.new(-3.638, -3.005, 52.561), max = Vector3.new(69.552, 34.297, 136.51), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_8_10_Band", min = Vector3.new(15.307, 8.913, 127.3), max = Vector3.new(64.493, 16.0, 140.616), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_8_10_Beach", min = Vector3.new(11.046, -2.758, 131.539), max = Vector3.new(66.765, 14.002, 172.703), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_8_10_Dirt", min = Vector3.new(-3.906, -1.057, 125.678), max = Vector3.new(17.27, 11.002, 172.14), color = Color3.fromRGB(150, 116, 78) },
+	{ name = "IslandTerrain_8_10_Grass", min = Vector3.new(15.719, 4.0, 126.392), max = Vector3.new(65.243, 16.0, 140.616), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_8_10_Rock", min = Vector3.new(-4.517, -3.008, 121.931), max = Vector3.new(65.564, 14.0, 172.622), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_9_5_Band", min = Vector3.new(62.986, 9.168, -132.227), max = Vector3.new(74.051, 14.0, -127.748), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_9_5_Beach", min = Vector3.new(61.9, -2.768, -156.404), max = Vector3.new(92.271, 10.625, -127.213), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_9_5_Grass", min = Vector3.new(50.007, 9.168, -132.227), max = Vector3.new(73.024, 14.0, -127.901), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_9_5_GrassDark", min = Vector3.new(72.547, 11.97, -128.8), max = Vector3.new(73.067, 14.0, -127.901), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_9_5_Rock", min = Vector3.new(61.285, -3.006, -156.259), max = Vector3.new(89.678, 11.969, -119.309), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_9_6_Band", min = Vector3.new(63.554, 9.316, -128.125), max = Vector3.new(128.375, 34.0, -63.555), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_9_6_Beach", min = Vector3.new(75.644, -2.765, -129.255), max = Vector3.new(134.008, 14.001, -71.911), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_9_6_Grass", min = Vector3.new(62.639, 3.987, -128.587), max = Vector3.new(128.351, 34.0, -62.706), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_9_6_GrassDark", min = Vector3.new(63.352, 4.0, -127.901), max = Vector3.new(128.351, 32.99, -61.032), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_9_6_Rock", min = Vector3.new(61.313, -3.007, -138.485), max = Vector3.new(128.704, 31.875, -54.021), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_9_6_Stone", min = Vector3.new(63.554, 30.718, -74.012), max = Vector3.new(68.888, 34.0, -63.711), color = Color3.fromRGB(100, 154, 58) },
+	{ name = "IslandTerrain_9_7_Band", min = Vector3.new(63.777, 14.0, -64.456), max = Vector3.new(128.531, 44.001, 0.467), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_9_7_Dirt", min = Vector3.new(63.642, 36.875, -31.226), max = Vector3.new(64.711, 41.0, -12.8), color = Color3.fromRGB(150, 116, 78) },
+	{ name = "IslandTerrain_9_7_Grass", min = Vector3.new(60.974, 14.0, -68.261), max = Vector3.new(127.769, 44.001, 1.812), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_9_7_GrassDark", min = Vector3.new(65.059, 13.998, -68.142), max = Vector3.new(133.001, 44.001, 4.424), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_9_7_Rock", min = Vector3.new(63.233, -3.01, -75.458), max = Vector3.new(137.483, 44.0, 6.256), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_9_7_Stone", min = Vector3.new(63.091, 30.846, -67.653), max = Vector3.new(76.082, 40.999, -26.309), color = Color3.fromRGB(100, 154, 58) },
+	{ name = "IslandTerrain_9_8_Band", min = Vector3.new(63.349, 9.149, -0.372), max = Vector3.new(128.717, 44.001, 64.709), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_9_8_Beach", min = Vector3.new(115.844, 3.0, 59.456), max = Vector3.new(128.132, 14.0, 66.26), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_9_8_Dirt", min = Vector3.new(60.221, 25.842, 0.08), max = Vector3.new(130.319, 44.001, 60.358), color = Color3.fromRGB(150, 116, 78) },
+	{ name = "IslandTerrain_9_8_Grass", min = Vector3.new(60.339, 11.75, -5.071), max = Vector3.new(132.781, 44.001, 72.101), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_9_8_GrassDark", min = Vector3.new(60.339, 11.45, -5.071), max = Vector3.new(134.571, 44.001, 72.101), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_9_8_Rock", min = Vector3.new(60.121, -3.008, -14.227), max = Vector3.new(137.573, 44.0, 72.947), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_9_9_Band", min = Vector3.new(63.406, 8.943, 63.483), max = Vector3.new(120.345, 26.0, 128.17), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_9_9_Beach", min = Vector3.new(71.717, -2.775, 60.315), max = Vector3.new(134.358, 14.375, 131.341), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_9_9_Grass", min = Vector3.new(58.561, 4.052, 51.759), max = Vector3.new(120.618, 26.0, 128.267), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_9_9_GrassDark", min = Vector3.new(60.593, 3.883, 58.544), max = Vector3.new(116.395, 26.0, 100.547), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_9_9_Rock", min = Vector3.new(57.501, -3.006, 51.984), max = Vector3.new(133.511, 24.0, 138.715), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_9_10_Band", min = Vector3.new(63.833, 10.625, 127.718), max = Vector3.new(71.423, 14.375, 130.943), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_9_10_Beach", min = Vector3.new(62.247, -2.779, 127.012), max = Vector3.new(113.326, 14.0, 167.707), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_9_10_Grass", min = Vector3.new(64.26, 11.875, 129.062), max = Vector3.new(65.288, 14.0, 131.554), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_9_10_Rock", min = Vector3.new(63.488, -3.001, 113.263), max = Vector3.new(113.118, 14.0, 165.463), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_10_6_Band", min = Vector3.new(128.175, 9.496, -71.905), max = Vector3.new(135.606, 14.001, -64.001), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_10_6_Beach", min = Vector3.new(124.891, -2.759, -91.994), max = Vector3.new(168.2, 14.0, -61.732), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_10_6_GrassDark", min = Vector3.new(128.175, 10.919, -71.721), max = Vector3.new(135.606, 14.001, -64.09), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_10_6_Rock", min = Vector3.new(125.709, -3.005, -91.366), max = Vector3.new(167.772, 11.875, -58.174), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_10_7_Band", min = Vector3.new(127.705, 9.107, -64.001), max = Vector3.new(172.578, 46.002, 0.504), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_10_7_Beach", min = Vector3.new(135.288, -2.768, -65.737), max = Vector3.new(192.438, 24.0, 2.125), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_10_7_Grass", min = Vector3.new(127.769, 3.977, -59.506), max = Vector3.new(172.513, 46.002, 3.224), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_10_7_GrassDark", min = Vector3.new(124.858, 3.0, -68.142), max = Vector3.new(160.265, 46.0, 13.22), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_10_7_Rock", min = Vector3.new(122.129, -3.01, -75.458), max = Vector3.new(192.538, 44.217, 8.701), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_10_8_Band", min = Vector3.new(127.493, 9.196, -0.323), max = Vector3.new(172.142, 46.002, 64.169), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_10_8_Beach", min = Vector3.new(128.162, -2.784, -0.928), max = Vector3.new(195.157, 24.001, 68.438), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_10_8_Dirt", min = Vector3.new(124.243, 42.994, 0.08), max = Vector3.new(139.684, 44.001, 20.444), color = Color3.fromRGB(150, 116, 78) },
+	{ name = "IslandTerrain_10_8_Grass", min = Vector3.new(118.611, 10.338, -15.692), max = Vector3.new(172.142, 46.0, 64.145), color = Color3.fromRGB(112, 182, 62) },
+	{ name = "IslandTerrain_10_8_GrassDark", min = Vector3.new(118.611, 3.987, -0.391), max = Vector3.new(172.103, 46.002, 63.597), color = Color3.fromRGB(86, 156, 50) },
+	{ name = "IslandTerrain_10_8_Rock", min = Vector3.new(119.221, -3.008, -3.499), max = Vector3.new(194.472, 44.0, 75.957), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_10_9_Band", min = Vector3.new(135.621, 10.625, 63.996), max = Vector3.new(137.319, 11.875, 64.289), color = Color3.fromRGB(236, 212, 128) },
+	{ name = "IslandTerrain_10_9_Beach", min = Vector3.new(125.619, -2.781, 62.29), max = Vector3.new(160.801, 10.745, 112.133), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_10_9_Rock", min = Vector3.new(118.497, -3.003, 51.256), max = Vector3.new(160.801, 11.421, 112.105), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_11_7_Beach", min = Vector3.new(191.729, -2.75, -11.527), max = Vector3.new(194.6, 3.0, 0.318), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_11_7_Rock", min = Vector3.new(191.747, -2.58, -1.47), max = Vector3.new(193.927, 3.0, -0.19), color = Color3.fromRGB(124, 137, 214) },
+	{ name = "IslandTerrain_11_8_Beach", min = Vector3.new(187.585, -2.778, -0.23), max = Vector3.new(196.323, 3.0, 12.146), color = Color3.fromRGB(246, 228, 160) },
+	{ name = "IslandTerrain_11_8_Rock", min = Vector3.new(190.544, -3.0, -0.42), max = Vector3.new(196.182, 1.875, 11.691), color = Color3.fromRGB(124, 137, 214) },
+}
+local TERRAIN_BY_NAME = {}
+for _, t in ipairs(TERRAIN) do
+	TERRAIN_BY_NAME[t.name] = t
+end
+local PRECISE = { ReefShelf = true, ReefArch = true, ReefPinnacle = true, ReefPinnacleTall = true, Arch = true }
 local MAPS = { "VoxelIsland", "CoralReef" }
 
 local ServerStorage = game:GetService("ServerStorage")
@@ -66,6 +269,17 @@ local function restore()
 			end
 			for _, d in ipairs(old) do
 				d:Destroy()
+			end
+		end
+	end
+	local island = workspace:FindFirstChild("VoxelIsland")
+	local ground = island and island:FindFirstChild("Ground")
+	if ground then
+		for _, p in ipairs(ground:GetDescendants()) do
+			if p:IsA("BasePart") and p:GetAttribute("VoxelHidden") then
+				p.Transparency = 0
+				p.CastShadow = true
+				p:SetAttribute("VoxelHidden", nil)
 			end
 		end
 	end
@@ -101,7 +315,7 @@ for _, root in ipairs({ workspace, game:GetService("ReplicatedStorage"), ServerS
 			for _, d in ipairs(list) do
 				if d:IsA("MeshPart") then
 					local key = norm(d.Name)
-					if PIECES[key:match("^(.-)_[^_]+$") or ""] and not found[key] then
+					if (PIECES[key:match("^(.-)_[^_]+$") or ""] or TERRAIN_BY_NAME[key]) and not found[key] then
 						found[key] = d
 					end
 				end
@@ -112,6 +326,20 @@ end
 
 local ready, missing = {}, {}
 local votes = { straight = 0, lying = 0 }
+local function vote(size, want)
+	local function spread(a, b)
+		local r = { a.X / b.X, a.Y / b.Y, a.Z / b.Z }
+		table.sort(r)
+		return r[3] / r[1]
+	end
+	local straight = spread(size, want)
+	local sideways = spread(size, Vector3.new(want.X, want.Z, want.Y))
+	if straight < 1.1 and sideways > 1.2 then
+		votes.straight += 1
+	elseif sideways < 1.1 and straight > 1.2 then
+		votes.lying += 1
+	end
+end
 for name, pieces in pairs(PIECES) do
 	local ok = true
 	for _, piece in ipairs(pieces) do
@@ -119,22 +347,7 @@ for name, pieces in pairs(PIECES) do
 		if not tmpl then
 			ok = false
 		else
-			-- the imported mesh should have our proportions; if it matches with Y and Z swapped,
-			-- the importer laid it on its side. The importer treats every mesh the same way,
-			-- so collect votes and decide once for all of them.
-			local want = piece.max - piece.min
-			local function spread(a, b)
-				local r = { a.X / b.X, a.Y / b.Y, a.Z / b.Z }
-				table.sort(r)
-				return r[3] / r[1]
-			end
-			local straight = spread(tmpl.Size, want)
-			local sideways = spread(tmpl.Size, Vector3.new(want.X, want.Z, want.Y))
-			if straight < 1.1 and sideways > 1.2 then
-				votes.straight += 1
-			elseif sideways < 1.1 and straight > 1.2 then
-				votes.lying += 1
-			end
+			vote(tmpl.Size, piece.max - piece.min)
 		end
 	end
 	if ok then
@@ -143,12 +356,20 @@ for name, pieces in pairs(PIECES) do
 		table.insert(missing, name)
 	end
 end
+local terrainFound = 0
+for _, t in ipairs(TERRAIN) do
+	local tmpl = found[t.name]
+	if tmpl then
+		terrainFound += 1
+		vote(tmpl.Size, t.max - t.min)
+	end
+end
 local LYING = votes.lying > votes.straight
 if LYING then
 	warn("[MeshSwap] the importer laid the meshes on their sides - standing them back up")
 end
-if next(ready) == nil then
-	warn("[MeshSwap] No imported rock meshes found. Import exports/meshes/VoxelRockMeshes.fbx first.")
+if next(ready) == nil and terrainFound == 0 then
+	warn("[MeshSwap] No imported meshes found. Import exports/meshes/VoxelRockMeshes.fbx and IslandTerrain.fbx first.")
 	return
 end
 if #missing > 0 then
@@ -213,6 +434,59 @@ for _, mapName in ipairs(MAPS) do
 		end
 	end
 end
+-- 3. island terrain: deformed cliff meshes on top, blocky ground becomes invisible collision
+local island = workspace:FindFirstChild("VoxelIsland")
+local anchor = island and island:FindFirstChild("VoxelAnchor")
+if #TERRAIN > 0 and terrainFound < #TERRAIN then
+	warn(("[MeshSwap] island terrain: only %d of %d pieces imported - import exports/meshes/IslandTerrain.fbx")
+		:format(terrainFound, #TERRAIN))
+elseif island and anchor and terrainFound > 0 then
+	local base = anchor.CFrame
+	local model = Instance.new("Model")
+	model.Name = "TerrainMesh"
+	for _, t in ipairs(TERRAIN) do
+		local p = found[t.name]:Clone()
+		p.Name = t.name
+		local size = t.max - t.min
+		local at = base * CFrame.new((t.min + t.max) * 0.5)
+		if LYING then
+			p.Size = Vector3.new(size.X, size.Z, size.Y)
+			p.CFrame = at * CFrame.Angles(math.rad(-90), 0, 0)
+		else
+			p.Size = size
+			p.CFrame = at
+		end
+		p.Color = t.color
+		p.Anchored = true
+		p.CanCollide = false
+		p.CanTouch = false
+		p.CanQuery = false
+		p.Parent = model
+	end
+	model.WorldPivot = base
+	model:SetAttribute("VoxelMesh", true)
+	model.Parent = island
+	local ground = island:FindFirstChild("Ground")
+	if ground then
+		for _, p in ipairs(ground:GetDescendants()) do
+			if p:IsA("BasePart") then
+				p.Transparency = 1
+				p.CastShadow = false
+				p:SetAttribute("VoxelHidden", true)
+			end
+		end
+	end
+	local cliffs = island:FindFirstChild("Cliffs")
+	if cliffs then
+		local home = Instance.new("ObjectValue")
+		home.Name = "VoxelOriginalParent"
+		home.Value = island
+		home.Parent = cliffs
+		cliffs.Parent = backup
+	end
+	print(("[MeshSwap] island terrain: placed %d deformed cliff meshes"):format(#TERRAIN))
+end
+
 waypoint("MeshSwap")
 print(("[MeshSwap] swapped %d rocks for meshes (part versions kept in ServerStorage.VoxelPartRocks)."):format(swapped))
-print("[MeshSwap] You can delete the imported VoxelRockMeshes model now.")
+print("[MeshSwap] You can delete the imported VoxelRockMeshes / IslandTerrain models now.")

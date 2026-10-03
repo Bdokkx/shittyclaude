@@ -36,7 +36,13 @@ def chunked(items, per_line=6, indent="\t\t"):
 
 def map_lua(m):
     out = ["{"]
-    out.append("\tterrain = {\n" + chunked([box_lua(b) for b in m["terrain"]]) + "\n\t},")
+    if "groups" in m:
+        out.append("\tgroups = {")
+        for gname, boxes in m["groups"]:
+            out.append('\t\t{ name = "%s", boxes = {\n%s\n\t\t} },' % (gname, chunked([box_lua(b) for b in boxes], 6, "\t\t\t")))
+        out.append("\t},")
+    else:
+        out.append("\tterrain = {\n" + chunked([box_lua(b) for b in m["terrain"]]) + "\n\t},")
     out.append("\tprops = {\n" + chunked([prop_lua(p) for p in m["props"]], 3) + "\n\t},")
     if m["water"]:
         out.append("\twater = {" + ",".join(num(v) for v in m["water"]) + "},")

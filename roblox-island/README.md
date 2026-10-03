@@ -20,16 +20,18 @@ Previews (rendered in Blender from the same data, reef shown with the mesh rocks
    (Future lighting, atmosphere, color correction, bloom). **This makes a big difference.** Studio's default
    lighting washes the colors out.
 
-4. **Optional: deformed mesh rocks for the reef (the look from the reef reference screenshots).**
-   - **File → Import 3D** → `exports/meshes/VoxelRockMeshes.fbx` (keep the defaults; it lands in Workspace).
+4. **Deformed mesh look (recommended, matches the reference screenshots).**
+   - **File → Import 3D** → `exports/meshes/VoxelRockMeshes.fbx` (all rocks: reef + island).
+   - **File → Import 3D** → `exports/meshes/IslandTerrain.fbx` (the island's deformed cliffs, 165 chunks).
    - Paste everything from `roblox/MeshSwap.lua` into the Command Bar and press Enter.
-   - Every reef pinnacle, shelf, arch, boulder and seaweed is swapped for its Blender mesh. The island keeps its
-     blocky voxel rocks on purpose, so they match its cliffs. Each piece is placed from its exact size and centre, which Blender baked into the script,
-     so the importer's scale, grouping and naming (`.001` suffixes) don't matter. If the importer laid the
-     meshes on their side, MeshSwap stands them back up.
-   - The old part versions go to `ServerStorage.VoxelPartRocks`. Running it again is safe. To put the part
-     rocks back, set `UNDO = true` at the top and run it again.
-   - Afterwards you can delete the imported `VoxelRockMeshes` model.
+   - It swaps every rock on both maps for its deformed, stud-textured mesh and puts the deformed terrain
+     mesh on the island. The island's blocky ground stays underneath as **invisible collision** (the visible
+     grass tops sit exactly at its height), and the blocky cliff facades are parked in ServerStorage.
+   - Each piece is placed from its exact size and centre, which Blender baked into the script, so the
+     importer's scale, grouping and naming (`.001`) don't matter. If the importer laid the meshes on their
+     side, MeshSwap stands them back up.
+   - Running it again is safe. Set `UNDO = true` at the top to go back to the parts.
+   - Afterwards you can delete the imported `VoxelRockMeshes` / `IslandTerrain` models.
 
 **Updating from an older version?** Delete the old `VoxelIsland`, `CoralReef`, the imported
 `VoxelRockMeshes` and `ServerStorage.VoxelPartRocks`, then do the steps above again.
@@ -46,7 +48,7 @@ Previews (rendered in Blender from the same data, reef shown with the mesh rocks
 Option B rebuilds the map every time the game starts. If you want the map saved in your place
 file, use Option A (or press Play, copy the built models, Stop, and paste them).
 
-### How the mesh rocks are made
+### How the meshes are made
 `tools/blender_meshes.py` runs in Blender. It takes each rock's blocky base shape from `gen/assets.py`,
 fuses it with a voxel remesh, **deforms** it with two layers of noise displacement and decimates it into big
 facets. Faces pointing up become a separate sand, grass or moss mesh. Everything gets box-projected UVs
@@ -54,6 +56,16 @@ facets. Faces pointing up become a separate sand, grass or moss mesh. Everything
 faces. Each rock is exported as `<Name>_Rock` + `<Name>_Top` mesh parts, both one by one and all together
 in `VoxelRockMeshes.fbx`. Tune `disp` (how lumpy), `noise` (size of the lumps) and `faces` (how faceted) in
 `MESH_SOURCES` in `gen/assets.py`.
+
+`tools/terrainmesh.py` does the same for the whole island: the column height field is fused, the cliff
+faces are wobbled and bulged with noise while the tops snap back to their exact heights (so paths, props
+and the invisible collision line up), it's decimated into facets, and each face is coloured (grass top,
+yellow sand band and grass lip under every edge, blue rock cliffs, sand beaches). Then it's split into
+64-stud chunks.
+
+`tools/qa_island.py` (run in Blender) is the quality check. It drops a ray from every prop onto the terrain
+mesh to catch anything floating over a pulled-in cliff edge (currently 0 of ~1,100), and measures how well the
+mesh tops match the collision height.
 
 ## Assets
 

@@ -288,8 +288,18 @@ def prop_matrix(x, y, z, rot, sc, rx, rz):
 def map_objects(m, coll, mats, ocean_mat, prefix, offset=(0, 0, 0)):
     lib = mesh_library()
     ground = MeshBuilder()
-    for b in m["terrain"]:
-        ground.box(b)
+    extra = []
+    if USE_MESHES and "groups" in m:
+        # final look: deformed terrain mesh instead of the Ground columns + Cliffs facades
+        import terrainmesh
+        for gname, boxes in m["groups"]:
+            if gname in ("Shallows", "Paths"):
+                for b in boxes:
+                    ground.box(b)
+        extra = terrainmesh.build_island_terrain(m, coll, os.path.join(EXP, "meshes"))
+    else:
+        for b in m["terrain"]:
+            ground.box(b)
     props = MeshBuilder()
     for (name, x, y, z, rot, sc, tint, rx, rz) in m["props"]:
         if name in lib:
@@ -308,9 +318,9 @@ def map_objects(m, coll, mats, ocean_mat, prefix, offset=(0, 0, 0)):
         wb.box((x0, y1 - 0.01, z0, x1, y1, z1, "ocean"))
         ob = wb.to_object(prefix + "_Ocean", [ocean_mat], coll)
         objs.append(ob)
-    for ob in objs:
+    for ob in objs + extra:
         ob.location = offset
-    return objs
+    return objs + extra
 
 
 # ================================================================= 1. assets

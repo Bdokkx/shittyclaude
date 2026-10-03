@@ -34,6 +34,9 @@ end
 -- grab the PIECES table by running the generated header only
 local header = src:match("(local PIECES = %b{})")
 local PIECES = luau.load(header .. "\nreturn PIECES", { environment = env() })()
+local theader = src:match("(local TERRAIN = %b{})")
+local TERRAIN = luau.load(theader .. "\nreturn TERRAIN", { environment = env() })()
+print("terrain pieces:", #TERRAIN)
 
 -- fake import: one MeshPart per piece, wrong units (x3.57), odd names, random placement
 local imported = Instance.new("Model")
@@ -57,6 +60,21 @@ for name, pieces in PIECES do
 	end
 end
 imported.Parent = ws
+local timport = Instance.new("Model")
+timport.Name = "IslandTerrain"
+for _, t in TERRAIN do
+	local mp = Instance.new("MeshPart")
+	mp.Name = t.name
+	local sz = (t.max - t.min) * 3.57
+	if LYING then
+		sz = Vector3.new(sz.X, sz.Z, sz.Y)
+	end
+	mp.Size = sz
+	mp.Parent = timport
+end
+timport.Parent = ws
+local island = ws.VoxelIsland
+local nGround = #island.Ground:GetChildren()
 
 local function tagged(meshOnly)
 	local n = 0
@@ -93,7 +111,7 @@ assert(tagged(false) == 0, "part rocks left in the maps")
 local maxErr = 0
 for _, mapName in { "VoxelIsland", "CoralReef" } do
 	for _, d in ws[mapName]:GetDescendants() do
-		if d:IsA("Model") and d:GetAttribute("VoxelMesh") then
+		if d:IsA("Model") and d:GetAttribute("VoxelMesh") and d:GetAttribute("VoxelAsset") then
 			local name = d:GetAttribute("VoxelAsset")
 			local cf = d:GetAttribute("VoxelPivot")
 			local match
@@ -120,9 +138,28 @@ for _, mapName in { "VoxelIsland", "CoralReef" } do
 		end
 	end
 end
-print(("swapped %d rocks, max placement error %.5f studs"):format(tagged(true), maxErr))
+-- terrain: every piece placed relative to the anchor, ground hidden (but still solid), cliffs parked
+local tm = island:FindFirstChild("TerrainMesh")
+assert(tm and #tm:GetChildren() == #TERRAIN, "terrain mesh not placed")
+local base = island.VoxelAnchor.CFrame
+for _, t in TERRAIN do
+	local p = tm:FindFirstChild(t.name)
+	local want = (t.max - t.min)
+	if LYING then
+		want = Vector3.new(want.X, want.Z, want.Y)
+	end
+	maxErr = math.max(maxErr, (p.Size - want).Magnitude,
+		(p.CFrame.Position - (base * CFrame.new((t.min + t.max) * 0.5)).Position).Magnitude)
+	assert(not p.CanCollide, "terrain mesh should not collide")
+end
+for _, g in island.Ground:GetChildren() do
+	assert(g.Transparency == 1 and g.CanCollide, "ground should be invisible but solid")
+end
+assert(island:FindFirstChild("Cliffs") == nil and ss.VoxelPartRocks:FindFirstChild("Cliffs"), "cliffs not parked")
+assert(island:FindFirstChild("Paths") and island:FindFirstChild("Shallows"), "paths/shallows must stay")
+print(("swapped %d rocks + %d terrain pieces, max placement error %.5f studs"):format(tagged(true), #TERRAIN, maxErr))
 assert(maxErr < 1e-3)
-assert(#ss.VoxelPartRocks:GetChildren() == #expected)
+assert(#ss.VoxelPartRocks:GetChildren() == #expected + 1)
 
 -- second run must not double up
 luau.load(src, { environment = env() })()
@@ -132,5 +169,10 @@ print("re-run OK")
 -- undo puts the part rocks back
 luau.load((src:gsub("local UNDO = false", "local UNDO = true")), { environment = env() })()
 assert(tagged(true) == 0 and tagged(false) == #expected, "undo failed")
+assert(island:FindFirstChild("TerrainMesh") == nil and island:FindFirstChild("Cliffs"), "terrain undo failed")
+for _, g in island.Ground:GetChildren() do
+	assert(g.Transparency == 0, "ground not visible again after undo")
+end
+assert(#island.Ground:GetChildren() == nGround)
 print("undo OK; warnings:", #warnings)
 for _, w in warnings do print("  warn:", w) end
