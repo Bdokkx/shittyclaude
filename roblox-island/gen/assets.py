@@ -32,9 +32,10 @@ def dezfight(boxes):
     """Push apart faces of differently-coloured boxes that lie in the same plane,
     face the same way and overlap (they would flicker in Roblox). The later box
     grows outward by EPS on that face. Faces resting on the ground are left alone."""
-    bx = [list(b) for b in boxes]
+    # round first: comparing unrounded values and rounding afterwards can create new coincidences
+    bx = [[round(v, 3) if isinstance(v, float) else v for v in b] for b in boxes]
     ground = min(b[1] for b in bx)
-    for _ in range(8):
+    for _ in range(80):
         changed = False
         for i in range(len(bx)):
             p = bx[i]
@@ -52,7 +53,8 @@ def dezfight(boxes):
                         if abs(p[ax + side] - q[ax + side]) < 1e-6:
                             if ax == 1 and side == 0 and abs(q[1] - ground) < 1e-6:
                                 continue
-                            q[ax + side] += EPS if side else -EPS
+                            e = EPS + (j % 5) * 0.013  # per-box step so nudges don't line up again
+                            q[ax + side] += e if side else -e
                             changed = True
         if not changed:
             break
@@ -156,6 +158,11 @@ def blob_rock(seed, rx, rz, height, vox=2.0, vh=2.5, moss=0.18, shades=GRAY_ROCK
 # ---------------------------------------------------------------- plants
 
 def pine(tiers, base, seed, trunk=4):
+    return asset(pine_boxes(tiers, base, seed, trunk))
+
+
+def pine_boxes(tiers, base, seed, trunk=4, snow=False):
+    """Voxel pine. snow=True adds snow along every tier's rim and on the crown."""
     rng = random.Random(seed)
     b = [B(0, 0, 0, 2, trunk + tiers * 3 - 1, 2, "trunk"),
          B(1.25, 0, 0.2, 0.5, 1, 1, "trunk"), B(-0.2, 0, -1.25, 1, 0.8, 0.5, "trunk")]
@@ -187,7 +194,17 @@ def pine(tiers, base, seed, trunk=4):
             break
     b.append(B(0, y, 0, 2, 2, 2, "leaf"))
     b.append(B(0, y + 2, 0, 1, 1.2, 1, "leaf_light"))
-    return asset(b)
+    if snow:
+        b.append(B(0, y + 2, 0, 1.2, 0.5, 1.2, "snow"))
+        s, yy = base, trunk
+        for i in range(tiers):
+            if s <= 2:
+                break
+            b += [B(0, yy + 1.5, s / 2 - 0.5, s, 0.45, 1, "snow"), B(0, yy + 1.5, -(s / 2 - 0.5), s, 0.45, 1, "snow"),
+                  B(s / 2 - 0.5, yy + 1.5, 0, 1, 0.45, s - 2, "snow"), B(-(s / 2 - 0.5), yy + 1.5, 0, 1, 0.45, s - 2, "snow")]
+            s -= 2
+            yy += 3
+    return b
 
 
 def bush():
@@ -286,6 +303,9 @@ def arch_base():
     return [B(-13, 0, 0, 6, 16, 9, "rock"), B(13, 0, 0, 6, 16, 9, "rock"),
             B(0, 16, 0, 32, 5, 9, "rock_dark"), B(-8.5, 14, 0, 3, 2, 8, "rock"), B(8.5, 14, 0, 3, 2, 8, "rock"),
             B(0, 21, 0, 32, 1.5, 9, "sand"), B(0, 22.5, 0, 32, 1.5, 9, "grass")]
+
+
+ARCH_BASE = arch_base()
 
 
 def arch():
@@ -672,6 +692,12 @@ for _n, _src in MESH_SOURCES.items():
     if _src.get("boxes") is ASSETS_PLACEHOLDER:
         _src["boxes"] = ASSETS[_n]["boxes"]
 
+# Desert / Frost / Volcanic assets and their rock meshes
+from theme_assets import theme_assets, theme_mesh_sources  # noqa: E402
+
+ASSETS.update(theme_assets())
+MESH_SOURCES.update(theme_mesh_sources(ASSETS))
+
 
 def bounds(name):
     bx = ASSETS[name]["boxes"]
@@ -680,6 +706,4 @@ def bounds(name):
     return mn, mx
 
 
-if __name__ == "__main__":
-    for n, a in ASSETS.items():
-        print(f"{n:18s} {len(a['boxes']):4d} boxes")
+# (run `python3 -c "import assets"` - this module can't be run directly: theme_assets imports it)

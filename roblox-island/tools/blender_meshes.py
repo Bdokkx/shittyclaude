@@ -89,26 +89,31 @@ for name, (root, objs) in roots.items():
         pieces.append('{ suffix = "%s", min = Vector3.new(%s, %s, %s), max = Vector3.new(%s, %s, %s), '
                       'color = Color3.fromRGB(%d, %d, %d) }' % (suffix, *mn, *mx, r, g, b))
     rows.append('\t%s = {\n\t\t%s,\n\t},' % (name, ",\n\t\t".join(pieces)))
-# the island terrain itself as deformed, chunked meshes
+# every island's terrain as deformed, chunked meshes (one FBX per island)
 import terrainmesh  # noqa: E402
 from island import build_island  # noqa: E402
-tcoll = bpy.data.collections.new("IslandTerrain")
-scene.collection.children.link(tcoll)
-terrain_objs = terrainmesh.build_island_terrain(build_island(), tcoll, OUT)
-bpy.ops.object.select_all(action="DESELECT")
-for o in terrain_objs:
-    o.data.name = o.name
-    o.select_set(True)
-export_fbx(os.path.join(OUT, "IslandTerrain.fbx"))
-tris = sum(len(o.data.polygons) for o in terrain_objs)
-print("exported island terrain: %d meshes, %d triangles (max %d per mesh)" % (
-    len(terrain_objs), tris, max(len(o.data.polygons) for o in terrain_objs)))
+from themes import ORDER  # noqa: E402
 trows = []
-for o in terrain_objs:
-    mn, mx = rockmesh.roblox_bounds(o)
-    r, g, b, _ = COLORS[o["voxel_color"]]
-    trows.append('\t{ name = "%s", min = Vector3.new(%s, %s, %s), max = Vector3.new(%s, %s, %s), '
-                 'color = Color3.fromRGB(%d, %d, %d) },' % (o.name, *mn, *mx, r, g, b))
+terrain_objs = []
+for theme in ORDER:
+    m = build_island(theme)
+    tcoll = bpy.data.collections.new(m["map"] + "_Terrain")
+    scene.collection.children.link(tcoll)
+    objs = terrainmesh.build_island_terrain(m, tcoll, OUT)
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in objs:
+        o.data.name = o.name
+        o.select_set(True)
+    export_fbx(os.path.join(OUT, m["map"] + "_Terrain.fbx"))
+    print("exported %s terrain: %d meshes, %d triangles (max %d per mesh)" % (
+        m["map"], len(objs), sum(len(o.data.polygons) for o in objs), max(len(o.data.polygons) for o in objs)))
+    for o in objs:
+        mn, mx = rockmesh.roblox_bounds(o)
+        r, g, b, kind = COLORS[o["voxel_color"]]
+        trows.append('\t{ map = "%s", name = "%s", min = Vector3.new(%s, %s, %s), max = Vector3.new(%s, %s, %s), '
+                     'color = Color3.fromRGB(%d, %d, %d), material = "%s" },'
+                     % (m["map"], o.name, *mn, *mx, r, g, b, kind))
+    terrain_objs += objs
 for o in terrain_objs:
     o.hide_render = True
 

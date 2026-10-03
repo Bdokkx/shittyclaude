@@ -1,21 +1,34 @@
--- Paste this whole thing into Studio's Command Bar (View > Command Bar) after
--- inserting VoxelIsland.rbxm / CoralReef.rbxm. It:
---   1. removes the placeholder Ocean part (and moves the default Baseplate out of the way)
---      and fills real terrain water around the island
---   2. sets up bright, saturated lighting + clear turquoise water like the reference
-local island = workspace:FindFirstChild("VoxelIsland")
-if island and island:FindFirstChild("Ocean") then island.Ocean:Destroy() end
--- the default Baseplate's top sits exactly at water level and flickers through the water
+-- Paste this whole thing into Studio's Command Bar (View > Command Bar) after inserting
+-- any of the island .rbxm files (VoxelIsland, DesertCoast, FrostCoast, VolcanicIsland, CoralReef).
+-- It:
+--   1. moves the default Baseplate out of the way (its top sits at water level and flickers)
+--   2. for every inserted island: removes its placeholder Ocean part and fills real terrain water
+--   3. sets up bright lighting + clear turquoise water like the reference
+local ServerStorage = game:GetService("ServerStorage")
 local bp = workspace:FindFirstChild("Baseplate")
 if bp and bp:IsA("BasePart") then
-	bp.Parent = game:GetService("ServerStorage")
+	bp.Parent = ServerStorage
 	print("[VoxelIsland] moved the default Baseplate to ServerStorage")
 end
-local origin = island and island:GetPivot().Position or Vector3.zero
-for a = -2, 1 do
-	for b = -2, 1 do
-		local c = origin + Vector3.new((a + 0.5) * 500, -6, (b + 0.5) * 500)
-		workspace.Terrain:FillBlock(CFrame.new(c), Vector3.new(500, 12, 500), Enum.Material.Water)
+
+for _, map in ipairs(workspace:GetChildren()) do
+	local anchor = map:IsA("Model") and map:FindFirstChild("VoxelAnchor")
+	local wmin, wmax = map:GetAttribute("WaterMin"), map:GetAttribute("WaterMax")
+	if anchor and wmin and wmax then
+		if map:FindFirstChild("Ocean") then
+			map.Ocean:Destroy()
+		end
+		local size = wmax - wmin
+		local tiles = math.ceil(math.max(size.X, size.Z) / 512)
+		local tx, tz = size.X / tiles, size.Z / tiles
+		for a = 0, tiles - 1 do
+			for b = 0, tiles - 1 do
+				local local_ = Vector3.new(wmin.X + (a + 0.5) * tx, (wmin.Y + wmax.Y) / 2, wmin.Z + (b + 0.5) * tz)
+				workspace.Terrain:FillBlock(anchor.CFrame * CFrame.new(local_), Vector3.new(tx, size.Y, tz),
+					Enum.Material.Water)
+			end
+		end
+		print("[VoxelIsland] water filled around " .. map.Name)
 	end
 end
 

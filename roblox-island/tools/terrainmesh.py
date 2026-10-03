@@ -21,7 +21,7 @@ from island import greedy
 
 CHUNK = 64          # studs per chunk side
 BOTTOM = -3         # mesh goes a little below the water line; shallows stay as parts
-MATS = {"Rock": "rock", "Band": "sand", "Grass": "grass", "GrassDark": "grass_dark", "Beach": "sand_light",
+MATS = {"Lava": "lava", "Ice": "ice", "Rock": "rock", "Band": "sand", "Grass": "grass", "GrassDark": "grass_dark", "Beach": "sand_light",
         "Dirt": "path_dirt", "Stone": "moss"}
 
 
@@ -35,7 +35,9 @@ def _cell_lookup(m):
     return cells, at
 
 
-def build_island_terrain(m, coll, tex_dir, voxel=1.25, amp=1.15, bulge=1.3, ratio=0.28, name="IslandTerrain"):
+def build_island_terrain(m, coll, tex_dir, voxel=1.25, amp=1.15, bulge=1.3, ratio=0.28, name=None):
+    name = name or m.get("map", "IslandTerrain")
+    mats = dict(MATS, **m.get("mats", {}))
     N, C = m["N"], m["cell"]
     cells, at = _cell_lookup(m)
 
@@ -116,7 +118,8 @@ def build_island_terrain(m, coll, tex_dir, voxel=1.25, amp=1.15, bulge=1.3, rati
                 mat = "Rock"
             else:
                 top, kind, surf = col
-                mat = {"beach": "Beach", "path": "Dirt"}.get(kind, "Stone" if surf == "rocktop" else grass(rx, rz))
+                mat = {"beach": "Beach", "path": "Dirt", "lava": "Lava", "ice": "Ice"}.get(
+                    kind, "Stone" if surf == "rocktop" else grass(rx, rz))
         elif n.z < -0.5:
             mat = "Rock"
         else:
@@ -129,8 +132,10 @@ def build_island_terrain(m, coll, tex_dir, voxel=1.25, amp=1.15, bulge=1.3, rati
                 mat = "Rock"
             else:
                 top, kind, surf = col
-                if kind == "beach":
+                if kind in ("beach", "ice"):
                     mat = "Beach"
+                elif kind == "lava":
+                    mat = "Lava" if ry > top - 1.0 else ("Band" if ry > top - 2.5 else "Rock")
                 elif kind == "path":
                     mat = "Dirt" if ry > top - 2 else "Rock"
                 elif ry > top - 1.3:
@@ -165,8 +170,8 @@ def build_island_terrain(m, coll, tex_dir, voxel=1.25, amp=1.15, bulge=1.3, rati
         for p in pme.polygons:
             p.use_smooth = False
         rockmesh.box_uv(pme)
-        pme.materials.append(rockmesh.stud_material(MATS[mat], tex_dir))
-        po["voxel_color"] = MATS[mat]
+        pme.materials.append(rockmesh.stud_material(mats[mat], tex_dir))
+        po["voxel_color"] = mats[mat]
         objs.append(po)
     bm.free()
     bpy.data.objects.remove(ob)

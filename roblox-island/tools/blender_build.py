@@ -44,6 +44,7 @@ for t in TINT_NAMES:
     swatches["tint_" + t + "_dk"] = darker(CORAL_TINTS[t])
 cell_of = {n: k for k, n in enumerate(swatches)}
 GLOW = {n for n, c in COLORS.items() if c[3] == "Neon"}
+GLASS = {n for n, c in COLORS.items() if c[3] == "Glass" and n != "ocean"}
 
 
 def make_palette_image():
@@ -88,6 +89,17 @@ def palette_material(img, glow=False):
     if glow:
         nt.links.new(tex.outputs["Color"], bsdf.inputs["Emission Color"])
         bsdf.inputs["Emission Strength"].default_value = 4.0
+    return m
+
+
+def glass_material(img):
+    m = palette_material(img)
+    m.name = "VoxelGlass"
+    nt = m.node_tree
+    bsdf = nt.nodes["Principled BSDF"]
+    bsdf.inputs["Roughness"].default_value = 0.05
+    bsdf.inputs["Alpha"].default_value = 0.6
+    m.blend_method = "BLEND"
     return m
 
 
@@ -159,7 +171,7 @@ class MeshBuilder:
             wp = apply(rot, (lp[0] * scale, lp[1] * scale, lp[2] * scale))
             self.verts.append(to_blender((wp[0] + pos[0], wp[1] + pos[1], wp[2] + pos[2])))
         uv = uv_for(c)
-        glow = 1 if c in GLOW else 0
+        glow = 1 if c in GLOW else (2 if c in GLASS else 0)
         for f in CUBE_FACES:
             # CUBE_FACES wind inward; reverse for outward normals
             self.faces.append(tuple(base + i for i in reversed(f)))
@@ -293,7 +305,7 @@ def map_objects(m, coll, mats, ocean_mat, prefix, offset=(0, 0, 0)):
         # final look: deformed terrain mesh instead of the Ground columns + Cliffs facades
         import terrainmesh
         for gname, boxes in m["groups"]:
-            if gname in ("Shallows", "Paths"):
+            if gname in ("Shallows", "Paths", "Accents"):
                 for b in boxes:
                     ground.box(b)
         extra = terrainmesh.build_island_terrain(m, coll, os.path.join(EXP, "meshes"))
@@ -392,54 +404,149 @@ if ONLY in (None, "assets"):
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, "voxel_assets.blend"))
     render(scene, os.path.join(PREV, "assets_contact_sheet.png"))
 
-# ================================================================= 2. maps
-reset()
-scene = bpy.context.scene
-img = make_palette_image()
-mat, glow = palette_material(img), palette_material(img, glow=True)
-ocean = ocean_material()
-setup_world(scene)
-setup_render(scene, 1700, 960, 64)
+# ================================================================= 2. islands + reef
+from island import build_island as build_themed  # noqa: E402
+from themes import ORDER, THEMES  # noqa: E402
 
-isl_coll = bpy.data.collections.new("VoxelIsland")
-scene.collection.children.link(isl_coll)
-reef_coll = bpy.data.collections.new("CoralReef")
-scene.collection.children.link(reef_coll)
-if ONLY in (None, "island"):
-    map_objects(build_island(), isl_coll, [mat, glow], ocean, "Island")
-if ONLY in (None, "reef"):
-    # Roblox (0,0,700) -> Blender (0,-700,0)
-    map_objects(build_reef(), reef_coll, [mat, glow], ocean, "Reef", offset=(0, -700, 0))
+ISLAND_ASSETS = {
+    "voxel": ["PineTree", "PineTreeTall", "Bush", "GrassTuft", "Flowers", "Fern", "Mushrooms", "SmallRock",
+              "CliffCrag", "CliffRocks", "LedgeRock", "RockOutcrop", "RockOutcropBig", "Arch", "Dock", "Rowboat",
+              "MarketStall", "Campfire", "LampPost", "Torch", "WoodFrame", "Statue", "Signpost", "Well",
+              "FlagFrame", "CaveEntrance", "Fence", "CrateStack", "Barrels", "LogPile"],
+    "desert": ["PalmTree", "PalmTreeTall", "PalmTreeSmall", "Cactus", "DryBush", "DesertTuft", "DesertRock", "Pots",
+               "AdobeHouse", "AdobeHouseBig", "DesertStall", "DesertWell", "Obelisk", "SandstonePillar", "Brazier",
+               "Ziggurat", "DesertCrag", "DesertRocks", "DesertLedge", "DesertStack", "DesertStackBig", "DesertArch"],
+    "frost": ["SnowPine", "SnowPineTall", "SnowPineSmall", "FrostBush", "SnowPile", "IceCrystal", "FrostRock",
+              "Snowman", "LogCabin", "IceCrag", "IceRocks", "IceLedge", "Iceberg", "IcebergBig", "IceArch"],
+    "volcanic": ["CharredPine", "CharredPineSmall", "DeadTree", "AshTuft", "LavaRock", "ObsidianShards",
+                 "BasaltColumns", "VolcanicBrazier", "StiltHut", "BasaltCrag", "BasaltRocks", "BasaltLedge",
+                 "ObsidianStack", "ObsidianStackBig", "BasaltArch"],
+}
 
-if ONLY is None:
-    bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, "voxel_maps.blend"))
 
-if ONLY in (None, "island"):
-    reef_coll.hide_render = True
-    isl_coll.hide_render = False
-    # overview from the south-east, like the reference shot
-    add_camera(scene, (235, -335, 165), (-5, 5, 22), lens=30)
-    render(scene, os.path.join(PREV, "island.png"))
-    # close-up of the village and the stairs
-    add_camera(scene, (50, -205, 95), (2, -52, 20), lens=30)
-    render(scene, os.path.join(PREV, "island_village.png"))
-    # the mountain with its crags and the stair path
-    add_camera(scene, (150, -70, 150), (0, 50, 62), lens=30)
-    render(scene, os.path.join(PREV, "island_mountain.png"))
-    # walking up the west path towards the arch gateway
-    arch = next((p for p in build_island()["props"] if p[0] == "Arch"), None)
-    if arch:
+def fresh_scene(w=1700, h=960, samples=48):
+    reset()
+    scene = bpy.context.scene
+    img = make_palette_image()
+    mats = [palette_material(img), palette_material(img, glow=True), glass_material(img)]
+    MESH_LIB.clear()
+    setup_world(scene)
+    setup_render(scene, w, h, samples)
+    return scene, mats
+
+
+def ortho_top(scene, size, name):
+    cam_data = bpy.data.cameras.new("Top")
+    cam_data.type = "ORTHO"
+    cam_data.ortho_scale = size
+    cam_data.clip_end = 5000
+    cam = bpy.data.objects.new("Top", cam_data)
+    scene.collection.objects.link(cam)
+    cam.location = (0, 0, 900)
+    scene.camera = cam
+    w, h = scene.render.resolution_x, scene.render.resolution_y
+    scene.render.resolution_x = scene.render.resolution_y = 1000
+    render(scene, os.path.join(PREV, name))
+    scene.render.resolution_x, scene.render.resolution_y = w, h
+
+
+def look(scene, target, offset, lens=30, lift=8):
+    tx, ty, tz = target
+    add_camera(scene, to_blender((tx + offset[0], ty + offset[1], tz + offset[2])),
+               to_blender((tx, ty + lift, tz)), lens=lens)
+
+
+def first(m, name):
+    return next((p for p in m["props"] if p[0] == name), None)
+
+
+for theme in ORDER:
+    if ONLY not in (None, "islands", theme):
+        continue
+    scene, mats = fresh_scene()
+    m = build_themed(theme)
+    name = m["map"]
+    coll = bpy.data.collections.new(name)
+    scene.collection.children.link(coll)
+    map_objects(m, coll, mats, ocean_material(), name)
+    L = m["landmarks"]
+    look(scene, (0, 0, 0), (235, 165, 335), lift=22)                      # overview from the south-east
+    render(scene, os.path.join(PREV, name + ".png"))
+    ortho_top(scene, 540, name + "_top.png")
+    px, py, pz = L["plaza"]                                               # the village
+    look(scene, (px, py, pz), (48, 75, 140), lens=30, lift=4)
+    render(scene, os.path.join(PREV, name + "_village.png"))
+    if theme == "desert":                                                 # signature close-ups
+        z = first(m, "Ziggurat")
+        look(scene, (z[1], z[2], z[3]), (55, 40, 70), lift=10)
+        render(scene, os.path.join(PREV, name + "_detail.png"))
+    elif theme == "volcanic" and L["crater"]:
+        cx, cy, cz = L["crater"]
+        look(scene, (cx, cy, cz), (80, 55, 120), lift=0)
+        render(scene, os.path.join(PREV, name + "_detail.png"))
+    elif theme == "voxel":
+        arch = first(m, "Arch")
         ax, ay, az, rot = arch[1], arch[2], arch[3], math.radians(arch[4])
-        dx, dz = math.sin(rot), math.cos(rot)
-        add_camera(scene, to_blender((ax - dx * 70, ay + 22, az - dz * 70)), to_blender((ax, ay + 14, az)), lens=28)
-        render(scene, os.path.join(PREV, "island_arch.png"))
-    # low along the shore, sea stacks and cliff-foot rocks
-    add_camera(scene, (-250, -250, 32), (-120, -70, 16), lens=30)
-    render(scene, os.path.join(PREV, "island_shore.png"))
+        look(scene, (ax, ay, az), (-math.sin(rot) * 70, 22, -math.cos(rot) * 70), lens=28, lift=14)
+        render(scene, os.path.join(PREV, name + "_detail.png"))
+    else:
+        look(scene, L["peak"], (90, 10, 120), lift=-20)
+        render(scene, os.path.join(PREV, name + "_detail.png"))
+    if L["falls"]:                                                        # waterfall / frozen fall / lava fall
+        fx, fy, fz, d = L["falls"][len(L["falls"]) // 2]
+        look(scene, (fx, fy * 0.6, fz), (d[0] * 115 + d[1] * 45, 34, d[1] * 115 + d[0] * 45), lens=30, lift=0)
+        render(scene, os.path.join(PREV, name + "_falls.png"))
+    if theme == "voxel":
+        look(scene, (-120, 16, 70), (-130, 16, 180), lift=0)                # shoreline
+        render(scene, os.path.join(PREV, name + "_shore.png"))
 
 if ONLY in (None, "reef"):
-    reef_coll.hide_render = False
-    isl_coll.hide_render = True
-    add_camera(scene, (-120, -700 - 250, 70), (20, -700 + 20, 6), lens=28)
-    render(scene, os.path.join(PREV, "reef.png"))
+    scene, mats = fresh_scene()
+    coll = bpy.data.collections.new("CoralReef")
+    scene.collection.children.link(coll)
+    map_objects(build_reef(), coll, mats, ocean_material(), "Reef")
+    add_camera(scene, (-120, -250, 70), (20, 20, 6), lens=28)
+    render(scene, os.path.join(PREV, "CoralReef.png"))
+
+# ================================================================= 3. per-theme asset tiles
+# Every custom asset of every island is rendered on its own framed tile (previews/tiles/<theme>/);
+# tools/compose_previews.py lays them out into labelled sheets + posters.
+for theme in ORDER:
+    if ONLY not in (None, "sheets", theme):
+        continue
+    scene, mats = fresh_scene(420, 420, 32)
+    scene.render.film_transparent = False
+    lib = mesh_library()
+    coll = bpy.data.collections.new("Tile")
+    scene.collection.children.link(coll)
+    floor = THEMES[theme]["sand_top"][0][0]
+    fb = MeshBuilder()
+    fb.box((-400, -2, -400, 400, 0, 400, floor))
+    fb.to_object("Floor", mats, coll)
+    tdir = os.path.join(PREV, "tiles", theme)
+    os.makedirs(tdir, exist_ok=True)
+    for n in ISLAND_ASSETS[theme]:
+        made = []
+        if n in lib:
+            m_ = prop_matrix(0, 0, 0, 30, 1, 0, 0)
+            for src in lib[n]:
+                ob = bpy.data.objects.new("T_" + src.name, src.data)
+                ob.matrix_world = m_
+                coll.objects.link(ob)
+                made.append(ob)
+        else:
+            mb = MeshBuilder()
+            mb.asset(n, (0, 0, 0), 30, 1, 1 if ASSETS[n]["tintable"] else 0)
+            made.append(mb.to_object("T_" + n, mats, coll))
+        mn, mx = bounds(n)
+        h = mx[1] - mn[1]
+        r = max(math.hypot(mx[0] - mn[0], mx[2] - mn[2]) / 2, h * 0.62, 3)
+        for ob in made:   # sit the asset on the floor
+            ob.location.z -= mn[1]
+        cam = add_camera(scene, to_blender((r * 1.25, h * 0.5 + r * 1.05, r * 2.1)),
+                         to_blender((0, h * 0.42, 0)), lens=42)
+        render(scene, os.path.join(tdir, n + ".png"))
+        for ob in made:
+            bpy.data.objects.remove(ob)
+        bpy.data.objects.remove(cam)
 print("done")

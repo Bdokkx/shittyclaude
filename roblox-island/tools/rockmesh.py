@@ -74,6 +74,12 @@ def stud_material(color_name, out_dir):
     tex.interpolation = "Linear"
     nt.links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
     bsdf.inputs["Roughness"].default_value = 0.7
+    kind = COLORS[color_name][3]
+    if kind == "Neon":
+        nt.links.new(tex.outputs["Color"], bsdf.inputs["Emission Color"])
+        bsdf.inputs["Emission Strength"].default_value = 3.0
+    elif kind in ("Ice", "Glass"):
+        bsdf.inputs["Roughness"].default_value = 0.15
     return mat
 
 

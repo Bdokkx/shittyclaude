@@ -6,28 +6,26 @@ local roblox = require("@lune/roblox")
 local process = require("@lune/process")
 
 local root = process.args[1] or "."
-local srcPath = root .. "/roblox/VoxelIslandBuilder.server.lua"
-local source = fs.readFile(srcPath)
-
 local Instance, CFrame, Vector3, Color3, Enum =
 	roblox.Instance, roblox.CFrame, roblox.Vector3, roblox.Color3, roblox.Enum
 
-local exported
-local G = { __VOXEL_EXPORT = function(b) exported = b end }
-local env = {
-	Instance = Instance, CFrame = CFrame, Vector3 = Vector3, Color3 = Color3, Enum = Enum,
-	math = math, table = table, string = string, os = os,
-	pairs = pairs, ipairs = ipairs, print = print, type = type, typeof = typeof,
-	tostring = tostring, tonumber = tonumber, assert = assert, error = error,
-	pcall = pcall, select = select, setmetatable = setmetatable, _G = G,
-}
-local chunk = luau.load(source, { debugName = "VoxelIslandBuilder", environment = env })
-chunk()
-assert(exported, "builder did not hand over its API")
-
-local B = exported
-B.CONFIG.UseTerrainWater = false
-B.CONFIG.YieldEvery = 0
+local function loadBuilder(path)
+	local source = fs.readFile(path)
+	local exported
+	local G = { __VOXEL_EXPORT = function(b) exported = b end }
+	local env = {
+		Instance = Instance, CFrame = CFrame, Vector3 = Vector3, Color3 = Color3, Enum = Enum,
+		math = math, table = table, string = string, os = os,
+		pairs = pairs, ipairs = ipairs, print = print, type = type, typeof = typeof,
+		tostring = tostring, tonumber = tonumber, assert = assert, error = error,
+		pcall = pcall, select = select, setmetatable = setmetatable, _G = G,
+	}
+	luau.load(source, { debugName = path, environment = env })()
+	assert(exported, "builder did not hand over its API: " .. path)
+	exported.CONFIG.UseTerrainWater = false
+	exported.CONFIG.YieldEvery = 0
+	return exported, source
+end
 
 local out = root .. "/roblox"
 local function count(inst)
@@ -43,13 +41,17 @@ local function save(inst, name)
 end
 
 local holder = Instance.new("Folder")
-save(B.buildMap("VoxelIsland", B.MAPS.Island, Vector3.new(0, 0, 0), holder), "VoxelIsland")
-save(B.buildMap("CoralReef", B.MAPS.Reef, Vector3.new(0, 0, 700), holder), "CoralReef")
-save(B.buildAssetLibrary(holder, Vector3.new(0, 0, -400)), "VoxelAssetLibrary")
-
--- the builder script itself, as a drag-in Script
-local script = Instance.new("Script")
-script.Name = "VoxelIslandBuilder"
-script.Source = source
-fs.writeFile(out .. "/VoxelIslandBuilder.rbxmx", roblox.serializeModel({ script }, true))
-print("VoxelIslandBuilder.rbxmx (Script)")
+for _, file in fs.readDir(out .. "/builders") do
+	local name = file:match("^(.-)Builder%.server%.lua$")
+	if name then
+		local B, source = loadBuilder(out .. "/builders/" .. file)
+		local entry = B.MAPS[1]
+		save(B.buildMap(entry.name, entry.data, entry.origin, holder), entry.name)
+		local script = Instance.new("Script")
+		script.Name = name .. "Builder"
+		script.Source = source
+		fs.writeFile(out .. "/builders/" .. name .. "Builder.rbxmx", roblox.serializeModel({ script }, true))
+	end
+end
+local L = loadBuilder(out .. "/builders/AssetLibrary.lua")
+save(L.buildAssetLibrary(holder, Vector3.new(0, 0, -400)), "VoxelAssetLibrary")

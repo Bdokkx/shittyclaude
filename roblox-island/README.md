@@ -1,93 +1,84 @@
-# Voxel Island + Coral Reef (Roblox)
+# Voxel Islands + Coral Reef (Roblox)
 
-Two blocky, studded maps based on the reference shots:
+Four themed blocky, studded islands plus an underwater reef, built from the reference shots.
+Each island mixes **deformed Blender meshes** (the stud-textured terrain and rocks) with **parts**
+(ledges, block clumps, paths, stairs, buildings, falls) that stick out of and blend into the meshes.
 
-| | |
-|---|---|
-| **VoxelIsland** | terraced rocky mountain with a wide stair path spiralling to a summit lookout, two cliff mesas (banner on the east one, cave entrance below it), a blocky rock arch the west path walks through, an open cobblestone village plaza (campfire, market stall, lantern frame, well, statue, signpost, benches, lamps), wide wooden stairs with railings down to the dock, a rowboat, stepped turquoise shallows. Rock crags sit half-buried at the foot of the tall cliffs and up on the mountain, with rock clusters out in the terraces and sea stacks rising from the shallows at the shoreline. Everything is built from the same chunky multi-shade blocks as the cliffs, and there's clutter everywhere (tufts, flowers, ferns, mushrooms, bushes, rocks, fences, torches) |
-| **CoralReef** | sandy reef slab with sand-colour patches, rock shelves / pinnacles / arches, boulders, ruined pillars, a tilted shipwreck and ~190 corals (tube, branch, fan, seaweed) in 6 colours |
+| Map | Origin | What's on it |
+|---|---|---|
+| **VoxelIsland** | 0, 0, 0 | green terraced mountain with a stair path spiralling to a summit lookout, two cliff mesas (banner, cave), rock arch, cobblestone village plaza, dock + rowboat, waterfall, turquoise shallows, sea stacks |
+| **DesertCoast** | 1300, 0, 0 | red sandstone mesas around an oasis lake with a waterfall, a ziggurat, obelisks and sandstone pillars, an adobe village with market stalls, pots and a well, palms and cacti, desert rock stacks offshore |
+| **FrostCoast** | 2600, 0, 0 | snowy mountain with a spiral path to a flag lookout, ice cliffs, a frozen pond and frozen waterfall, log-cabin village with snowmen, snow pines, ice crystals, icebergs out at sea |
+| **VolcanicIsland** | 3900, 0, 0 | volcano cone with a glowing crater lava pool, lava rivers and lava falls down the terraces, basalt columns, obsidian shards, charred pines, stilt-hut village with braziers |
+| **CoralReef** | 0, 0, 900 | sandy reef slab, rock shelves / pinnacles / arches, boulders, ruined pillars, a tilted shipwreck and ~190 corals |
 
-Previews (rendered in Blender from the same data, reef shown with the mesh rocks): `previews/island.png`, `previews/island_village.png`, `previews/island_mountain.png`, `previews/island_arch.png`, `previews/island_shore.png`, `previews/reef.png`, `previews/rock_meshes.png`, `previews/rock_meshes_closeup.png`, `previews/assets_contact_sheet.png`.
+## Previews (`previews/`)
+
+- `AllIslands.png`: the four islands side by side.
+- `<Map>_poster.png`: overview, top view, village, detail and falls close-ups for each island.
+- `<Map>_assets.png`: every custom asset for that island, rendered in Blender and labelled.
+- The single renders are also there: `<Map>.png`, `_top`, `_village`, `_detail`, `_falls`, `CoralReef.png`.
+- `assets_contact_sheet.png` shows the shared asset set.
 
 ## Use it in Roblox Studio
 
 ### Option A: drop in the finished maps (easiest)
-1. In Studio, right-click **Workspace** → **Insert from File…**
-2. Pick `roblox/VoxelIsland.rbxm`, then do the same for `roblox/CoralReef.rbxm` (the reef sits at Z = 700 so they don't overlap).
-3. Open **View → Command Bar**, paste in everything from `roblox/LightingAndWater.lua` and press Enter.
-   That swaps the placeholder ocean for real terrain water, moves the default **Baseplate** to ServerStorage
-   (its top sits exactly at water level and makes the water flicker in a checker pattern), and sets up the lighting
-   (Future lighting, atmosphere, color correction, bloom). **This makes a big difference.** Studio's default
-   lighting washes the colors out.
+1. In Studio, right-click **Workspace** → **Insert from File…** and pick any of `roblox/VoxelIsland.rbxm`,
+   `DesertCoast.rbxm`, `FrostCoast.rbxm`, `VolcanicIsland.rbxm`, `CoralReef.rbxm`. They sit side by side,
+   so you can insert all of them.
+2. Open **View → Command Bar**, paste in all of `roblox/LightingAndWater.lua` and press Enter.
+   It fills real terrain water around every inserted island and moves the default **Baseplate** to
+   ServerStorage (it sits at water level and flickers). It also sets the lighting: Future lighting,
+   atmosphere, colour correction and bloom. **This makes a big difference.**
+3. **Deformed mesh look (recommended).**
+   - **File → Import 3D** → `exports/meshes/VoxelRockMeshes.fbx` (all rocks, crags, stacks and arches for every theme).
+   - **File → Import 3D** → `exports/meshes/<Map>_Terrain.fbx` for each island you inserted
+     (`VoxelIsland_Terrain.fbx`, `DesertCoast_Terrain.fbx`, `FrostCoast_Terrain.fbx`, `VolcanicIsland_Terrain.fbx`).
+   - Paste all of `roblox/MeshSwap.lua` into the Command Bar and press Enter.
+   - **What MeshSwap does:**
+     - Puts the deformed terrain mesh on each island; lava is set to Neon so it glows.
+     - Swaps every rock for its deformed mesh.
+     - Keeps the blocky ground as **invisible collision** (the mesh tops sit exactly at its height).
+     - Parks the blocky cliff facades in ServerStorage.
+     - **Keeps the Accents parts**: block ledges, clumps and falls that poke out of the mesh cliffs so parts
+       and meshes blend. Paths, stairs and shallows stay as parts too.
+   - **Placement details:**
+     - Pieces are placed from their exact baked bounds, so the importer's scale and `.001` names don't matter.
+     - Meshes the importer laid on their side are stood back up.
+     - Running it again is safe. Set `UNDO = true` to go back to parts.
 
-4. **Deformed mesh look (recommended, matches the reference screenshots).**
-   - **File → Import 3D** → `exports/meshes/VoxelRockMeshes.fbx` (all rocks: reef + island).
-   - **File → Import 3D** → `exports/meshes/IslandTerrain.fbx` (the island's deformed cliffs, 165 chunks).
-   - Paste everything from `roblox/MeshSwap.lua` into the Command Bar and press Enter.
-   - It swaps every rock on both maps for its deformed, stud-textured mesh and puts the deformed terrain
-     mesh on the island. The island's blocky ground stays underneath as **invisible collision** (the visible
-     grass tops sit exactly at its height), and the blocky cliff facades are parked in ServerStorage.
-   - Each piece is placed from its exact size and centre, which Blender baked into the script, so the
-     importer's scale, grouping and naming (`.001`) don't matter. If the importer laid the meshes on their
-     side, MeshSwap stands them back up.
-   - Running it again is safe. Set `UNDO = true` at the top to go back to the parts.
-   - Afterwards you can delete the imported `VoxelRockMeshes` / `IslandTerrain` models.
+**Updating from an older version?** First delete the old maps, the imported meshes and `ServerStorage.VoxelPartRocks`.
+Then do the steps above again. The old file `IslandTerrain.fbx` is now `VoxelIsland_Terrain.fbx`.
 
-**Updating from an older version?** Delete the old `VoxelIsland`, `CoralReef`, the imported
-`VoxelRockMeshes` and `ServerStorage.VoxelPartRocks`, then do the steps above again.
+### Option B: builder scripts
+`roblox/builders/<Map>Builder.server.lua` builds one map from code (assets and layout are inside it).
+- **Set it up:** right-click **ServerScriptService** → **Insert from File…** → `roblox/builders/<Map>Builder.rbxmx`
+  (or paste the `.lua` file into a Script).
+- **Run it:** press **Play**. `CONFIG` at the top sets the origin, studs, water, lighting and so on.
+- `roblox/AssetLibrary.lua` holds all 101 asset shapes for your own code:
+  `Builder.spawnAsset("PalmTree", CFrame.new(x, y, z), scale, tint, parent)`.
 
-### Option B: the builder script
-`roblox/VoxelIslandBuilder.server.lua` builds both maps from code (all asset shapes and the layout are inside it).
-- Right-click **ServerScriptService** → **Insert from File…** → `roblox/VoxelIslandBuilder.rbxmx`
-  (or make a Script and paste the `.lua` file in).
-- Press **Play**. It builds `Workspace.VoxelIsland` + `Workspace.CoralReef`, fills real terrain water and applies the lighting preset.
-- Settings live in the `CONFIG` table at the top (origins, studs on/off, terrain water, reef underwater, …).
-- The script also exposes `Builder.spawnAsset("PineTree", CFrame.new(x, y, z), scale, tint, parent)`
-  if you want to place assets from your own code.
+## How it's made
+- **`gen/`** (Python) is the single source of truth:
+  - `assets.py` + `theme_assets.py`: asset shapes as box lists.
+  - `themes.py`: colours, trees, clutter and rocks for each theme.
+  - `island.py`: the layout engine (height field, mesas, spiral/bent paths, accents, falls, village, props).
+  - `maps.py`: the reef.
+- **`tools/blender_meshes.py`**: each rock's blocky shape goes through voxel remesh, noise **deformation** and
+  decimation into facets. The up-facing faces become a separate top mesh, and everything gets a tiling stud
+  texture with box-projected UVs.
+- **`tools/terrainmesh.py`**: does the same for each whole island. It wobbles and bulges the cliffs while the
+  tops snap back to their exact heights, colours each face (grass, sand band, rock, beach, lava, ice) and splits
+  the result into 64-stud chunks.
+- **`tools/blender_build.py`**: renders the previews and the per-asset tiles. `tools/compose_previews.py`
+  builds the posters and sheets from them.
+- **Checks:**
+  - `tools/qa_island.py`: no prop floats over a cliff edge (0 of ~3,600 across the four islands).
+  - `tools/check_zfight.py`: no overlapping coplanar faces in any asset.
+  - `tools/test_meshswap.luau`: runs MeshSwap offline on every map, including the lying-on-side import case.
 
-Option B rebuilds the map every time the game starts. If you want the map saved in your place
-file, use Option A (or press Play, copy the built models, Stop, and paste them).
+Run `./build.sh` to regenerate everything. It needs `python3` + Pillow, `blender` 4.x and
+[`lune`](https://github.com/lune-org/lune). Change a theme's `seed` in `gen/themes.py` to get a new layout.
 
-### How the meshes are made
-`tools/blender_meshes.py` runs in Blender. It takes each rock's blocky base shape from `gen/assets.py`,
-fuses it with a voxel remesh, **deforms** it with two layers of noise displacement and decimates it into big
-facets. Faces pointing up become a separate sand, grass or moss mesh. Everything gets box-projected UVs
-(1 UV unit = 4 studs) on a tiling stud texture (`exports/meshes/studs_*.png`), so the studs line up across
-faces. Each rock is exported as `<Name>_Rock` + `<Name>_Top` mesh parts, both one by one and all together
-in `VoxelRockMeshes.fbx`. Tune `disp` (how lumpy), `noise` (size of the lumps) and `faces` (how faceted) in
-`MESH_SOURCES` in `gen/assets.py`.
-
-`tools/terrainmesh.py` does the same for the whole island: the column height field is fused, the cliff
-faces are wobbled and bulged with noise while the tops snap back to their exact heights (so paths, props
-and the invisible collision line up), it's decimated into facets, and each face is coloured (grass top,
-yellow sand band and grass lip under every edge, blue rock cliffs, sand beaches). Then it's split into
-64-stud chunks.
-
-`tools/qa_island.py` (run in Blender) is the quality check. It drops a ray from every prop onto the terrain
-mesh to catch anything floating over a pulled-in cliff edge (currently 0 of ~1,100), and measures how well the
-mesh tops match the collision height.
-
-## Assets
-
-PineTree, PineTreeTall, PineTreeSmall, Bush, GrassTuft, Flowers, Fern, Mushrooms, SmallRock, RockOutcrop, RockOutcropBig, RockOutcropSmall, Boulder, Arch, Seaweed, TubeCoral, BranchCoral, FanCoral, ReefPinnacle, ReefShelf, ReefArch, RuinPillar, Dock, Rowboat, Shipwreck, MarketStall, Campfire, LampPost, Torch, WoodFrame, Statue, Signpost, Bench, Well, FlagFrame, Fence, CrateStack, Barrels, LogPile, CaveEntrance, WoodenStairs.
-
-`roblox/VoxelAssetLibrary.rbxm` has all of them lined up as part-built models, ready to copy into any scene.
-`blender/voxel_assets.blend` and `blender/voxel_maps.blend` are the Blender scenes.
-
-## Changing things / regenerating
-
-Everything comes from three Python files:
-
-- `gen/assets.py`: asset shapes (lists of boxes)
-- `gen/island.py`: island layout (height field, mesas, paths, cliff facades, prop scatter)
-- `gen/maps.py`: reef layout
-- `gen/palette.py`: colours
-
-`tools/test_meshswap.luau` (run with `lune run`) tests MeshSwap offline against both maps.
-
-Then run `./build.sh` (needs `python3`, `blender` 4.x and [`lune`](https://github.com/lune-org/lune)).
-It regenerates the Lua script, the `.rbxm` files (built by running the real Lua builder offline)
-and the Blender exports and renders. Change `seed` in `build_island()` / `build_reef()` to get a new layout.
-
-Part counts: island ≈ 30k, reef ≈ 13k (all anchored, static; MeshSwap lowers them). That's fine on PC and console. On low-end phones, use
-StreamingEnabled, or swap trees and rocks for the imported meshes.
+Part counts are about 32–35k for each island (mostly clutter, all anchored and static) and 13k for the reef.
+MeshSwap lowers them. For phones, turn on StreamingEnabled.

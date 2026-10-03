@@ -1,8 +1,9 @@
 -- MeshSwap: swaps the part-built rocks (island + reef) AND the island's blocky cliffs for
 -- the deformed, stud-textured Blender meshes.
 --
--- 1. File > Import 3D > exports/meshes/VoxelRockMeshes.fbx   (rocks, it lands in Workspace)
--- 2. File > Import 3D > exports/meshes/IslandTerrain.fbx     (the island's deformed cliffs)
+-- 1. File > Import 3D > exports/meshes/VoxelRockMeshes.fbx         (all rocks, it lands in Workspace)
+-- 2. File > Import 3D > exports/meshes/<IslandName>_Terrain.fbx    (for each island you inserted:
+--    VoxelIsland_Terrain, DesertCoast_Terrain, FrostCoast_Terrain, VolcanicIsland_Terrain)
 -- 3. Paste this whole file into the Command Bar (View > Command Bar) and press Enter.
 --
 -- The island's blocky ground stays underneath as invisible collision, so walking is unchanged.
@@ -26,7 +27,8 @@ for _, t in ipairs(TERRAIN) do
 	TERRAIN_BY_NAME[t.name] = t
 end
 local PRECISE = { ReefShelf = true, ReefArch = true, ReefPinnacle = true, ReefPinnacleTall = true, Arch = true }
-local MAPS = { "VoxelIsland", "CoralReef" }
+local MAPS = { "VoxelIsland", "CoralReef", "DesertCoast", "FrostCoast", "VolcanicIsland" }
+local ISLANDS = { "VoxelIsland", "DesertCoast", "FrostCoast", "VolcanicIsland" }
 
 local ServerStorage = game:GetService("ServerStorage")
 local function waypoint(name)
@@ -59,14 +61,16 @@ local function restore()
 			end
 		end
 	end
-	local island = workspace:FindFirstChild("VoxelIsland")
-	local ground = island and island:FindFirstChild("Ground")
-	if ground then
-		for _, p in ipairs(ground:GetDescendants()) do
-			if p:IsA("BasePart") and p:GetAttribute("VoxelHidden") then
-				p.Transparency = 0
-				p.CastShadow = true
-				p:SetAttribute("VoxelHidden", nil)
+	for _, islandName in ipairs(ISLANDS) do
+		local island = workspace:FindFirstChild(islandName)
+		local ground = island and island:FindFirstChild("Ground")
+		if ground then
+			for _, p in ipairs(ground:GetDescendants()) do
+				if p:IsA("BasePart") and p:GetAttribute("VoxelHidden") then
+					p.Transparency = 0
+					p.CastShadow = true
+					p:SetAttribute("VoxelHidden", nil)
+				end
 			end
 		end
 	end
@@ -143,11 +147,13 @@ for name, pieces in pairs(PIECES) do
 		table.insert(missing, name)
 	end
 end
-local terrainFound = 0
+local terrainFound, perMap, perMapFound = 0, {}, {}
 for _, t in ipairs(TERRAIN) do
+	perMap[t.map] = (perMap[t.map] or 0) + 1
 	local tmpl = found[t.name]
 	if tmpl then
 		terrainFound += 1
+		perMapFound[t.map] = (perMapFound[t.map] or 0) + 1
 		vote(tmpl.Size, t.max - t.min)
 	end
 end
@@ -156,7 +162,7 @@ if LYING then
 	warn("[MeshSwap] the importer laid the meshes on their sides - standing them back up")
 end
 if next(ready) == nil and terrainFound == 0 then
-	warn("[MeshSwap] No imported meshes found. Import exports/meshes/VoxelRockMeshes.fbx and IslandTerrain.fbx first.")
+	warn("[MeshSwap] No imported meshes found. Import exports/meshes/VoxelRockMeshes.fbx and the *_Terrain.fbx files first.")
 	return
 end
 if #missing > 0 then
@@ -222,58 +228,66 @@ for _, mapName in ipairs(MAPS) do
 	end
 end
 -- 3. island terrain: deformed cliff meshes on top, blocky ground becomes invisible collision
-local island = workspace:FindFirstChild("VoxelIsland")
-local anchor = island and island:FindFirstChild("VoxelAnchor")
-if #TERRAIN > 0 and terrainFound < #TERRAIN then
-	warn(("[MeshSwap] island terrain: only %d of %d pieces imported - import exports/meshes/IslandTerrain.fbx")
-		:format(terrainFound, #TERRAIN))
-elseif island and anchor and terrainFound > 0 then
-	local base = anchor.CFrame
-	local model = Instance.new("Model")
-	model.Name = "TerrainMesh"
-	for _, t in ipairs(TERRAIN) do
-		local p = found[t.name]:Clone()
-		p.Name = t.name
-		local size = t.max - t.min
-		local at = base * CFrame.new((t.min + t.max) * 0.5)
-		if LYING then
-			p.Size = Vector3.new(size.X, size.Z, size.Y)
-			p.CFrame = at * CFrame.Angles(math.rad(-90), 0, 0)
-		else
-			p.Size = size
-			p.CFrame = at
-		end
-		p.Color = t.color
-		p.Anchored = true
-		p.CanCollide = false
-		p.CanTouch = false
-		p.CanQuery = false
-		p.Parent = model
-	end
-	model.WorldPivot = base
-	model:SetAttribute("VoxelMesh", true)
-	model.Parent = island
-	local ground = island:FindFirstChild("Ground")
-	if ground then
-		for _, p in ipairs(ground:GetDescendants()) do
-			if p:IsA("BasePart") then
-				p.Transparency = 1
-				p.CastShadow = false
-				p:SetAttribute("VoxelHidden", true)
+for _, islandName in ipairs(ISLANDS) do
+	local island = workspace:FindFirstChild(islandName)
+	local anchor = island and island:FindFirstChild("VoxelAnchor")
+	local have, need = perMapFound[islandName] or 0, perMap[islandName] or 0
+	if island and anchor and have > 0 and have < need then
+		warn(("[MeshSwap] %s terrain: only %d of %d pieces imported - import exports/meshes/%s_Terrain.fbx")
+			:format(islandName, have, need, islandName))
+	elseif island and anchor and have > 0 then
+		local base = anchor.CFrame
+		local model = Instance.new("Model")
+		model.Name = "TerrainMesh"
+		for _, t in ipairs(TERRAIN) do
+			if t.map == islandName then
+				local p = found[t.name]:Clone()
+				p.Name = t.name
+				local size = t.max - t.min
+				local at = base * CFrame.new((t.min + t.max) * 0.5)
+				if LYING then
+					p.Size = Vector3.new(size.X, size.Z, size.Y)
+					p.CFrame = at * CFrame.Angles(math.rad(-90), 0, 0)
+				else
+					p.Size = size
+					p.CFrame = at
+				end
+				p.Color = t.color
+				if t.material == "Neon" then
+					p.Material = Enum.Material.Neon
+				end
+				p.Anchored = true
+				p.CanCollide = false
+				p.CanTouch = false
+				p.CanQuery = false
+				p.Parent = model
 			end
 		end
+		model.WorldPivot = base
+		model:SetAttribute("VoxelMesh", true)
+		model.Parent = island
+		local ground = island:FindFirstChild("Ground")
+		if ground then
+			for _, p in ipairs(ground:GetDescendants()) do
+				if p:IsA("BasePart") then
+					p.Transparency = 1
+					p.CastShadow = false
+					p:SetAttribute("VoxelHidden", true)
+				end
+			end
+		end
+		local cliffs = island:FindFirstChild("Cliffs")
+		if cliffs then
+			local home = Instance.new("ObjectValue")
+			home.Name = "VoxelOriginalParent"
+			home.Value = island
+			home.Parent = cliffs
+			cliffs.Parent = backup
+		end
+		print(("[MeshSwap] %s: placed %d deformed terrain meshes"):format(islandName, have))
 	end
-	local cliffs = island:FindFirstChild("Cliffs")
-	if cliffs then
-		local home = Instance.new("ObjectValue")
-		home.Name = "VoxelOriginalParent"
-		home.Value = island
-		home.Parent = cliffs
-		cliffs.Parent = backup
-	end
-	print(("[MeshSwap] island terrain: placed %d deformed cliff meshes"):format(#TERRAIN))
 end
 
 waypoint("MeshSwap")
 print(("[MeshSwap] swapped %d rocks for meshes (part versions kept in ServerStorage.VoxelPartRocks)."):format(swapped))
-print("[MeshSwap] You can delete the imported VoxelRockMeshes / IslandTerrain models now.")
+print("[MeshSwap] You can delete the imported VoxelRockMeshes / *_Terrain models now.")

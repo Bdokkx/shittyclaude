@@ -16,23 +16,19 @@
 ]]
 
 local CONFIG = {
-	BuildIsland = true,
-	BuildReef = true,
-	IslandOrigin = Vector3.new(0, 0, 0),
-	ReefOrigin = Vector3.new(0, 0, 700),
-
 	-- true: fill real Roblox terrain water around the island (recommended)
 	-- false: use a translucent "Ocean" part instead
 	UseTerrainWater = true,
-	SetupLighting = true, -- bright, saturated lighting + clear turquoise water like the reference
+	SetupLighting = true, -- bright lighting + clear turquoise water like the reference
 	RemoveBaseplate = true, -- the default Baseplate's top is at water level and flickers through the water
-	ReefUnderwater = false, -- also flood the reef with terrain water
+	ReefUnderwater = false, -- flood the coral reef with terrain water
 
 	Studs = true, -- stud surfaces on every face, like the screenshots
 	UseImportedMeshes = true,
-	ClearExisting = true, -- delete an old VoxelIsland / CoralReef first
+	ClearExisting = true, -- delete an older copy of this map first
 	AddSpawns = true,
 	YieldEvery = 600, -- parts built between task.wait() calls (0 = never yield)
+	Origin = nil, -- set to a Vector3 to build the map somewhere else (default: its spot in the world)
 }
 
 --@@DATA@@
@@ -306,6 +302,11 @@ function Builder.buildMap(mapName, data, origin, parent)
 		s.Material = Enum.Material.Slate
 		s.Parent = root
 	end
+	if data.water then
+		local w = data.water
+		root:SetAttribute("WaterMin", Vector3.new(w[1], w[2], w[3]))
+		root:SetAttribute("WaterMax", Vector3.new(w[4], w[5], w[6]))
+	end
 	root.WorldPivot = CFrame.new(origin)
 	return root
 end
@@ -409,13 +410,11 @@ end
 if CONFIG.SetupLighting then
 	Builder.setupLighting()
 end
-if CONFIG.BuildIsland then
-	Builder.buildMap("VoxelIsland", MAPS.Island, CONFIG.IslandOrigin, workspace)
-end
-if CONFIG.BuildReef then
-	Builder.buildMap("CoralReef", MAPS.Reef, CONFIG.ReefOrigin, workspace)
-	if CONFIG.ReefUnderwater then
-		Builder.buildReefWater(CONFIG.ReefOrigin)
+for _, entry in ipairs(MAPS) do
+	local origin = CONFIG.Origin or entry.origin
+	Builder.buildMap(entry.name, entry.data, origin, workspace)
+	if entry.name == "CoralReef" and CONFIG.ReefUnderwater then
+		Builder.buildReefWater(origin)
 	end
 end
 print(("[VoxelIsland] built %d parts in %.1fs"):format(built, os.clock() - t0))

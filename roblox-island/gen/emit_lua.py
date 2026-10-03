@@ -52,7 +52,10 @@ def map_lua(m):
     return "\n".join(out)
 
 
-def data_lua():
+def data_lua(maps, asset_names=None):
+    """maps: list of (name, origin, map dict). asset_names: assets to include (default: those used)."""
+    if asset_names is None:
+        asset_names = sorted({p[0] for _, _, m in maps for p in m["props"]})
     o = ["-- palette: {r, g, b, material}"]
     o.append("local PALETTE = {")
     for n in NAMES:
@@ -67,7 +70,8 @@ def data_lua():
     o.append("")
     o.append("-- assets: boxes {x0,y0,z0,x1,y1,z1,color}, lights {x,y,z,color,range,brightness}")
     o.append("local ASSETS = {}")
-    for name, a in ASSETS.items():
+    for name in asset_names:
+        a = ASSETS[name]
         mn, mx = bounds(name)
         lights = ",".join("{%s,%s,%s,%d,%s,%s}" % (num(l[0]), num(l[1]), num(l[2]), INDEX[l[3]],
                                                     num(l[4]), num(l[5])) for l in a["lights"])
@@ -79,23 +83,39 @@ def data_lua():
         o.append("\tlights = {%s}, fires = {%s}," % (lights, fires))
         o.append("\tboxes = {\n" + chunked([box_lua(b) for b in a["boxes"]], 4) + "\n\t},")
         o.append("}")
-    o.append("local ASSET_ORDER = {" + ", ".join('"%s"' % n for n in ASSETS) + "}")
+    o.append("local ASSET_ORDER = {" + ", ".join('"%s"' % n for n in asset_names) + "}")
     o.append("")
     o.append("local MAPS = {}")
-    o.append("MAPS.Island = " + map_lua(build_island()))
-    o.append("MAPS.Reef = " + map_lua(build_reef()))
+    for name, origin, m in maps:
+        o.append("table.insert(MAPS, { name = \"%s\", origin = Vector3.new(%s, %s, %s), data = %s })"
+                 % (name, num(origin[0]), num(origin[1]), num(origin[2]), map_lua(m)))
     return "\n".join(o)
+
+
+def all_maps():
+    from themes import ORDER, ORIGINS, THEMES
+    out = []
+    for theme in ORDER:
+        m = build_island(theme)
+        out.append((THEMES[theme]["map"], ORIGINS[THEMES[theme]["map"]], m))
+    out.insert(1, ("CoralReef", ORIGINS["CoralReef"], build_reef()))
+    return out
 
 
 def main():
     tmpl = open(os.path.join(HERE, "builder_template.lua")).read()
-    src = tmpl.replace("--@@DATA@@", data_lua())
-    out_dir = os.path.join(ROOT, "roblox")
+    out_dir = os.path.join(ROOT, "roblox", "builders")
     os.makedirs(out_dir, exist_ok=True)
-    path = os.path.join(out_dir, "VoxelIslandBuilder.server.lua")
-    with open(path, "w") as f:
+    for name, origin, m in all_maps():
+        src = tmpl.replace("--@@DATA@@", data_lua([(name, origin, m)]))
+        path = os.path.join(out_dir, name + "Builder.server.lua")
+        with open(path, "w") as f:
+            f.write(src)
+        print("wrote", os.path.relpath(path, ROOT), len(src) // 1024, "KB")
+    # every asset, no maps: used to export the asset library model
+    src = tmpl.replace("--@@DATA@@", data_lua([], list(ASSETS)))
+    with open(os.path.join(out_dir, "AssetLibrary.lua"), "w") as f:
         f.write(src)
-    print("wrote", path, len(src) // 1024, "KB")
 
 
 if __name__ == "__main__":

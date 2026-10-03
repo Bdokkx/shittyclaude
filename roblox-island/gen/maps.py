@@ -11,7 +11,8 @@ import math
 import random
 
 from assets import ASSETS
-from island import ROCK as ROCK_FACADE
+from themes import THEMES
+ROCK_FACADE = THEMES["voxel"]["rock"]
 from island import build_island  # noqa: F401  (re-exported)
 from island import facade_boxes
 from palette import TINT_NAMES
