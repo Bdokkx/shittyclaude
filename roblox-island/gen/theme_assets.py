@@ -42,6 +42,7 @@ def recolored(name_boxes, mapping):
 # ------------------------------------------------------------------ desert
 
 def palm(seed, height=16, lean=4):
+    """Leaning ringed trunk with a full crown of continuous fronds that rise, then arch over and droop."""
     rng = random.Random(seed)
     b = []
     segs = int(height / 2)
@@ -55,17 +56,32 @@ def palm(seed, height=16, lean=4):
             b.append(B(nx, k * 2 + 1.6, 0, w + 0.3, 0.4, w + 0.3, "trunk"))  # trunk rings
         x = nx
     top = segs * 2
-    b.append(B(x, top, 0, 2.6, 1.4, 2.6, "palm_leaf_dk"))
-    b += [B(x + 0.8, top - 0.8, 0.6, 0.8, 0.8, 0.8, "palm_trunk"),
-          B(x - 0.6, top - 0.9, -0.7, 0.8, 0.8, 0.8, "palm_trunk")]  # coconuts
+    b.append(B(x, top - 0.4, 0, 2.4, 1.8, 2.4, "palm_leaf_dk"))           # crown
+    b.append(B(x, top + 1.4, 0, 1.4, 1.0, 1.4, "palm_leaf"))
+    b += [B(x + 1.1, top - 1.0, 0.7, 0.9, 0.9, 0.9, "palm_trunk"),        # coconuts
+          B(x - 0.9, top - 1.1, -0.8, 0.9, 0.9, 0.9, "palm_trunk"),
+          B(x + 0.2, top - 1.2, -1.1, 0.8, 0.8, 0.8, "trunk")]
+    reach = height / 16
     for a in range(8):
-        ang = a * math.pi / 4 + rng.uniform(-0.15, 0.15)
+        ang = a * math.pi / 4 + rng.uniform(-0.08, 0.08)
         dx, dz = math.cos(ang), math.sin(ang)
-        for s in range(4):  # frond: steps outward and droops
-            r = 1.6 + s * 1.7
-            y = top + 0.9 - s * s * 0.45
-            col = "palm_leaf" if (s + a) % 2 else "palm_leaf_dk"
-            b.append(B(x + dx * r, y, dz * r, 1.9 - s * 0.25, 0.5, 1.9 - s * 0.25, col))
+        cardinal = a % 2 == 0
+        n = 7 if cardinal else 6
+        lift = rng.uniform(0.5, 0.75)
+        for st in range(n):
+            r = (1.2 + st * 1.25) * reach
+            y = top + 1.0 + lift * st - 0.3 * st * st                          # rises, then arches down
+            w = max(0.7, 1.7 - 0.15 * st)
+            col = "palm_leaf" if (st // 2 + a) % 2 else "palm_leaf_dk"
+            cx, cz = x + dx * r, dz * r
+            if cardinal:   # long strip segments that overlap, so the frond is one continuous leaf
+                lx, lz = (1.7, w) if abs(dx) > 0.5 else (w, 1.7)
+                b.append(B(cx, y, cz, lx, 0.5, lz, col))
+                if 1 <= st <= n - 2:   # leaflets hanging off both sides
+                    px, pz = (0.6, w + 1.6) if abs(dx) > 0.5 else (w + 1.6, 0.6)
+                    b.append(B(cx, y - 0.45, cz, px, 0.4, pz, "palm_leaf_dk" if col == "palm_leaf" else "palm_leaf"))
+            else:          # diagonal fronds: overlapping squares make a continuous staircase leaf
+                b.append(B(cx, y, cz, w + 0.4, 0.5, w + 0.4, col))
     return asset(b)
 
 
