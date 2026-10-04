@@ -68,20 +68,23 @@ def palm(seed, height=16, lean=4):
         cardinal = a % 2 == 0
         n = 7 if cardinal else 6
         lift = rng.uniform(0.5, 0.75)
+        ys = [top + 1.0 + lift * st - 0.24 * st * st for st in range(n + 1)]   # rises, then arches down
         for st in range(n):
             r = (1.2 + st * 1.25) * reach
-            y = top + 1.0 + lift * st - 0.3 * st * st                          # rises, then arches down
+            y0 = min(ys[st], ys[st + 1]) if st < n - 1 else ys[st]
+            y1 = max(ys[st], ys[st + 1] if st < n - 1 else ys[st]) + 0.5     # each piece reaches the next: no gaps
             w = max(0.7, 1.7 - 0.15 * st)
             col = "palm_leaf" if (st // 2 + a) % 2 else "palm_leaf_dk"
             cx, cz = x + dx * r, dz * r
             if cardinal:   # long strip segments that overlap, so the frond is one continuous leaf
-                lx, lz = (1.7, w) if abs(dx) > 0.5 else (w, 1.7)
-                b.append(B(cx, y, cz, lx, 0.5, lz, col))
+                lx, lz = (1.8, w) if abs(dx) > 0.5 else (w, 1.8)
+                b.append((cx - lx / 2, y0, cz - lz / 2, cx + lx / 2, y1, cz + lz / 2, col))
                 if 1 <= st <= n - 2:   # leaflets hanging off both sides
                     px, pz = (0.6, w + 1.6) if abs(dx) > 0.5 else (w + 1.6, 0.6)
-                    b.append(B(cx, y - 0.45, cz, px, 0.4, pz, "palm_leaf_dk" if col == "palm_leaf" else "palm_leaf"))
+                    b.append(B(cx, y0 - 0.4, cz, px, 0.4, pz, "palm_leaf_dk" if col == "palm_leaf" else "palm_leaf"))
             else:          # diagonal fronds: overlapping squares make a continuous staircase leaf
-                b.append(B(cx, y, cz, w + 0.4, 0.5, w + 0.4, col))
+                q = w + 0.6
+                b.append((cx - q / 2, y0, cz - q / 2, cx + q / 2, y1, cz + q / 2, col))
     return asset(b)
 
 
