@@ -360,38 +360,67 @@ def ruin_pillar():
 # ---------------------------------------------------------------- built props
 
 def dock():
-    """Origin = land end of the deck; deck top at y=0, extends toward +Z (40 long)."""
+    """T-shaped pier. Origin = land end of the deck; deck top at y=0. The walkway runs 48 studs out
+    toward +Z, then a 46-wide crossbar (the top of the T) sits across its end."""
     rng = random.Random(5)
     b = []
-    L, W = 40, 10
-    for k in range(int(L / 2)):  # planks across, slightly uneven
+    L, W = 48, 10            # walkway
+    TW, TD = 46, 10          # crossbar of the T
+    for k in range(int(L / 2)):  # walkway planks across, slightly uneven
         j = rng.choice((0, 0.08, 0.15))
         b.append(B(0, -1 + j, k * 2 + 1, W, 1, 1.85, "plank" if k % 2 else "wood"))
-    for z in range(0, L + 1, 10):
-        zz = min(max(z, 0.7), L - 0.7)
+    for k in range(int(TW / 2)):  # crossbar planks run the other way
+        j = rng.choice((0, 0.08, 0.15))
+        b.append(B(-TW / 2 + k * 2 + 1, -1 + j, L + TD / 2, 1.85, 1, TD, "plank" if k % 2 else "wood"))
+
+    def post(x, z, tall=False):
+        b.append(B(x, -12, z, 1.4, 13.5 if tall else 11.4, 1.4, "wood_dark"))
+
+    for z in range(0, L, 10):
+        zz = max(z, 0.7)
         for x in (-W / 2 - 0.2, W / 2 + 0.2):
-            b.append(B(x, -12, zz, 1.4, 13.5 if z in (L, 20) else 11.4, 1.4, "wood_dark"))
+            post(x, zz, z == 20)
         b.append(B(0, -2.6, zz, W, 0.8, 0.8, "wood_dark"))           # cross beam
         b.append(B(0, -7, zz, W - 1, 0.6, 0.6, "wood_dark"))           # lower brace
     for x in (-W / 2 + 0.3, W / 2 - 0.3):
         b.append(B(x, -1.8, L / 2, 0.6, 0.8, L, "wood_dark"))           # stringers
-    for x in (-W / 2 - 0.2, W / 2 + 0.2):                                 # rope rail, outer half
-        b.append(B(x, 1.1, 30, 0.3, 0.3, 20, "rope"))
+    for x in range(int(-TW / 2), int(TW / 2) + 1, 9):                    # crossbar posts + beams
+        xx = max(min(x, TW / 2 - 0.7), -TW / 2 + 0.7)
+        for z in (L + 0.2, L + TD - 0.2):
+            post(xx, z, abs(x) > TW / 2 - 5)
+        b.append(B(xx, -2.6, L + TD / 2, 0.8, 0.8, TD, "wood_dark"))
+    for z in (L + 0.8, L + TD - 0.8):
+        b.append(B(0, -1.8, z, TW, 0.8, 0.6, "wood_dark"))
+    # rope rails around the outer edge of the T
+    for x0, x1 in ((-TW / 2, -W / 2 - 0.5), (W / 2 + 0.5, TW / 2)):
+        b.append(B((x0 + x1) / 2, 1.1, L + 0.2, x1 - x0, 0.3, 0.3, "rope"))
+    b.append(B(0, 1.1, L + TD - 0.2, TW, 0.3, 0.3, "rope"))
+    for x in (-TW / 2 - 0.2, TW / 2 + 0.2):
+        b.append(B(x, 1.1, L + TD / 2, 0.3, 0.3, TD, "rope"))
     # crane / lantern gallows at the land end (like the reference)
     b += [B(-W / 2 + 0.8, 0, 3, 1.4, 14, 1.4, "wood_dark"), B(-W / 2 + 3.2, 12.6, 3, 6, 1.2, 1.2, "wood"),
           B(-W / 2 + 2, 10.4, 3, 1, 2.2, 1, "wood_dark"),
           B(-W / 2 + 5.4, 9.2, 3, 0.25, 3.4, 0.25, "rope"),
           B(-W / 2 + 5.4, 7.6, 3, 1.3, 1.6, 1.3, "glow"), B(-W / 2 + 5.4, 9.2, 3, 1.6, 0.35, 1.6, "metal"),
           B(-W / 2 + 5.4, 7.3, 3, 1.6, 0.3, 1.6, "metal")]
-    # cargo on the deck
-    b += [B(3, 0.15, 34, 2.6, 2.6, 2.6, "wood"), B(3.4, 2.75, 34.2, 2, 2, 2, "plank"),
-          B(-3, 0.15, 33, 2, 2.6, 2, "barrel"), B(-3, 0.75, 33, 2.1, 0.25, 2.1, "metal"),
-          B(-3, 2.0, 33, 2.1, 0.25, 2.1, "metal"), B(1, 0.15, 37.5, 1.6, 0.8, 1.6, "rope")]
-    # ladder down the end
-    for k in range(5):
-        b.append(B(0, -1.6 - k * 1.6, L + 0.5, 3, 0.4, 0.4, "wood_dark"))
-    b += [B(-1.5, -8.5, L + 0.5, 0.4, 8, 0.4, "wood_dark"), B(1.5, -8.5, L + 0.5, 0.4, 8, 0.4, "wood_dark")]
-    return asset(b, lights=[(-W / 2 + 5.4, 8.4, 3, "glow", 22, 1.6)])
+    lights = [(-W / 2 + 5.4, 8.4, 3, "glow", 22, 1.6)]
+    for x in (-TW / 2 + 1.2, TW / 2 - 1.2):                               # lantern posts at both ends of the T
+        z = L + TD - 1.2
+        b += [B(x, 0, z, 0.9, 7, 0.9, "wood_dark"), B(x, 7, z, 1.6, 0.3, 1.6, "metal"),
+              B(x, 5.4, z, 1.2, 1.6, 1.2, "glow"), B(x, 5.1, z, 1.6, 0.3, 1.6, "metal")]
+        lights.append((x, 6.2, z, "glow", 20, 1.4))
+    # cargo on the T
+    b += [B(-14, 0.15, L + 4, 2.6, 2.6, 2.6, "wood"), B(-13.6, 2.75, L + 4.2, 2, 2, 2, "plank"),
+          B(-10, 0.15, L + 3.5, 2, 2.6, 2, "barrel"), B(-10, 0.75, L + 3.5, 2.1, 0.25, 2.1, "metal"),
+          B(-10, 2.0, L + 3.5, 2.1, 0.25, 2.1, "metal"), B(15, 0.15, L + 6, 1.6, 0.8, 1.6, "rope"),
+          B(12, 0.15, L + 3, 2.6, 2.6, 2.6, "wood")]
+    # ladders down both sides of the T
+    for x in (-TW / 2 + 8, TW / 2 - 8):
+        for k in range(5):
+            b.append(B(x, -1.6 - k * 1.6, L + TD + 0.5, 3, 0.4, 0.4, "wood_dark"))
+        b += [B(x - 1.5, -8.5, L + TD + 0.5, 0.4, 8, 0.4, "wood_dark"),
+              B(x + 1.5, -8.5, L + TD + 0.5, 0.4, 8, 0.4, "wood_dark")]
+    return asset(b, lights=lights)
 
 
 def rowboat():
@@ -697,6 +726,14 @@ from theme_assets import theme_assets, theme_mesh_sources  # noqa: E402
 
 ASSETS.update(theme_assets())
 MESH_SOURCES.update(theme_mesh_sources(ASSETS))
+
+# rocks made for one kind of spot (cliff wall, buttress, corner, overhang, beach, terrace) per theme
+from fit_rocks import fit_rock_assets, fit_rock_mesh_sources  # noqa: E402
+from theme_assets import DESERT, FROST, VOLCANIC, recolor  # noqa: E402
+
+ASSETS.update(fit_rock_assets(asset, recolor, {"voxel": None, "desert": DESERT, "frost": FROST,
+                                               "volcanic": VOLCANIC}))
+MESH_SOURCES.update(fit_rock_mesh_sources(ASSETS))
 
 
 def bounds(name):

@@ -425,6 +425,11 @@ ISLAND_ASSETS = {
 }
 
 
+from fit_rocks import SHAPES, THEME_ROCKS  # noqa: E402
+for _t, _names in ISLAND_ASSETS.items():   # rocks made for each kind of spot
+    _names += [THEME_ROCKS[_t][0] + n for n in SHAPES]
+
+
 def fresh_scene(w=1700, h=960, samples=48):
     reset()
     scene = bpy.context.scene
@@ -493,6 +498,14 @@ for theme in ORDER:
     else:
         look(scene, L["peak"], (90, 10, 120), lift=-20)
         render(scene, os.path.join(PREV, name + "_detail.png"))
+    R = THEMES[theme]["rocks"]                                            # cliff close-up: biggest cliff wall
+    walls = sorted((p for p in m["props"] if p[0] == R["wall"]), key=lambda p: -p[5])
+    if walls:
+        w = walls[0]
+        r = math.radians(w[4])
+        look(scene, (w[1], w[2] + 6 * w[5], w[3]), (math.sin(r) * 62 + math.cos(r) * 26, 24, math.cos(r) * 62 - math.sin(r) * 26),
+             lens=30, lift=0)
+        render(scene, os.path.join(PREV, name + "_cliffs.png"))
     if L["falls"]:                                                        # waterfall / frozen fall / lava fall
         fx, fy, fz, d = L["falls"][len(L["falls"]) // 2]
         look(scene, (fx, fy * 0.6, fz), (d[0] * 115 + d[1] * 45, 34, d[1] * 115 + d[0] * 45), lens=30, lift=0)

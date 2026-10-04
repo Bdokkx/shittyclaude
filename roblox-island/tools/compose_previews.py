@@ -94,7 +94,8 @@ def poster(theme):
     over, top = load(m + ".png"), load(m + "_top.png")
     if over is None:
         return None
-    insets = [(load(m + s), lab) for s, lab in (("_village.png", "village"), ("_detail.png", "detail"),
+    insets = [(load(m + s), lab) for s, lab in (("_village.png", "village"), ("_cliffs.png", "cliff rocks"),
+                                                 ("_detail.png", "detail"),
                                                  ("_falls.png", {"desert": "oasis falls", "frost": "frozen falls",
                                                                  "volcanic": "lava falls"}.get(theme, "waterfall")))]
     insets = [(i, lab) for i, lab in insets if i is not None]
@@ -122,6 +123,9 @@ def main():
     block = src[src.index("ISLAND_ASSETS = {"):]
     block = block[:block.index("\n}\n") + 3]
     exec(block, {}, lists)
+    from fit_rocks import SHAPES, THEME_ROCKS   # rocks made for each kind of spot
+    for t, names in lists["ISLAND_ASSETS"].items():
+        names += [THEME_ROCKS[t][0] + n for n in SHAPES]
     overs = []
     for theme in ORDER:
         s = asset_sheet(theme, lists["ISLAND_ASSETS"][theme])

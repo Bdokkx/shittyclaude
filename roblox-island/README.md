@@ -3,8 +3,26 @@
 Four themed blocky, studded islands plus an underwater reef, built from the reference shots.
 The islands are built the same way as the coral reef:
 - **Parts** make up the terrain: ground, stacked slab cliffs with sand, grass or snow lips, paths, stairs, buildings and falls.
-- **Deformed Blender meshes** are only used where they make it look good: crags, rock clusters, ledges,
-  sea stacks and arches tucked into the part cliffs so they blend in.
+- **Deformed Blender meshes** are only used where they make it look good. Each rock is picked for the spot
+  it goes in and scaled to fit it:
+
+  | Spot | Mesh |
+  |---|---|
+  | straight run of cliff | **Cliff Wall**: a wide rock face as tall as the drop, set into the slab cliff |
+  | narrow or very tall cliff face | **Buttress**: a tall tapering column |
+  | outside corner of a terrace | **Corner Rock**: an L-shaped rock wrapping the corner |
+  | top of the tallest cliffs | **Overhang**: a lip of rock hanging over the edge |
+  | foot of the very tallest cliffs | big crag / rock cluster |
+  | mountain | crag spires |
+  | waterline | **Beach Boulders**: smooth round boulders |
+  | beside the paths | **Flat Stones**: stepping stones |
+  | open terraces | **Round Boulder** |
+  | sea | sea stacks / icebergs, and the rock arch |
+
+  Every theme has its own coloured set (Desert, Ice, Basalt).
+
+The dock is a **T-shaped pier**: a 48-stud walkway out into the water, then a 46-wide crossbar with lanterns,
+ladders, cargo and boats moored alongside.
 
 | Map | Origin | What's on it |
 |---|---|---|
@@ -18,6 +36,7 @@ The islands are built the same way as the coral reef:
 
 - `AllIslands.png`: the four islands side by side.
 - `<Map>_poster.png`: overview, top view, village, detail and falls close-ups for each island.
+- `<Map>_cliffs.png`: close-up of a cliff wall rock set into the part cliffs.
 - `<Map>_assets.png`: every custom asset for that island, rendered in Blender and labelled.
 - The single renders are also there: `<Map>.png`, `_top`, `_village`, `_detail`, `_falls`, `CoralReef.png`.
 - `assets_contact_sheet.png` shows the shared asset set.
@@ -52,12 +71,13 @@ Then do the steps above again.
 - **Set it up:** right-click **ServerScriptService** → **Insert from File…** → `roblox/builders/<Map>Builder.rbxmx`
   (or paste the `.lua` file into a Script).
 - **Run it:** press **Play**. `CONFIG` at the top sets the origin, studs, water, lighting and so on.
-- `roblox/AssetLibrary.lua` holds all 101 asset shapes for your own code:
+- `roblox/AssetLibrary.lua` holds all 129 asset shapes for your own code:
   `Builder.spawnAsset("PalmTree", CFrame.new(x, y, z), scale, tint, parent)`.
 
 ## How it's made
 - **`gen/`** (Python) is the single source of truth:
   - `assets.py` + `theme_assets.py`: asset shapes as box lists.
+  - `fit_rocks.py`: the rocks made for one kind of spot (cliff wall, buttress, corner, overhang, beach, terrace).
   - `themes.py`: colours, trees, clutter and rocks for each theme.
   - `island.py`: the layout engine. It builds the height field, mesas, spiral and bent paths, and slab cliffs
     whose layers line up around the island. It also places the mesh rocks tucked into cliff feet, the accents,

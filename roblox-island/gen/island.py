@@ -19,6 +19,7 @@ from collections import deque
 
 from noise import fbm, weighted
 from themes import THEMES
+from fit_rocks import BUTTRESS_H, CORNER_H, WALL_H
 
 CELL = 4
 N = 124
@@ -709,12 +710,14 @@ def build_island(theme="voxel"):
 
     # dock + boat + beach clutter
     dock_z = (shore_j - N / 2) * CELL - 6
-    props += [prop("Dock", px + 2, BEACH_TOP + 0.4, dock_z, 0), prop("Rowboat", px - 10, 0, dock_z + 22, -14),
+    props += [prop("Dock", px + 2, BEACH_TOP + 0.4, dock_z, 0), prop("Rowboat", px - 9, 0, dock_z + 28, -8),
+              prop("Rowboat", px + 2 + 12, 0, dock_z + 48 + 17, 84),
               prop("Barrels", px - 8, BEACH_TOP, dock_z - 3, 20), prop("CrateStack", px + 12, BEACH_TOP, dock_z - 4, -10),
               prop(T["lamp"], px + 8, BEACH_TOP, dock_z + 1, 0, 0.9)]
     block(pi, shore_j - 1, 3)
 
-    feature = []
+    feature = [(px + 2, dock_z + z, 9) for z in range(0, 48, 8)]           # keep the T dock clear
+    feature += [(px + 2 + x, dock_z + 53, 9) for x in range(-24, 25, 8)]
 
     def clear_of(x, z, r):
         return all(math.hypot(x - a, z - b) > r + rr for a, b, rr in feature)
@@ -804,39 +807,151 @@ def build_island(theme="voxel"):
             if k % 9 == 0:
                 props.append(prop("LavaGlow", wx(cell[0]), top[cell], wx(cell[1]), 0))
 
-    # crags and clusters half-buried at the foot of tall cliffs
+    # ------------------------------------------------------------ rocks that fit their spot
+    # Each rock mesh is picked for the spot it goes in and scaled to it (no random lumps):
+    #   straight cliff runs -> CliffWall (height = the drop), narrow / very tall faces -> Buttress,
+    #   outside corners of a terrace -> CornerRock, tall cliff tops -> Overhang,
+    #   the biggest cliff feet -> crag / rock cluster, mountain -> crag spires,
+    #   waterline -> BeachBoulders, beside paths -> FlatStones, open terraces -> RoundBoulder.
     R = T["rocks"]
+    used_faces = set()
+    rocks_at = []   # (x, z, radius) of every fitted rock, so they never pile up
+
+    def room(x, z, r):
+        return all(math.hypot(x - a, z - b) > r + rr for a, b, rr in rocks_at) and clear_of(x, z, r * 0.6)
+
+    def put(name, x, y, z, rot, sc, r):
+        props.append(prop(name, x, y, z, rot, sc))
+        rocks_at.append((x, z, r))
+        feature.append((x, z, r))
+
+    def face_drop(cell, d):
+        """Height of the cliff on side d of a land cell, if a fitted rock may go there."""
+        nb = (cell[0] + d[0], cell[1] + d[1])
+        if cell not in tier or nb not in tier or (cell, d) in reserved:
+            return None
+        if cell in blocked or nb in blocked or cell in path or nb in path or near_path(nb, 1):
+            return None
+        drop = top[cell] - top[nb]
+        return drop if drop >= 6 else None
+
+    # straight runs of cliff face with the same height
+    runs, seen = [], set()
+    for cell in sorted(tier):
+        for d in DIRS:
+            drop = face_drop(cell, d)
+            if drop is None or (cell, d) in seen:
+                continue
+            u = (abs(d[1]), abs(d[0]))
+            start = cell
+            while True:
+                prev = (start[0] - u[0], start[1] - u[1])
+                pd = face_drop(prev, d)
+                if pd is None or abs(pd - drop) > 0.6 or top[prev] != top[cell]:
+                    break
+                start = prev
+            run, cur = [], start
+            while True:
+                cd = face_drop(cur, d)
+                if cd is None or abs(cd - drop) > 0.6 or top[cur] != top[cell]:
+                    break
+                run.append(cur)
+                seen.add((cur, d))
+                cur = (cur[0] + u[0], cur[1] + u[1])
+            if run:
+                runs.append((drop, d, run))
+    runs.sort(key=lambda r: (-r[0] * len(r[2]), r[2][0]))
+    n_wall = n_butt = 0
+    for k, (drop, d, run) in enumerate(runs):
+        cx = sum(wx(c[0]) for c in run) / len(run) + d[0] * 2.05
+        cz = sum(wx(c[1]) for c in run) / len(run) + d[1] * 2.05
+        foot = top[run[0]] - drop
+        span = len(run) * CELL
+        sc = (drop + 0.2) / (WALL_H + 0.6)
+        if 20 * sc <= span + 4 and 0.45 <= sc <= 2.2 and n_wall < 34 and k % 3 != 2:
+            name, r = R["wall"], 10 * sc
+            n_wall += 1
+        elif drop >= 9 and n_butt < 18 and k % 2 == 0:
+            sc = (drop + 0.2) / (BUTTRESS_H + 0.6)
+            name, r = R["buttress"], 4.5 * sc
+            n_butt += 1
+        else:
+            continue
+        if not room(cx, cz, r + 6):
+            continue
+        put(name, cx, foot - 0.4, cz, FACING_ROT[d], round(sc, 2), r)
+        for rc in run:
+            used_faces.add((rc, d))
+            blocked.add((rc[0] + d[0], rc[1] + d[1]))
+
+    # outside corners of a terrace
+    CORNER_ROT = {(1, 1): 0, (1, -1): 90, (-1, -1): 180, (-1, 1): 270}
+    n_corner = 0
+    for cell in sorted(tier, key=lambda c: (-top[c], c)):
+        for (a, b), rot in CORNER_ROT.items():
+            d1, d2, diag = (a, 0), (0, b), (cell[0] + a, cell[1] + b)
+            r1, r2 = face_drop(cell, d1), face_drop(cell, d2)
+            if r1 is None or r2 is None or diag not in tier or (cell, d1) in used_faces or (cell, d2) in used_faces:
+                continue
+            lows = [top[(cell[0] + a, cell[1])], top[(cell[0], cell[1] + b)], top[diag]]
+            if max(lows) - min(lows) > 1.5 or n_corner >= 24:
+                continue
+            drop = top[cell] - max(lows)
+            sc = (drop + 0.2) / (CORNER_H + 0.6)
+            x, z = wx(cell[0]) + a * 2.05, wx(cell[1]) + b * 2.05
+            if drop < 6 or not 0.5 <= sc <= 2.2 or not room(x, z, 6 * sc + 4):
+                continue
+            put(R["corner"], x, max(lows) - 0.4, z, rot, round(sc, 2), 6 * sc)
+            used_faces.update({(cell, d1), (cell, d2)})
+            for rc in ((cell[0] + a, cell[1]), (cell[0], cell[1] + b), diag):
+                blocked.add(rc)
+            n_corner += 1
+
+    # lips of rock over the top of the tallest faces
+    n_over = 0
+    for cell in sorted(tier, key=lambda c: (-top[c], c)):
+        for d in DIRS:
+            drop = face_drop(cell, d)
+            if drop is None or drop < 12 or (cell, d) in used_faces or n_over >= 10:
+                continue
+            x, z = wx(cell[0]) + d[0] * 2.05, wx(cell[1]) + d[1] * 2.05
+            sc = max(0.8, min(1.4, drop / 16))
+            if room(x, z, 7 * sc + 8):
+                put(R["overhang"], x, top[cell], z, FACING_ROT[d], round(sc, 2), 7 * sc)
+                used_faces.add((cell, d))
+                block(cell[0], cell[1], 1)
+                n_over += 1
+
+    # a few big crags / rock clusters at the foot of the very tallest cliffs
     feet = []
     for cell, t in tier.items():
         if cell in blocked or near_path(cell, 1) or edge_cell(cell):
             continue
         for d in DIRS:
             nb = (cell[0] + d[0], cell[1] + d[1])
-            if nb in top and nb not in path and top[nb] - top[cell] >= 7:
-                feet.append((top[nb] - top[cell] + rng.random() * 6, cell, d))
-    feet.sort(key=lambda f: -f[0])
+            if nb in top and nb not in path and top[nb] - top[cell] >= 14 and (nb, (-d[0], -d[1])) not in used_faces:
+                feet.append((top[nb] - top[cell], cell, d))
+    feet.sort(key=lambda f: (-f[0], f[1]))
     placed_feet = 0
-    for score, cell, d in feet:
-        if placed_feet >= 70:
+    for drop, cell, d in feet:
+        if placed_feet >= 10:
             break
-        drop = top[(cell[0] + d[0], cell[1] + d[1])] - top[cell]
-        x, z = wx(cell[0]) + d[0] * 1.8, wx(cell[1]) + d[1] * 1.8   # big rock wraps into the cliff face
-        if drop >= 16:
+        x, z = wx(cell[0]) + d[0] * 1.8, wx(cell[1]) + d[1] * 1.8
+        if drop >= 18:
             name, sc = R["crag"], max(0.7, min(1.6, drop / 24))
         else:
-            name, sc = rng.choice((R["rocks"], R["ledge"])), max(0.9, min(1.7, drop / 8))
-        if not clear_of(x, z, 9 * sc + 2):
+            name, sc = R["rocks"], max(0.9, min(1.6, drop / 9))
+        if not room(x, z, 9 * sc + 4):
             continue
-        props.append(prop(name, x, top[cell] - 1.5, z, rng.uniform(0, 360), sc))
-        feature.append((x, z, 9 * sc))
+        put(name, x, top[cell] - 1.5, z, FACING_ROT[(-d[0], -d[1])], round(sc, 2), 9 * sc)
         block(cell[0], cell[1], 1)
         placed_feet += 1
-        if theme == "volcanic" and rng.random() < 0.5:   # basalt column clusters next to the crags
-            side = rng.choice((-1, 1)) * rng.uniform(6, 9)   # beside the crag, along the cliff foot
+        if theme == "volcanic":   # basalt column clusters beside the crags, along the cliff foot
+            side = (1 if placed_feet % 2 else -1) * 7.5
             bx, bz = x + d[1] * side - d[0] * 1.5, z + d[0] * side - d[1] * 1.5
             bc = (round((bx / CELL) + N / 2 - 0.5), round((bz / CELL) + N / 2 - 0.5))
             if top.get(bc) == top[cell]:
-                props.append(prop("BasaltColumns", bx, top[cell] - 1, bz, rng.uniform(0, 360), rng.uniform(0.7, 1.1)))
+                props.append(prop("BasaltColumns", bx, top[cell] - 1, bz, (placed_feet * 47) % 360, 0.9))
 
     if "mount" in info:  # craggy spires up the mountain
         mcells = [cell for cell, t in tier.items()
@@ -851,20 +966,46 @@ def build_island(theme="voxel"):
                 feature.append((x, z, 9 * sc))
                 block(cell[0], cell[1], 1)
 
-    fcells = [cell for cell, t in tier.items()
-              if 1 <= t <= 3 and surface.get(cell) == "grass" and cell not in blocked and not near_path(cell, 2)]
-    rng.shuffle(fcells)
-    n_field = 0
-    for cell in fcells:   # rock clusters out in the open terraces
-        if n_field >= 12:
-            break
+    # waterline: smooth boulders where the beach meets the sea (most open-water first)
+    def water_around(cell, r):
+        return sum((cell[0] + a, cell[1] + b) not in tier for a in range(-r, r + 1) for b in range(-r, r + 1))
+    beach = [cell for cell, t in tier.items() if t == 0 and surface.get(cell) not in ("ice", "lava")
+             and cell not in blocked and not near_path(cell, 2) and water_around(cell, 1) > 0]
+    beach.sort(key=lambda c: (-water_around(c, 2), c))
+    n_beach = 0
+    for cell in beach:
         x, z = wx(cell[0]), wx(cell[1])
-        sc = rng.uniform(0.9, 1.4)
-        if clear_of(x, z, 9 * sc + 30):
-            props.append(prop(rng.choice((R["rocks"], R["ledge"])), x, top[cell] - 1.5, z, rng.uniform(0, 360), sc))
-            feature.append((x, z, 9 * sc))
+        if n_beach < 14 and room(x, z, 6 + 22):
+            put(R["beach"], x, top[cell] - 0.4, z, (cell[0] * 37 + cell[1] * 11) % 360,
+                round(0.85 + 0.4 * fbm(cell[0] / 5, cell[1] / 5, seed + 9), 2), 6)
             block(cell[0], cell[1], 1)
-            n_field += 1
+            n_beach += 1
+
+    # flat stepping stones just off the paths, round boulders out in the open meadows
+    def openness(cell):
+        return sum((cell[0] + a, cell[1] + b) in tier and abs(top.get((cell[0] + a, cell[1] + b), -99) - top[cell]) < 0.5
+                   for a in range(-3, 4) for b in range(-3, 4))
+    land = [cell for cell, t in tier.items() if t >= 1 and surface.get(cell) in ("grass", "rocktop")
+            and cell not in blocked and not edge_cell(cell)]
+    side = sorted((c for c in land if near_path(c, 2) and not near_path(c, 1)), key=lambda c: (-openness(c), c))
+    n_flat, flats = 0, []
+    for cell in side:
+        x, z = wx(cell[0]), wx(cell[1])
+        if n_flat < 12 and room(x, z, 6) and all(math.hypot(x - a, z - b) > 30 for a, b in flats):
+            flats.append((x, z))
+            put(R["flat"], x, top[cell] - 0.3, z, (cell[0] * 53 + cell[1] * 29) % 360, 1.0, 5)
+            block(cell[0], cell[1], 1)
+            n_flat += 1
+    meadow = sorted((c for c in land if not near_path(c, 2) and openness(c) >= 30), key=lambda c: (-openness(c), c))
+    n_boulder, boulders = 0, []
+    for cell in meadow:
+        x, z = wx(cell[0]), wx(cell[1])
+        if n_boulder < 12 and room(x, z, 7) and all(math.hypot(x - a, z - b) > 34 for a, b in boulders):
+            boulders.append((x, z))
+            put(R["boulder"], x, top[cell] - 0.6, z, (cell[0] * 71 + cell[1] * 13) % 360,
+                round(0.9 + 0.4 * fbm(cell[0] / 6, cell[1] / 6, seed + 13), 2), 5)
+            block(cell[0], cell[1], 1)
+            n_boulder += 1
 
     if peak is not None:   # lookout at the top of the spiral path
         lookout = {"voxel": [("RuinPillar", 2, 1), ("Signpost", 1, -2)],

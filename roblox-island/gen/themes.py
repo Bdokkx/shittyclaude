@@ -97,6 +97,13 @@ THEMES = {
     ),
 }
 
+# rocks made for one kind of spot (gen/fit_rocks.py), named with the theme's rock prefix
+_FIT_PREFIX = {"voxel": "", "desert": "Desert", "frost": "Ice", "volcanic": "Basalt"}
+for _t, _p in _FIT_PREFIX.items():
+    THEMES[_t]["rocks"].update(wall=_p + "CliffWall", buttress=_p + "Buttress", corner=_p + "CornerRock",
+                               overhang=_p + "Overhang", beach=_p + "BeachBoulders", flat=_p + "FlatStones",
+                               boulder=_p + "RoundBoulder")
+
 ORDER = ["voxel", "desert", "frost", "volcanic"]
 # world placement (studs): islands 1300 apart along X, the reef behind the first island
 ORIGINS = {"VoxelIsland": (0, 0, 0), "CoralReef": (0, 0, 900), "DesertCoast": (1300, 0, 0),

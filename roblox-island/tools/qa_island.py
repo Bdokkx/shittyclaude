@@ -42,8 +42,9 @@ def qa(theme):
     scene = bpy.context.scene
 
     R = THEMES[theme]["rocks"]
-    SKIP = {"Dock", "Rowboat", R["stack"], R["stack_big"], R["stack_small"], "LavaGlow"}
-    SUNK = {R["crag"], R["rocks"], R["ledge"], R["arch"]}   # placed partly below ground on purpose
+    SKIP = {"Dock", "Rowboat", R["stack"], R["stack_big"], R["stack_small"], "LavaGlow",
+            R["overhang"]}                    # the overhang hangs off a cliff top on purpose
+    SUNK = {R["crag"], R["rocks"], R["ledge"], R["arch"], R["wall"], R["buttress"], R["corner"]}   # placed partly below ground on purpose
     bad = collections.Counter()
     total = collections.Counter()
     worst = []
