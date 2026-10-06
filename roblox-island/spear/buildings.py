@@ -563,115 +563,230 @@ def dashed_square(m, w, d, color, name, dash=1.2, gap=0.8):
                         m.box((s * other / 2, 0.12, c), (0.4, 0.2, dash), color, mat="Neon")
 
 
-def simple_stall(m, title, stripe, cloth, pad_name, goods=None, ink="#2A3A5C"):
-    """Market stall like the reference: 4 posts, counter with a draped cloth, striped awning,
-    a sign on top and a glowing dashed pad in front. Front faces -Z. ~10 wide x 6 deep."""
+def simple_stall(m, title, stripe, cloth, pad_name, goods=None, ink="#2A3A5C", icon=None):
+    """Market stall, front faces -Z, ~14 wide x 9 deep:
+    stone footing, plank floor, thick corner posts with capitals, framed counter with a draped cloth,
+    plank back wall with two shelves, low side walls, sloped striped awning with a scalloped valance,
+    big framed sign with a 3D icon, hanging lantern, a crate/barrel cluster and a glowing pad in front."""
     lw, dw = STALL_WOOD
-    for x in (-4.4, 4.4):
-        for z in (-2.2, 2.2):
-            m.box((x, 4.5, z), (1.2, 9.0, 1.2), lw)
-            m.box((x, 0.6, z), (1.5, 1.2, 1.5), dw)
-    m.box((0, 1.75, -2.2), (8.0, 3.5, 1.0), lw)                    # counter front
-    m.box((0, 3.7, -2.0), (9.8, 0.5, 2.2), dw)                     # counter top
-    m.box((0, 3.95, -2.0), (8.4, 0.12, 2.0), cloth)                # cloth on the counter
-    with m.at((0, 3.0, -3.25)):                                    # cloth draped over the front
-        m.box((0, 0, 0), (8.4, 1.4, 0.15), cloth)
-        m.box((0, -0.95, 0), (4.0, 0.6, 0.15), cloth)
-    m.box((0, 0.3, 0.2), (9.2, 0.6, 5.2), dw)                      # floor boards
-    m.box((0, 3.4, 2.2), (8.0, 0.4, 0.8), dw)                      # back shelf
-    # awning: alternating stripes, tilted, with a scalloped edge
-    with m.at((0, 9.6, -0.4), rx=10):
-        for k in range(6):
-            x = -5.0 + k * 2.0 + 1.0
-            m.box((x, 0, 0), (2.0, 0.6, 7.2), stripe if k % 2 == 0 else "#FFFFFF")
-        for k in range(6):
-            x = -5.0 + k * 2.0 + 1.0
-            m.box((x, -0.7, -3.5), (1.8, 0.9, 0.3), "#FFFFFF" if k % 2 == 0 else stripe)
-    # sign on top
-    m.box((0, 11.6, 0.6), (0.6, 2.2, 0.6), dw)
-    m.box((0, 12.9, 0.4), (8.6, 2.4, 0.5), dw)
-    board = m.box((0, 12.9, 0.1), (8.0, 1.9, 0.3), "#FFF6E2")
+    trim = "#7A4423"
+    W, D = 13.0, 8.0
+    # footing + floor
+    m.box((0, 0.4, 0.3), (W + 1.4, 0.8, D + 1.4), P.STONE_DK)
+    m.box((0, 0.85, 0.3), (W + 0.8, 0.3, D + 0.8), P.STONE)
+    for k in range(7):
+        x = -W / 2 + (k + 0.5) * W / 7
+        m.box((x, 1.15, 0.3), (W / 7 - 0.05, 0.3, D), lw if k % 2 else "#B66D33")
+    # corner posts with stone feet + capitals
+    for x in (-W / 2, W / 2):
+        for z in (-D / 2, D / 2 + 0.6):
+            m.box((x, 1.6, z), (1.8, 0.9, 1.8), P.STONE_DK)
+            m.box((x, 5.6, z), (1.3, 8.0, 1.3), dw)
+            m.box((x, 9.8, z), (1.7, 0.6, 1.7), trim)
+    m.box((0, 9.6, -D / 2), (W + 1.2, 0.9, 1.0), trim)                 # front beam
+    m.box((0, 11.2, D / 2 + 0.6), (W + 1.2, 0.9, 1.0), trim)           # back beam (higher)
+    # back wall: vertical boards + two shelves
+    for k in range(9):
+        x = -W / 2 + 0.7 + k * (W - 1.4) / 9 + (W - 1.4) / 18
+        m.box((x, 6.1, D / 2 + 0.6), ((W - 1.4) / 9 - 0.04, 9.6, 0.6), lw if k % 2 else "#B66D33")
+    for y in (5.0, 7.6):
+        m.box((0, y, D / 2 - 0.2), (W - 1.6, 0.35, 1.4), trim)
+        for s_ in (-1, 1):
+            m.box((s_ * 4.5, y - 0.6, D / 2 - 0.2), (0.3, 0.9, 1.2), trim, rx=0)
+    # low side walls
+    for s_ in (-1, 1):
+        for k in range(3):
+            m.box((s_ * W / 2, 1.9 + k * 0.95, 0.3), (0.5, 0.9, D - 1.2), lw if k % 2 else "#B66D33")
+        m.box((s_ * W / 2, 4.85, 0.3), (0.8, 0.35, D - 0.8), trim)
+    # counter: framed panels + top + cloth
+    m.box((0, 2.6, -D / 2 + 0.6), (W - 1.4, 3.0, 1.2), "#B66D33")
+    for k in range(4):
+        x = -W / 2 + 0.7 + (k + 0.5) * (W - 1.4) / 4
+        m.box((x, 2.6, -D / 2 - 0.05), ((W - 1.4) / 4 - 0.9, 2.0, 0.2), lw)
+    for x in [-W / 2 + 0.7 + k * (W - 1.4) / 4 for k in range(5)]:
+        m.box((x, 2.6, -D / 2 - 0.1), (0.45, 3.0, 0.3), trim)
+    m.box((0, 4.35, -D / 2 + 0.6), (W - 0.6, 0.5, 2.2), trim)
+    m.box((0, 4.65, -D / 2 + 0.6), (W - 2.6, 0.15, 2.0), cloth)
+    with m.at((0, 3.9, -D / 2 - 0.45)):
+        m.box((0, 0, 0), (W - 2.6, 1.2, 0.15), cloth)
+        for k in range(5):
+            m.box((-(W - 2.6) / 2 + (k + 0.5) * (W - 2.6) / 5, -0.9, 0), (1.1, 1.1, 0.15), cloth, rz=45)
+    # awning: sloped striped roof with scalloped valance
+    slope = math.degrees(math.atan2(11.6 - 10.0, D + 2.6))
+    with m.at((0, 10.9, 0.2), rx=-slope):
+        n = 7
+        for k in range(n):
+            x = -W / 2 - 0.9 + (k + 0.5) * (W + 1.8) / n
+            m.box((x, 0, 0), ((W + 1.8) / n + 0.02, 0.6, D + 3.2), stripe if k % 2 == 0 else "#FFFFFF")
+        m.box((0, 0.45, D / 2 + 1.3), (W + 2.0, 0.4, 0.8), trim)
+        for k in range(n):
+            x = -W / 2 - 0.9 + (k + 0.5) * (W + 1.8) / n
+            col = "#FFFFFF" if k % 2 == 0 else stripe
+            m.box((x, -0.8, -(D + 3.2) / 2 + 0.15), ((W + 1.8) / n - 0.3, 1.0, 0.3), col)
+            m.box((x, -1.35, -(D + 3.2) / 2 + 0.15), (0.9, 0.9, 0.3), col, rz=45)
+    # sign: framed board on two short posts above the awning, with a 3D icon
+    for s_ in (-1, 1):
+        m.box((s_ * 3.6, 12.6, -1.0), (0.6, 2.6, 0.6), trim)
+    m.box((0, 14.2, -1.0), (10.4, 2.8, 0.6), trim)
+    board = m.box((0, 14.2, -1.35), (9.6, 2.1, 0.3), "#FFF6E2")
     m.text(board, title, ink, "Front")
+    if icon:
+        with m.at((0, 17.0, -1.0)):
+            icon(m)
+    # hanging lantern on the front-left post
+    with m.at((-W / 2 - 0.2, 8.4, -D / 2 - 1.0)):
+        m.box((0, 0.9, 0.5), (0.3, 0.3, 1.6), P.METAL)
+        m.box((0, 0.3, 0), (0.15, 0.9, 0.15), P.METAL, collide=False)
+        m.box((0, -0.5, 0), (1.3, 0.3, 1.3), P.METAL, collide=False)
+        m.box((0, -1.2, 0), (0.9, 1.1, 0.9), P.GLOW, mat="Neon", collide=False,
+              light=("PointLight", 1.2, 16, P.GLOW))
+        m.box((0, -1.9, 0), (1.3, 0.3, 1.3), P.METAL, collide=False)
     if goods:
         goods(m)
-    with m.at((0, 0, -7.0)):
-        dashed_square(m, 7.0, 5.0, cloth, pad_name)
+    with m.at((W / 2 + 2.2, 0, 1.5)):                          # side cluster against the wall
+        P.barrel(m)
+    with m.at((W / 2 + 2.0, 0, 4.4)):
+        P.crate(m, 2.6)
+    with m.at((W / 2 + 2.1, 2.6, 4.3)):
+        P.crate(m, 1.6)
+    with m.at((0, 0, -9.0)):
+        dashed_square(m, 8.0, 5.0, cloth, pad_name)
 
 
 def goods_fish(m):
-    for k, c in enumerate(("sky", "orange", "pink")):
-        P.fish(m, P.ACCENTS[c], 1.8, ry=8 * (k - 1), pos=(-2.4 + k * 2.4, 4.4, -2.0))
-    for k, c in enumerate(("yellow", "sky")):
-        m.box((-1.5 + k * 3, 6.6, 1.9), (0.12, 1.2, 0.12), P.ROPE, collide=False)
-        P.fish(m, P.ACCENTS[c], 1.8, rz=-80, pos=(-1.5 + k * 3, 5.2, 1.9))
+    for k, x in enumerate((-3.6, 0, 3.6)):                       # ice trays with fish on the counter
+        m.box((x, 4.95, -3.4), (3.0, 0.45, 1.8), "#DFF4FF", collide=False)
+        for f in range(2):
+            P.fish(m, P.ACCENTS[("sky", "orange", "pink", "yellow")[(k + f) % 4]], 1.6,
+                   ry=180 * f + 6, pos=(x - 0.6 + 1.2 * f, 5.45, -3.4))
+    for k, x in enumerate((-4.5, -1.5, 1.5, 4.5)):               # fish hanging from the front beam
+        m.box((x, 8.6, -4.0), (0.12, 1.4, 0.12), P.ROPE, collide=False)
+        P.fish(m, P.ACCENTS[("yellow", "sky", "pink", "orange")[k]], 1.9, rz=-80, pos=(x, 7.1, -4.0))
+    for k, x in enumerate((-4, -1.3, 1.3, 4)):                   # jars + baskets on the shelves
+        m.box((x, 5.75, 3.6), (1.4, 1.2, 1.2), ("#5BB6E3", "#C8A06A", "#5BB6E3", "#C8A06A")[k])
+        m.box((x, 8.35, 3.6), (1.6, 1.2, 1.2), ("#C8A06A", "#FF8A3D", "#C8A06A", "#FF8A3D")[k])
 
 
 def goods_spears(m):
     with m.ctx(collide=False):
-        for k in range(5):
-            x = -3.2 + k * 1.6
-            m.box((x, 6.2, 2.0), (0.25, 5.6, 0.25), "#C8A06A", rx=-4)
-            m.box((x, 9.2, 1.8), (0.5, 0.9, 0.2), P.METAL_LT, rx=-4)
-        m.box((0, 4.15, -2.0), (5.0, 0.3, 0.3), "#C8A06A", ry=10)
-        m.box((2.6, 4.15, -2.1), (0.8, 0.4, 0.3), P.METAL_LT, ry=10)
+        for k in range(7):                                       # spearguns on the back wall
+            x = -4.5 + k * 1.5
+            m.box((x, 6.6, 4.1), (0.3, 6.6, 0.3), "#C8A06A")
+            m.box((x, 10.1, 4.0), (0.6, 1.0, 0.25), P.METAL_LT, rz=45)
+            m.box((x, 4.6, 4.0), (0.7, 0.9, 0.5), "#3A3F4E")
+        for k in range(2):                                       # two on the counter
+            with m.at((-2.5 + k * 5, 5.0, -3.4), ry=12 - 24 * k):
+                m.box((0, 0, 0), (5.0, 0.35, 0.35), "#C8A06A")
+                m.box((2.8, 0, 0), (1.0, 0.6, 0.3), P.METAL_LT, rz=45)
+                m.box((-1.2, -0.4, 0), (0.6, 0.8, 0.4), "#3A3F4E")
 
 
 def goods_upgrades(m):
     with m.ctx(collide=False):
-        m.box((-2.2, 4.4, -2.0), (2.6, 0.5, 1.6), "#3B6FD6")              # blueprint
-        m.box((-2.2, 4.68, -2.0), (2.0, 0.05, 1.1), "#EAF2FF")
-        with m.at((1.8, 4.4, -2.0)):
-            hammer_icon(m, 2.0)
+        m.box((-2.6, 4.9, -3.4), (3.4, 0.3, 2.0), "#3B6FD6")              # blueprint on the counter
         for k in range(3):
-            m.box((0, 4.2 + k * 0.9, 2.0), (6.0, 0.8, 0.8), "#C68A52" if k % 2 else "#A8703F")
+            m.box((-2.9 + 0.3 * k, 5.07, -3.6 + 0.5 * k), (2.2 - 0.4 * k, 0.05, 0.12), "#EAF2FF")
+        with m.at((2.6, 5.2, -3.4)):
+            hammer_icon(m, 2.2)
+        for k in range(4):                                       # planks + tools on the shelves
+            m.box((-2.0, 5.5 + 0.4 * k, 3.6), (6.0, 0.35, 0.9), "#C68A52" if k % 2 else "#A8703F")
+        for k, x in enumerate((2.6, 4.2)):
+            m.box((x, 8.6, 4.0), (0.3, 2.8, 0.3), P.WOOD_DK)
+            m.box((x, 9.8, 3.9), (1.0, 0.6, 0.3), P.METAL)
+        m.box((-3.5, 8.4, 3.6), (2.4, 1.2, 1.2), "#B5523B")
+
+
+def icon_fish(m):
+    fish_icon(m, 5.0, P.ACCENTS["sky"], P.ACCENTS["orange"])
+
+
+def icon_spear(m):
+    spear_icon(m, 5.5)
+
+
+def icon_hammer(m):
+    hammer_icon(m, 3.6)
 
 
 # ---------------------------------------------------------------- portal
 
-def portal(m, ring_col=("#6E63B8", "#544A9C"), rim="#B67CFF", swirl=("#7A4DFF", "#4FE3FF"), R=7.5):
-    """Round portal on a dais, facing -Z: stone ring of 24 segments, glowing rim, spinning neon swirl
-    (parts named PortalSwirl), glowing runes, two crystal pillars, light + particles (effect 'portal'),
-    and a glowing dashed pad in front (PortalPad, touch to teleport)."""
-    m.octagon(0.6, 6.2, 1.2, "#4A4280")
-    m.octagon(1.35, 5.4, 0.3, "#8F86D6")
-    cy = 1.5 + R + 0.8
+def ring(m, R, n, w, depth, colors, z=0.0, mat="Plastic", phase=0.5, **kw):
+    """Ring of n blocks of radius R in the local XY plane (normal +Z)."""
+    seg = 2 * math.pi * R / n + 0.3
+    for k in range(n):
+        a = 2 * math.pi * (k + phase) / n
+        with m.at((math.cos(a) * R, math.sin(a) * R, z), rz=math.degrees(a) + 90):
+            m.box((0, 0, 0), (seg, w, depth), colors[k % len(colors)], mat=mat, **kw)
+
+
+def portal(m, R=7.5):
+    """Round portal gate facing -Z on a stepped round dais: chunky two-tone stone ring with an inner
+    trim ring, keystone with a gem, side horns, a vortex of glowing rings that spin around the core
+    (PortalSwirl / PortalSwirl2, spun by the Spinner script), a bright core (PortalCore: light +
+    particles), runes, three floating crystals (PortalOrbit) and a glowing dashed pad (PortalPad)."""
+    stone, stone_dk, stone_lt = "#7C74C4", "#5A519E", "#A39BE0"
+    # stepped dais
+    m.octagon(0.5, 8.2, 1.0, stone_dk)
+    m.octagon(1.25, 7.2, 0.5, stone)
+    m.octagon(1.75, 6.0, 0.5, stone_lt)
+    with m.ctx(collide=False):
+        m.octagon(1.52, 7.25, 0.08, "#B67CFF", mat="Neon")            # glowing inlay line
+    cy = 2.0 + R + 1.0
     with m.at((0, cy, 0)):
-        n = 24
-        seg = 2 * math.pi * R / n + 0.35
-        for k in range(n):
-            a = 2 * math.pi * k / n
-            with m.at((math.cos(a) * R, math.sin(a) * R, 0), rz=math.degrees(a) + 90):
-                m.box((0, 0, 0), (seg, 1.9, 2.4), ring_col[k % 2])
-        for k in range(n):        # glowing inner rim
-            a = 2 * math.pi * (k + 0.5) / n
-            r = R - 1.15
-            with m.at((math.cos(a) * r, math.sin(a) * r, 0), rz=math.degrees(a) + 90):
-                m.box((0, 0, 0), (2 * math.pi * r / n + 0.3, 0.45, 1.6), rim, mat="Neon")
-        for k in range(6):        # runes on the front face
-            a = math.radians(30 + 60 * k)
-            with m.at((math.cos(a) * R, math.sin(a) * R, -1.25), rz=math.degrees(a)):
-                m.box((0, 0, 0), (0.9, 0.9, 0.15), "#4FE3FF", mat="Neon", rz=45)
-        # the swirl: centred bars (spin about the portal axis) + a faint disc
+        ring(m, R, 28, 2.4, 3.2, (stone, stone_dk))                  # outer ring
+        ring(m, R - 1.5, 24, 0.8, 3.6, (stone_lt,), phase=0)          # inner trim, slightly deeper
+        ring(m, R + 1.3, 28, 0.5, 2.0, (stone_dk,), z=0.2)            # back flange
+        with m.ctx(collide=False):
+            ring(m, R - 2.05, 24, 0.35, 0.6, ("#E2C4FF",), z=-1.5, mat="Neon")   # glowing rim
+        # keystone + gem, side horns, feet
+        m.box((0, R + 0.4, 0), (3.0, 3.4, 4.0), stone_dk)
+        m.box((0, R + 0.4, -2.05), (1.4, 1.4, 0.3), "#4FE3FF", mat="Neon", rz=45)
+        for s_ in (-1, 1):
+            with m.at((s_ * (R + 0.6), 0, 0)):
+                m.box((0, 0, 0), (2.2, 3.0, 3.8), stone_dk)
+                m.box((s_ * 1.0, 1.2, 0), (1.2, 1.6, 2.6), stone, rz=-s_ * 30)
+            with m.at((s_ * (R * 0.62), -R * 0.82, 0), rz=s_ * 35):
+                m.box((0, 0, 0), (2.6, 3.0, 3.8), stone_dk)
+        for k in range(8):                                          # runes on the front of the ring
+            a = math.radians(22.5 + 45 * k)
+            if abs(math.cos(a)) > 0.95:
+                continue
+            with m.at((math.cos(a) * R, math.sin(a) * R, -1.65), rz=math.degrees(a)):
+                m.box((0, 0, 0), (0.8, 0.8, 0.12), "#4FE3FF", mat="Neon", rz=45, collide=False)
+        # vortex: rings fading from deep purple at the rim to white at the core, each further back
         with m.ctx(collide=False, shadow=False):
-            disc = m.box((0, 0, 0.0), (2 * (R - 1.3), 2 * (R - 1.3), 0.2), swirl[0], mat="Neon", transparency=0.55,
-                         light=("PointLight", 3, 32, "#9A6BFF"), effect="portal")
-            m.box((0, 0, 0), (2 * (R - 1.3), 2 * (R - 1.3), 0.2), swirl[0], mat="Neon", transparency=0.55, rz=45)
-            for k in range(6):
-                m.box((0, 0, -0.25), (2 * (R - 1.6), 0.9, 0.3), swirl[k % 2], mat="Neon", transparency=0.3,
-                      rz=k * 30, name="PortalSwirl")
-            for k in range(4):
-                m.box((0, 0, 0.25), (2 * (R - 3.0), 0.7, 0.2), swirl[1], mat="Neon", transparency=0.35,
-                      rz=k * 45 + 15, name="PortalSwirl")
-            m.box((0, 0, -0.35), (2.2, 2.2, 0.3), "#FFFFFF", mat="Neon", transparency=0.2, rz=45)
-    for s in (-1, 1):             # crystal pillars
-        with m.at((s * (R + 3.2), 0, -0.5)):
-            m.octagon(1.6, 1.3, 3.2, ring_col[1])
-            m.octagon(3.4, 1.0, 0.4, "#8F86D6")
-            m.box((0, 5.0, 0), (1.3, 3.0, 1.3), "#4FE3FF", mat="Neon", ry=45, rx=8,
+            vort = [(R - 2.6, 1.1, "#5B2FD1", "PortalSwirl", -0.2), (R - 3.5, 1.0, "#8A4DFF", "PortalSwirl2", 0.0),
+                    (R - 4.4, 0.95, "#B07CFF", "PortalSwirl", 0.2), (R - 5.2, 0.9, "#62D8FF", "PortalSwirl2", 0.4),
+                    (R - 5.9, 0.8, "#A9F1FF", "PortalSwirl", 0.6)]
+            for k, (r, w, col, nm, z) in enumerate(vort):
+                n = max(8, int(2 * math.pi * r / 1.4))
+                for j in range(n):
+                    a = 2 * math.pi * j / n
+                    if j % 3 == 2:
+                        continue                                    # gaps make the spin visible
+                    with m.at((math.cos(a) * r, math.sin(a) * r, z), rz=math.degrees(a) + 90 + 18):
+                        m.box((0, 0, 0), (2 * math.pi * r / n * 1.05, w, 0.3), col, mat="Neon", name=nm)
+            m.box((0, 0, 0.9), (2 * (R - 2.3), 2 * (R - 2.3), 0.2), "#3A1C8C", mat="Neon", transparency=0.15)
+            m.box((0, 0, 0.8), (2.0, 2.0, 0.4), "#FFFFFF", mat="Neon", name="PortalCore", rz=45,
+                  light=("PointLight", 3.5, 36, "#A57BFF"), effect="portal")
+    # floating crystals orbiting the ring
+    with m.ctx(collide=False):
+        for k, (a, h) in enumerate(((150, 1.0), (30, 0.6), (270, 0.0))):
+            r = math.radians(a)
+            with m.at((math.cos(r) * (R + 4.2), cy + math.sin(r) * (R + 2.5) + h, -1.0), rz=20 * k):
+                m.box((0, 0, 0), (1.0, 2.2, 1.0), "#4FE3FF", mat="Neon", ry=45, name="PortalOrbit")
+                m.box((0, 1.5, 0), (0.6, 0.9, 0.6), "#E2C4FF", mat="Neon", ry=45, name="PortalOrbit")
+    # stone lantern pillars either side of the dais
+    for s_ in (-1, 1):
+        with m.at((s_ * (R + 4.5), 0, -3.0)):
+            m.box((0, 0.6, 0), (2.4, 1.2, 2.4), stone_dk)
+            m.box((0, 2.8, 0), (1.5, 3.4, 1.5), stone)
+            m.box((0, 4.7, 0), (2.2, 0.5, 2.2), stone_dk)
+            m.box((0, 5.6, 0), (1.2, 1.3, 1.2), "#4FE3FF", mat="Neon", ry=45,
                   light=("PointLight", 1.2, 14, "#4FE3FF"))
-            m.box((0.5, 4.3, 0.3), (0.8, 1.8, 0.8), rim, mat="Neon", ry=20, rz=-18)
-    with m.at((0, 0.0, -6.5)):
-        dashed_square(m, 8.0, 5.0, rim, "PortalPad")
+            m.box((0, 6.5, 0), (2.0, 0.5, 2.0), stone_dk)
+    with m.at((0, 0.0, -10.5)):
+        dashed_square(m, 8.0, 5.0, "#B67CFF", "PortalPad")
 
 
 # ---------------------------------------------------------------- camp

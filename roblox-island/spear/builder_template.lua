@@ -395,12 +395,31 @@ pcall(function()
 -- spins the lighthouse beam and the portal swirl while the game runs
 local RunService = game:GetService("RunService")
 local island = script.Parent
+local beams, swirl, orbit, core = {}, {}, {}, nil
+for _, p in ipairs(island:GetDescendants()) do
+	if p:IsA("BasePart") then
+		if p.Name == "LighthouseBeam" then table.insert(beams, p)
+		elseif p.Name == "PortalSwirl" then table.insert(swirl, { p, 1.4 })
+		elseif p.Name == "PortalSwirl2" then table.insert(swirl, { p, -0.9 })
+		elseif p.Name == "PortalOrbit" then table.insert(orbit, p)
+		elseif p.Name == "PortalCore" then core = p end
+	end
+end
+local t = 0
 RunService.Heartbeat:Connect(function(dt)
-	for _, p in ipairs(island:GetDescendants()) do
-		if p.Name == "LighthouseBeam" and p:IsA("BasePart") and p.Transparency < 1 then
+	t += dt
+	for _, p in ipairs(beams) do
+		if p.Transparency < 1 then
 			p.CFrame = p.CFrame * CFrame.Angles(0, dt * 0.9, 0)
-		elseif p.Name == "PortalSwirl" and p:IsA("BasePart") then
-			p.CFrame = p.CFrame * CFrame.Angles(0, 0, dt * (p.Size.Z > 0.25 and 1.6 or -1.1))
+		end
+	end
+	if core then
+		local c = core.CFrame
+		for _, s in ipairs(swirl) do      -- vortex rings turn around the portal axis
+			s[1].CFrame = c * CFrame.Angles(0, 0, dt * s[2]) * c:Inverse() * s[1].CFrame
+		end
+		for _, p in ipairs(orbit) do      -- crystals bob gently
+			p.CFrame = p.CFrame + Vector3.new(0, math.sin(t * 1.5 + p.Position.X) * dt * 0.6, 0)
 		end
 	end
 end)
