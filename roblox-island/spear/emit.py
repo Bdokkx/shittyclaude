@@ -39,7 +39,7 @@ def emit(m, origin, preset, water, spawn, cameras=None):
         rx, ry, rz = to_euler(p["R"])
         decor = p["stage"] in ("props", "reef") and max(p["size"]) < 2   # small decor: no collision, no shadow
         flags = (1 if p["collide"] and not decor else 0) | (2 if p["shadow"] and not decor else 0)
-        rows.append("{%s}" % ",".join([*map(_num, p["size"]), *map(_num, p["pos"]), _num(rx), _num(ry), _num(rz),
+        rows.append("%s" % ",".join([*map(_num, p["size"]), *map(_num, p["pos"]), _num(rx), _num(ry), _num(rz),
                                         str(idx(colors, cidx, p["color"].upper())), str(idx(mats, midx, p["mat"])),
                                         str(idx(folders, fidx, part_folder(p))), str(flags)]))
         if p.get("effect"):
@@ -62,7 +62,7 @@ def emit(m, origin, preset, water, spawn, cameras=None):
         "@@COLORS@@": ",".join("{%d,%d,%d}" % hex_rgb(c) for c in colors),
         "@@MATS@@": ",".join('"%s"' % x for x in mats),
         "@@FOLDERS@@": ",".join('"%s"' % x for x in folders),
-        "@@PARTS@@": ",\n".join(rows),
+        "@@PARTS@@": "\n".join(rows),
         "@@LIGHTS@@": ",".join(lights),
         "@@NAMES@@": ",".join(names),
         "@@TRANSP@@": ",".join(transp),

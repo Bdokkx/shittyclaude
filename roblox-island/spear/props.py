@@ -49,7 +49,7 @@ def pine(m, size, seed, greens=("#2F8F4A", "#3FA85A"), trunk=WOOD_DK, snow=None)
         m.box((x, y + 1.2, 0), (1.6, 2.4, 1.6), greens[tiers % 2], ry=rng.uniform(0, 90))
 
 
-def oak(m, size, seed, greens=("#5DBB46", "#47A23A"), trunk=WOOD_DK):
+def oak(m, size, seed, greens=("#5DBB46", "#47A23A"), trunk=WOOD_DK, fruit=None):
     """Round tree: angled trunk segments, two branches, 4-5 big leaf blocks. ~14 / 17 / 21 studs."""
     rng = random.Random(seed)
     h = (14, 17, 21)[size]
@@ -69,8 +69,13 @@ def oak(m, size, seed, greens=("#5DBB46", "#47A23A"), trunk=WOOD_DK):
             blobs.append((0, r * 1.0, 0, 0.6))
         for k, (bx, by, bz, f) in enumerate(blobs):
             s = r * 1.5 * f
+            ry_ = rng.uniform(0, 90)
             m.box((x + bx, cy + by, bz), (s, s * 0.85, s), greens[k % 2],
-                  ry=rng.uniform(0, 90), rx=rng.uniform(-10, 10), rz=rng.uniform(-10, 10))
+                  ry=ry_, rx=rng.uniform(-10, 10), rz=rng.uniform(-10, 10))
+            if fruit and k:              # fruit sits on the outside faces of the leaf blocks
+                with m.at((x + bx, cy + by, bz), ry=ry_), m.ctx(collide=False, shadow=False):
+                    m.box((s / 2 + 0.1, -s * 0.1, s * 0.15), (0.9, 0.9, 0.9), fruit)
+                    m.box((-s * 0.2, -s * 0.2, s / 2 + 0.1), (0.9, 0.9, 0.9), fruit)
 
 
 def palm(m, size, seed, greens=("#3FAE4A", "#2E8F3C"), trunk=("#B98552", "#9A6A3E")):
@@ -370,15 +375,8 @@ def poplar(m, size, seed, greens=("#3E9C45", "#2F8A3C"), trunk="#6B4226"):
 
 
 def apple(m, size, seed):
-    """Round fruit tree: oak shape with red apples."""
-    oak(m, size, seed, greens=("#55B848", "#3F9E3C"))
-    rng = random.Random(seed + 1)
-    h = (14, 17, 21)[size]
-    with m.ctx(collide=False, shadow=False):
-        for k in range(6):
-            a = rng.uniform(0, 6.28)
-            r = h * 0.3
-            m.box((math.cos(a) * r, h * 0.6 + rng.uniform(-1, 2), math.sin(a) * r), (0.9, 0.9, 0.9), "#E8403A")
+    """Round fruit tree: oak shape with red apples on the leaf blocks."""
+    oak(m, size, seed, greens=("#55B848", "#3F9E3C"), fruit="#E8403A")
 
 
 def tuft(m, seed, greens=("#5DBB46", "#7AD155", "#4FA83A")):

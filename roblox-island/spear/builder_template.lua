@@ -29,10 +29,19 @@ local CONFIG = {
 local COLORS = { @@COLORS@@ }
 local MATS = { @@MATS@@ }
 local FOLDERS = { @@FOLDERS@@ }
--- {sx,sy,sz, x,y,z, rx,ry,rz (deg), color, mat, folder, flags(1=collide,2=shadow)}
-local P = {
+-- one part per line: sx,sy,sz, x,y,z, rx,ry,rz (deg), color, mat, folder, flags(1=collide,2=shadow)
+-- (kept as text and parsed at run time: a 17k-entry table literal is too big for the Luau compiler/VM)
+local P_DATA = [==[
 @@PARTS@@
-}
+]==]
+local P = {}
+for line in string.gmatch(P_DATA, "[^\n]+") do
+	local row = {}
+	for v in string.gmatch(line, "[^,]+") do
+		row[#row + 1] = tonumber(v)
+	end
+	P[#P + 1] = row
+end
 -- [part] = {kind, brightness, range, color}
 local LIGHTS = { @@LIGHTS@@ }
 local NAMES = { @@NAMES@@ }
