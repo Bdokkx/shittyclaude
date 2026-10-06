@@ -16,7 +16,9 @@ for _, name in maps do
 	local env = {
 		game = game, workspace = game:GetService("Workspace"),
 		Instance = roblox.Instance, CFrame = roblox.CFrame, Vector3 = roblox.Vector3, Color3 = roblox.Color3,
-		Enum = roblox.Enum, UDim2 = roblox.UDim2,
+		Enum = roblox.Enum, UDim2 = roblox.UDim2, Vector2 = roblox.Vector2,
+		ColorSequence = roblox.ColorSequence, NumberSequence = roblox.NumberSequence,
+		NumberSequenceKeypoint = roblox.NumberSequenceKeypoint, NumberRange = roblox.NumberRange,
 		math = math, table = table, string = string, bit32 = bit32, os = os,
 		pairs = pairs, ipairs = ipairs, print = print, warn = print, type = type, typeof = typeof,
 		tostring = tostring, tonumber = tonumber, assert = assert, error = error, pcall = pcall,

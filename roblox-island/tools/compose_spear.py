@@ -44,24 +44,24 @@ def main(m):
     img = Image.new("RGB", (W, 3800), BG)
     d = ImageDraw.Draw(img)
     d.text((40, 24), m.upper() + "  -  rebuild for review", font=font(56), fill=ACC)
-    d.text((40, 96), "same island shape, rebuilt to the style bible: banded slab cliffs, calm 2-tone ground, no clutter, "
-                     "clumped trees, Fish Market / Spear Shop / Upgrade Station, lighthouse, T-dock over the reef",
+    d.text((40, 96), "open hub (no centerpiece) with 3 simple shop stalls + glowing pads, portal on a cliff by the hub, "
+                     "big T-dock with rails, beach camp, fishing jetty, waterfall, lighthouse",
            font=font(24, False), fill=INK)
     panel(img, m + "_overhead", (40, 150, 1560, 1005), "overhead 45 deg (checklist b)")
     panel(img, m + "_dock", (1600, 150, 2360, 575), "end of the dock (checklist a)")
     panel(img, m + "_plaza", (1600, 580, 2360, 1005), "plaza at player height (checklist c)")
-    row = [(m + "_market", "Fish Market"), (m + "_shop", "Spear Shop"), (m + "_upgrade", "Upgrade Station"),
-           (m + "_lighthouse", "Lighthouse landmark")]
+    row = [(m + "_portal", "Portal cliff"), (m + "_market", "Fish Market stall"), (m + "_shop", "Spear Shop stall"),
+           (m + "_upgrade", "Upgrades stall")]
     w = (W - 80 - 3 * 30) // 4
     for k, (n, lab) in enumerate(row):
         x = 40 + k * (w + 30)
         panel(img, n, (x, 1040, x + w, 1460), lab)
-    row = [(m + "_village", "village"), (m + "_reef", "reef under the dock"), (m + "_cliffs", "slab cliffs")]
+    row = [(m + "_village", "hub from above"), (m + "_dockdeck", "big T-dock"), (m + "_lighthouse", "lighthouse")]
     w = (W - 80 - 2 * 30) // 3
     for k, (n, lab) in enumerate(row):
         x = 40 + k * (w + 30)
         panel(img, n, (x, 1495, x + w, 1955), lab)
-    row = [(m + "_beach", "beach palms"), (m + "_stairs", "wood stairs from the dock"), (m + "_waterfall", "waterfall + pond")]
+    row = [(m + "_camp", "beach camp"), (m + "_stairs", "railed stairs from the dock"), (m + "_beach", "beach palms")]
     for k, (n, lab) in enumerate(row):
         x = 40 + k * (w + 30)
         panel(img, n, (x, 1985, x + w, 2445), lab)
@@ -74,9 +74,9 @@ def main(m):
         x = 40 + k * (w + 30)
         panel(img, n, (x, 2035 + oy, x + w, 2365 + oy), lab)
     d.text((40, 2395 + oy), "UPGRADE TIERS", font=font(34), fill=ACC)
-    row = [(m + "_overhead_tier1", "Tier 1: short pier, stalls, dirt plaza + well"),
-           (m + "_overhead_tier2", "Tier 2: T-pier, shop buildings, stone plaza + fountain, lanterns"),
-           (m + "_overhead_tier3", "Tier 3: 2nd fishing platform, bunting, lit lighthouse beam")]
+    row = [(m + "_overhead_tier1", "Tier 1: short pier, dirt hub floor"),
+           (m + "_overhead_tier2", "Tier 2: big T-dock, stone hub floor, lanterns"),
+           (m + "_overhead_tier3", "Tier 3: fishing wings, canopy, pennants, beam")]
     w = (W - 80 - 2 * 30) // 3
     for k, (n, lab) in enumerate(row):
         x = 40 + k * (w + 30)

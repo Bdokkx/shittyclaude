@@ -112,7 +112,7 @@ class Model:
             color=color, mat=mat, light=light,
             stage=c["stage"], folder=c["folder"], tier=c["tier"], tag=c["tag"],
             collide=kw.get("collide", c["collide"]), shadow=kw.get("shadow", c["shadow"]),
-            name=kw.get("name"), transparency=kw.get("transparency", 0.0),
+            name=kw.get("name"), transparency=kw.get("transparency", 0.0), effect=kw.get("effect"),
         )
         part["id"] = len(self.parts)
         self.parts.append(part)

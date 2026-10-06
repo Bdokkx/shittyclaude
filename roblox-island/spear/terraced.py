@@ -278,20 +278,29 @@ def rowboat(m, wood, dark, stripe):
 
 
 def stair_rails(m, g, C):
-    """Wooden stairs (wood-style path cells): a post + rail on every open side of every step, so the
-    stair reads as one continuous railed staircase instead of loose fences."""
+    """Wooden stairs: a post on every open side of every step, joined to the next step's post by a
+    sloped handrail, so each side reads as one continuous railing."""
+    posts = {}
     for c, (h, style, (dx, dz), dist) in g.path.items():
         if style != "wood" or c not in g.top:
             continue
         t = g.top[c]
         tx, tz = (1, 0) if abs(dx) >= abs(dz) else (0, 1)          # travel axis
         for s in (-1, 1):
-            side = (tz * s, tx * s)                                 # perpendicular
+            side = (tz * s, tx * s)
             nb = (c[0] + side[0], c[1] + side[1])
             if g.kind.get(nb) == "path":
                 continue
-            ex = g.wx(c[0]) + side[0] * (g.S / 2 - 0.4)
-            ez = g.wx(c[1]) + side[1] * (g.S / 2 - 0.4)
-            with m.ctx(stage="dock", folder="Dock"):
-                m.box((ex, t + 1.6, ez), (0.7, 3.2, 0.7), C["wood_dark"])
-                m.box((ex, t + 3.0, ez), (0.5 + abs(tx) * 3.9, 0.5, 0.5 + abs(tz) * 3.9), C["wood"])
+            ex = g.wx(c[0]) + side[0] * (g.S / 2 - 0.45)
+            ez = g.wx(c[1]) + side[1] * (g.S / 2 - 0.45)
+            posts[(c, side)] = (ex, t, ez, (tx, tz))
+    with m.ctx(stage="dock", folder="Dock"):
+        for (c, side), (x, t, z, (tx, tz)) in posts.items():
+            m.box((x, t + 1.6, z), (0.7, 3.2, 0.7), C["wood_dark"])
+            m.box((x, t + 3.35, z), (0.9, 0.3, 0.9), C["wood"])
+            for d in ((tx, tz), (-tx, -tz)):
+                n = (c[0] + d[0], c[1] + d[1])
+                if (n, side) in posts and (d[0] + d[1]) > 0:     # one rail per pair of neighbours
+                    x2, t2, z2, _ = posts[(n, side)]
+                    m.beam((x, t + 3.0, z), (x2, t2 + 3.0, z2), (0.5, 0.5), C["wood"])
+                    m.beam((x, t + 1.8, z), (x2, t2 + 1.8, z2), (0.4, 0.4), C["wood"])

@@ -523,20 +523,200 @@ def dock_deck(m, x0, z0, x1, z1, y, planks=(WOOD, WOOD_DK), along="z", post=WOOD
     for x in xs_line:
         for z in (z0, z1):
             posts.add((round(x, 2), round(z, 2)))
-    for (x, z) in posts:
-        m.span((x - 0.6, seabed, z - 0.6), (x + 0.6, y + 1.8, z + 0.6), post)
-    if rope:
-        for k, (x, z) in enumerate(sorted(posts)):
-            if k % 3 == 0:
-                m.box((x, y + 1.3, z), (1.5, 0.4, 1.5), P.ROPE, collide=False)
-    for side in rails:
+    for (x, z) in posts:          # pilings stop under the deck; the railing does the job above it
+        m.span((x - 0.6, seabed, z - 0.6), (x + 0.6, y - 0.8, z + 0.6), post)
+    for side in rails:            # continuous railings; ("z0", (xa, xb)) leaves a gap where a walkway joins
+        gap = None
+        if isinstance(side, tuple):
+            side, gap = side
         if side in ("x0", "x1"):
-            x = x0 if side == "x0" else x1
-            for k, (za, zb) in enumerate(zip(zs, zs[1:])):
-                if k % 2 == 0:
-                    m.span((x - 0.3, y + 2.6, min(za, zb)), (x + 0.3, y + 3.1, max(za, zb)), planks[1])
+            x = (x0 + 0.35) if side == "x0" else (x1 - 0.35)
+            segs = [(z0, z1)] if not gap else [(z0, gap[0]), (gap[1], z1)]
+            for za, zb in segs:
+                rail_line(m, (x, za + 0.35), (x, zb - 0.35), y, planks)
         else:
-            z = z0 if side == "z0" else z1
-            for k, (xa, xb) in enumerate(zip(xs_line, xs_line[1:])):
-                if k % 2 == 0:
-                    m.span((min(xa, xb), y + 2.6, z - 0.3), (max(xa, xb), y + 3.1, z + 0.3), planks[1])
+            z = (z0 + 0.35) if side == "z0" else (z1 - 0.35)
+            segs = [(x0, x1)] if not gap else [(x0, gap[0]), (gap[1], x1)]
+            for xa, xb in segs:
+                rail_line(m, (xa + 0.35, z), (xb - 0.35, z), y, planks)
+
+
+# ---------------------------------------------------------------- simple shop stall (all three shops)
+
+STALL_WOOD = ("#C97A3A", "#A35F2A")
+
+
+def dashed_square(m, w, d, color, name, dash=1.2, gap=0.8):
+    """Glowing dashed outline on the ground (the 'step here' zone) + a faint glowing fill that is the
+    touch part for scripts (named `name`)."""
+    with m.ctx(collide=False, shadow=False):
+        m.box((0, 0.08, 0), (w, 0.12, d), color, mat="Neon", transparency=0.82, name=name, effect="pad")
+        for (length, other, horiz) in ((w, d, True), (d, w, False)):
+            n = int(length / (dash + gap))
+            start = -(n * (dash + gap) - gap) / 2
+            for k in range(n):
+                c = start + k * (dash + gap) + dash / 2
+                for s in (-1, 1):
+                    if horiz:
+                        m.box((c, 0.12, s * other / 2), (dash, 0.2, 0.4), color, mat="Neon")
+                    else:
+                        m.box((s * other / 2, 0.12, c), (0.4, 0.2, dash), color, mat="Neon")
+
+
+def simple_stall(m, title, stripe, cloth, pad_name, goods=None, ink="#2A3A5C"):
+    """Market stall like the reference: 4 posts, counter with a draped cloth, striped awning,
+    a sign on top and a glowing dashed pad in front. Front faces -Z. ~10 wide x 6 deep."""
+    lw, dw = STALL_WOOD
+    for x in (-4.4, 4.4):
+        for z in (-2.2, 2.2):
+            m.box((x, 4.5, z), (1.2, 9.0, 1.2), lw)
+            m.box((x, 0.6, z), (1.5, 1.2, 1.5), dw)
+    m.box((0, 1.75, -2.2), (8.0, 3.5, 1.0), lw)                    # counter front
+    m.box((0, 3.7, -2.0), (9.8, 0.5, 2.2), dw)                     # counter top
+    m.box((0, 3.95, -2.0), (8.4, 0.12, 2.0), cloth)                # cloth on the counter
+    with m.at((0, 3.0, -3.25)):                                    # cloth draped over the front
+        m.box((0, 0, 0), (8.4, 1.4, 0.15), cloth)
+        m.box((0, -0.95, 0), (4.0, 0.6, 0.15), cloth)
+    m.box((0, 0.3, 0.2), (9.2, 0.6, 5.2), dw)                      # floor boards
+    m.box((0, 3.4, 2.2), (8.0, 0.4, 0.8), dw)                      # back shelf
+    # awning: alternating stripes, tilted, with a scalloped edge
+    with m.at((0, 9.6, -0.4), rx=10):
+        for k in range(6):
+            x = -5.0 + k * 2.0 + 1.0
+            m.box((x, 0, 0), (2.0, 0.6, 7.2), stripe if k % 2 == 0 else "#FFFFFF")
+        for k in range(6):
+            x = -5.0 + k * 2.0 + 1.0
+            m.box((x, -0.7, -3.5), (1.8, 0.9, 0.3), "#FFFFFF" if k % 2 == 0 else stripe)
+    # sign on top
+    m.box((0, 11.6, 0.6), (0.6, 2.2, 0.6), dw)
+    m.box((0, 12.9, 0.4), (8.6, 2.4, 0.5), dw)
+    board = m.box((0, 12.9, 0.1), (8.0, 1.9, 0.3), "#FFF6E2")
+    m.text(board, title, ink, "Front")
+    if goods:
+        goods(m)
+    with m.at((0, 0, -7.0)):
+        dashed_square(m, 7.0, 5.0, cloth, pad_name)
+
+
+def goods_fish(m):
+    for k, c in enumerate(("sky", "orange", "pink")):
+        P.fish(m, P.ACCENTS[c], 1.8, ry=8 * (k - 1), pos=(-2.4 + k * 2.4, 4.4, -2.0))
+    for k, c in enumerate(("yellow", "sky")):
+        m.box((-1.5 + k * 3, 6.6, 1.9), (0.12, 1.2, 0.12), P.ROPE, collide=False)
+        P.fish(m, P.ACCENTS[c], 1.8, rz=-80, pos=(-1.5 + k * 3, 5.2, 1.9))
+
+
+def goods_spears(m):
+    with m.ctx(collide=False):
+        for k in range(5):
+            x = -3.2 + k * 1.6
+            m.box((x, 6.2, 2.0), (0.25, 5.6, 0.25), "#C8A06A", rx=-4)
+            m.box((x, 9.2, 1.8), (0.5, 0.9, 0.2), P.METAL_LT, rx=-4)
+        m.box((0, 4.15, -2.0), (5.0, 0.3, 0.3), "#C8A06A", ry=10)
+        m.box((2.6, 4.15, -2.1), (0.8, 0.4, 0.3), P.METAL_LT, ry=10)
+
+
+def goods_upgrades(m):
+    with m.ctx(collide=False):
+        m.box((-2.2, 4.4, -2.0), (2.6, 0.5, 1.6), "#3B6FD6")              # blueprint
+        m.box((-2.2, 4.68, -2.0), (2.0, 0.05, 1.1), "#EAF2FF")
+        with m.at((1.8, 4.4, -2.0)):
+            hammer_icon(m, 2.0)
+        for k in range(3):
+            m.box((0, 4.2 + k * 0.9, 2.0), (6.0, 0.8, 0.8), "#C68A52" if k % 2 else "#A8703F")
+
+
+# ---------------------------------------------------------------- portal
+
+def portal(m, ring_col=("#6E63B8", "#544A9C"), rim="#B67CFF", swirl=("#7A4DFF", "#4FE3FF"), R=7.5):
+    """Round portal on a dais, facing -Z: stone ring of 24 segments, glowing rim, spinning neon swirl
+    (parts named PortalSwirl), glowing runes, two crystal pillars, light + particles (effect 'portal'),
+    and a glowing dashed pad in front (PortalPad, touch to teleport)."""
+    m.octagon(0.6, 6.2, 1.2, "#4A4280")
+    m.octagon(1.35, 5.4, 0.3, "#8F86D6")
+    cy = 1.5 + R + 0.8
+    with m.at((0, cy, 0)):
+        n = 24
+        seg = 2 * math.pi * R / n + 0.35
+        for k in range(n):
+            a = 2 * math.pi * k / n
+            with m.at((math.cos(a) * R, math.sin(a) * R, 0), rz=math.degrees(a) + 90):
+                m.box((0, 0, 0), (seg, 1.9, 2.4), ring_col[k % 2])
+        for k in range(n):        # glowing inner rim
+            a = 2 * math.pi * (k + 0.5) / n
+            r = R - 1.15
+            with m.at((math.cos(a) * r, math.sin(a) * r, 0), rz=math.degrees(a) + 90):
+                m.box((0, 0, 0), (2 * math.pi * r / n + 0.3, 0.45, 1.6), rim, mat="Neon")
+        for k in range(6):        # runes on the front face
+            a = math.radians(30 + 60 * k)
+            with m.at((math.cos(a) * R, math.sin(a) * R, -1.25), rz=math.degrees(a)):
+                m.box((0, 0, 0), (0.9, 0.9, 0.15), "#4FE3FF", mat="Neon", rz=45)
+        # the swirl: centred bars (spin about the portal axis) + a faint disc
+        with m.ctx(collide=False, shadow=False):
+            disc = m.box((0, 0, 0.0), (2 * (R - 1.3), 2 * (R - 1.3), 0.2), swirl[0], mat="Neon", transparency=0.55,
+                         light=("PointLight", 3, 32, "#9A6BFF"), effect="portal")
+            m.box((0, 0, 0), (2 * (R - 1.3), 2 * (R - 1.3), 0.2), swirl[0], mat="Neon", transparency=0.55, rz=45)
+            for k in range(6):
+                m.box((0, 0, -0.25), (2 * (R - 1.6), 0.9, 0.3), swirl[k % 2], mat="Neon", transparency=0.3,
+                      rz=k * 30, name="PortalSwirl")
+            for k in range(4):
+                m.box((0, 0, 0.25), (2 * (R - 3.0), 0.7, 0.2), swirl[1], mat="Neon", transparency=0.35,
+                      rz=k * 45 + 15, name="PortalSwirl")
+            m.box((0, 0, -0.35), (2.2, 2.2, 0.3), "#FFFFFF", mat="Neon", transparency=0.2, rz=45)
+    for s in (-1, 1):             # crystal pillars
+        with m.at((s * (R + 3.2), 0, -0.5)):
+            m.octagon(1.6, 1.3, 3.2, ring_col[1])
+            m.octagon(3.4, 1.0, 0.4, "#8F86D6")
+            m.box((0, 5.0, 0), (1.3, 3.0, 1.3), "#4FE3FF", mat="Neon", ry=45, rx=8,
+                  light=("PointLight", 1.2, 14, "#4FE3FF"))
+            m.box((0.5, 4.3, 0.3), (0.8, 1.8, 0.8), rim, mat="Neon", ry=20, rz=-18)
+    with m.at((0, 0.0, -6.5)):
+        dashed_square(m, 8.0, 5.0, rim, "PortalPad")
+
+
+# ---------------------------------------------------------------- camp
+
+def campfire(m):
+    m.octagon(0.4, 2.4, 0.8, "#8E89A0")
+    m.octagon(0.5, 1.7, 0.8, "#4A3A30")
+    for k in range(4):
+        m.box((0, 1.0, 0), (3.2, 0.7, 0.7), "#6B4226", ry=k * 45 + 10, rz=8)
+    m.box((0, 1.9, 0), (1.4, 1.6, 1.4), "#FF8A3D", mat="Neon", ry=45, effect="fire",
+          light=("PointLight", 2, 22, "#FFA552"), collide=False)
+    m.box((0, 2.9, 0), (0.8, 1.0, 0.8), "#FFD447", mat="Neon", ry=20, collide=False)
+
+
+def log_seat(m, length=6):
+    m.box((0, 0.9, 0), (length, 1.6, 1.6), "#86542F", rx=0)
+    for e in (-1, 1):
+        m.box((e * length / 2, 0.9, 0), (0.2, 1.2, 1.2), "#D9B07A", collide=False)
+
+
+def tent(m, cloth=("#FF5A5A", "#FFF7EC")):
+    """A-frame tent, opening toward -Z."""
+    for s in (-1, 1):
+        with m.at((s * 1.9, 2.0, 0), rz=s * 42):
+            for k in range(3):
+                m.box((0, 0, -3 + k * 2 + 1), (0.4, 5.6, 2.0), cloth[k % 2])
+    m.box((0, 4.1, 0), (0.6, 0.6, 6.6), "#6B4226")
+    for z in (-3.2, 3.2):
+        m.box((0, 2.0, z), (0.5, 4.2, 0.5), "#6B4226")
+    m.box((0, 0.15, 0), (6.4, 0.3, 6.2), "#C9A27A")
+
+
+# ---------------------------------------------------------------- rails
+
+def rail_line(m, a, b, y, color=(WOOD, WOOD_DK), every=4.0, h=3.0):
+    """Continuous railing from a to b (x, z) at deck height y: posts every ~4 studs, top + mid rail."""
+    L = math.hypot(b[0] - a[0], b[1] - a[1])
+    if L < 0.5:
+        return
+    n = max(1, int(round(L / every)))
+    for k in range(n + 1):
+        t = k / n
+        x, z = a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t
+        m.box((x, y + h / 2, z), (0.7, h, 0.7), color[1])
+    ry = math.degrees(math.atan2(b[0] - a[0], b[1] - a[1]))
+    with m.at(((a[0] + b[0]) / 2, y, (a[1] + b[1]) / 2), ry=ry):
+        m.box((0, h - 0.25, 0), (0.45, 0.45, L + 0.4), color[0])
+        m.box((0, h * 0.5, 0), (0.35, 0.35, L), color[0])

@@ -74,7 +74,8 @@ def oak(m, size, seed, greens=("#5DBB46", "#47A23A"), trunk=WOOD_DK):
 
 
 def palm(m, size, seed, greens=("#3FAE4A", "#2E8F3C"), trunk=("#B98552", "#9A6A3E")):
-    """Curved trunk of 4 tilted segments + 6 big clean fronds. ~14 / 18 / 23 studs."""
+    """Curved trunk of 4 tilted segments, a crown, and 7 fronds. Each frond is one connected chain of
+    flat segments that rises from the crown, arches and droops (no loose leaf pieces). ~14 / 18 / 23 studs."""
     rng = random.Random(seed)
     h = (14, 18, 23)[size]
     lean = rng.uniform(10, 18)
@@ -86,15 +87,27 @@ def palm(m, size, seed, greens=("#3FAE4A", "#2E8F3C"), trunk=("#B98552", "#9A6A3
             nx, ny = x + math.sin(ang) * seg, y + math.cos(ang) * seg
             m.beam((x, y, 0), (nx, ny + 0.4, 0), 1.9 - 0.18 * k, trunk[k % 2])
             x, y = nx, ny
-        m.box((x, y + 0.6, 0), (2.4, 1.6, 2.4), greens[1])
+        m.box((x, y + 0.5, 0), (2.6, 1.8, 2.6), greens[1], ry=45)
+        m.box((x, y + 1.6, 0), (1.8, 1.0, 1.8), greens[0])
+        for s_ in (-1, 1):
+            m.box((x + s_ * 0.9, y - 0.5, 0.9 * s_), (1.1, 1.1, 1.1), "#7A4E2D")
+        L = h / 18.0                      # frond reach scales with the tree
         for k in range(6):
-            a = k * 60 + rng.uniform(-10, 10)
-            with m.at((x, y + 1.1, 0), ry=a):
-                # each frond: a long flat leaf rising then two drooping pieces
-                m.box((0, 0.6, -2.8), (2.6, 0.5, 5.8), greens[k % 2], rx=-12)
-                m.box((0, -0.9, -7.4), (2.0, 0.5, 4.6), greens[(k + 1) % 2], rx=30)
-        for s in (-1, 1):
-            m.box((x + s * 0.9, y - 0.4, 0.8), (1.1, 1.1, 1.1), "#7A4E2D")
+            a = math.radians(k * 60 + rng.uniform(-8, 8))
+            ca, sa = math.cos(a), math.sin(a)
+            lift = rng.uniform(1.0, 1.4)
+            pts = []
+            for j in range(5):            # rises, arches, droops
+                r = (0.6 + j * 1.95) * L
+                yy = y + 1.2 + (lift * 1.25 * j - 0.55 * j * j) * L
+                pts.append((x + ca * r, yy, sa * r))
+            for j in range(4):
+                (ax, ay, az), (bx, by, bz) = pts[j], pts[j + 1]
+                ex, ey, ez = bx - ax, by - ay, bz - az        # extend 0.35 so segments overlap
+                n = math.sqrt(ex * ex + ey * ey + ez * ez) or 1
+                b2 = (bx + ex / n * 0.35, by + ey / n * 0.35, bz + ez / n * 0.35)
+                w = (2.6 - 0.4 * j) * min(1.0, L + 0.15)
+                m.beam((ax, ay, az), b2, (w, 0.45), greens[(j + k) % 2])
 
 
 def bush(m, seed, greens=("#4FA83A", "#63BF4C"), berry=ACCENTS["red"]):

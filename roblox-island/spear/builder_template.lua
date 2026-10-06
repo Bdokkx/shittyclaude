@@ -37,6 +37,8 @@ local P = {
 local LIGHTS = { @@LIGHTS@@ }
 local NAMES = { @@NAMES@@ }
 local TRANSP = { @@TRANSP@@ }
+-- [part] = "portal" | "fire" | "pad"  (particles / touch zones)
+local EFFECTS = { @@EFFECTS@@ }
 -- {part, text, color, face}
 local TEXTS = { @@TEXTS@@ }
 local PRESET = { @@PRESET@@ }
@@ -137,6 +139,67 @@ for i, t in pairs(TRANSP) do
 end
 for i, n in pairs(NAMES) do
 	made[i].Name = n
+end
+local function seq(a, b)
+	return NumberSequence.new({ NumberSequenceKeypoint.new(0, a), NumberSequenceKeypoint.new(1, b) })
+end
+for i, kind in pairs(EFFECTS) do
+	local p = made[i]
+	if kind == "portal" then
+		local sparks = Instance.new("ParticleEmitter")
+		sparks.Name = "PortalSparkles"
+		sparks.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+		sparks.Color = ColorSequence.new(Color3.fromRGB(196, 140, 255), Color3.fromRGB(79, 227, 255))
+		sparks.LightEmission = 1
+		sparks.Rate = 45
+		sparks.Lifetime = NumberRange.new(1, 2)
+		sparks.Speed = NumberRange.new(1, 4)
+		sparks.SpreadAngle = Vector2.new(180, 180)
+		sparks.Size = seq(0.9, 0)
+		sparks.Parent = p
+		local wisps = Instance.new("ParticleEmitter")
+		wisps.Name = "PortalWisps"
+		wisps.Texture = "rbxasset://textures/particles/smoke_main.dds"
+		wisps.Color = ColorSequence.new(Color3.fromRGB(150, 90, 255), Color3.fromRGB(60, 200, 255))
+		wisps.LightEmission = 0.8
+		wisps.Rate = 12
+		wisps.Lifetime = NumberRange.new(1.5, 2.5)
+		wisps.Speed = NumberRange.new(0.5, 1.5)
+		wisps.Acceleration = Vector3.new(0, 2.5, 0)
+		wisps.RotSpeed = NumberRange.new(-90, 90)
+		wisps.Size = seq(2.5, 0.2)
+		wisps.Transparency = seq(0.35, 1)
+		wisps.Parent = p
+	elseif kind == "fire" then
+		local fire = Instance.new("Fire")
+		fire.Heat, fire.Size = 9, 5
+		fire.Color, fire.SecondaryColor = Color3.fromRGB(255, 150, 40), Color3.fromRGB(255, 70, 20)
+		fire.Parent = p
+		local embers = Instance.new("ParticleEmitter")
+		embers.Name = "Embers"
+		embers.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+		embers.Color = ColorSequence.new(Color3.fromRGB(255, 200, 80), Color3.fromRGB(255, 90, 30))
+		embers.LightEmission = 1
+		embers.Rate = 10
+		embers.Lifetime = NumberRange.new(1, 2)
+		embers.Speed = NumberRange.new(3, 6)
+		embers.SpreadAngle = Vector2.new(25, 25)
+		embers.Size = seq(0.35, 0)
+		embers.Parent = p
+	elseif kind == "pad" then
+		p.CanTouch = true          -- step on the glowing square to open the shop / use the portal
+		local glow = Instance.new("ParticleEmitter")
+		glow.Name = "PadGlow"
+		glow.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+		glow.Color = ColorSequence.new(p.Color)
+		glow.LightEmission = 1
+		glow.Rate = 6
+		glow.Lifetime = NumberRange.new(1, 1.6)
+		glow.Speed = NumberRange.new(1, 2)
+		glow.EmissionDirection = Enum.NormalId.Top
+		glow.Size = seq(0.4, 0)
+		glow.Parent = p
+	end
 end
 for i, l in pairs(LIGHTS) do
 	local light = Instance.new(l[1])
@@ -329,13 +392,15 @@ local spinner = Instance.new("Script")
 spinner.Name = "Spinner"
 pcall(function()
 	spinner.Source = [==[
--- spins the lighthouse beam (and anything else named LighthouseBeam) while the game runs
+-- spins the lighthouse beam and the portal swirl while the game runs
 local RunService = game:GetService("RunService")
 local island = script.Parent
 RunService.Heartbeat:Connect(function(dt)
 	for _, p in ipairs(island:GetDescendants()) do
 		if p.Name == "LighthouseBeam" and p:IsA("BasePart") and p.Transparency < 1 then
 			p.CFrame = p.CFrame * CFrame.Angles(0, dt * 0.9, 0)
+		elseif p.Name == "PortalSwirl" and p:IsA("BasePart") then
+			p.CFrame = p.CFrame * CFrame.Angles(0, 0, dt * (p.Size.Z > 0.25 and 1.6 or -1.1))
 		end
 	end
 end)

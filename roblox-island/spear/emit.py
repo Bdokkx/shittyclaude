@@ -34,7 +34,7 @@ def emit(m, origin, preset, water, spawn, cameras=None):
             table.append(key)
         return index[key]
 
-    rows, lights, names, transp = [], [], [], []
+    rows, lights, names, transp, effects = [], [], [], [], []
     for i, p in enumerate(m.parts, 1):
         rx, ry, rz = to_euler(p["R"])
         decor = p["stage"] in ("props", "reef") and max(p["size"]) < 2   # small decor: no collision, no shadow
@@ -42,6 +42,8 @@ def emit(m, origin, preset, water, spawn, cameras=None):
         rows.append("{%s}" % ",".join([*map(_num, p["size"]), *map(_num, p["pos"]), _num(rx), _num(ry), _num(rz),
                                         str(idx(colors, cidx, p["color"].upper())), str(idx(mats, midx, p["mat"])),
                                         str(idx(folders, fidx, part_folder(p))), str(flags)]))
+        if p.get("effect"):
+            effects.append('[%d]="%s"' % (i, p["effect"]))
         if p.get("transparency"):
             transp.append("[%d]=%s" % (i, _num(p["transparency"])))
         if p.get("name"):
@@ -64,6 +66,7 @@ def emit(m, origin, preset, water, spawn, cameras=None):
         "@@LIGHTS@@": ",".join(lights),
         "@@NAMES@@": ",".join(names),
         "@@TRANSP@@": ",".join(transp),
+        "@@EFFECTS@@": ",".join(effects),
         "@@TEXTS@@": ",".join(texts),
         "@@PRESET@@": preset_lua,
         "@@WATER@@": ",".join(map(_num, water)),
@@ -82,7 +85,7 @@ def emit(m, origin, preset, water, spawn, cameras=None):
                 parts=[dict(size=p["size"], pos=p["pos"], R=p["R"], color=p["color"], mat=p["mat"],
                             light=p["light"], stage=p["stage"], folder=p["folder"], tier=p["tier"],
                             tag=p["tag"], collide=p["collide"], shadow=p["shadow"], name=p.get("name"),
-                            transparency=p.get("transparency", 0.0)) for p in m.parts],
+                            transparency=p.get("transparency", 0.0), effect=p.get("effect")) for p in m.parts],
                 texts=m.texts)
     json_path = os.path.join(jdir, m.name + ".json")
     json.dump(data, open(json_path, "w"))

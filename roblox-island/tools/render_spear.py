@@ -140,11 +140,13 @@ def beam_mat():
     nt.nodes.clear()
     out = nt.nodes.new("ShaderNodeOutputMaterial")
     em = nt.nodes.new("ShaderNodeEmission")
-    em.inputs["Color"].default_value = (1.0, 0.95, 0.7, 1)
-    em.inputs["Strength"].default_value = 0.9
+    vc = nt.nodes.new("ShaderNodeVertexColor")
+    vc.layer_name = "Col"
+    nt.links.new(vc.outputs["Color"], em.inputs["Color"])
+    em.inputs["Strength"].default_value = 2.5
     tr = nt.nodes.new("ShaderNodeBsdfTransparent")
     mix = nt.nodes.new("ShaderNodeMixShader")
-    mix.inputs["Fac"].default_value = 0.14
+    mix.inputs["Fac"].default_value = 0.55
     nt.links.new(tr.outputs[0], mix.inputs[1])
     nt.links.new(em.outputs[0], mix.inputs[2])
     nt.links.new(mix.outputs[0], out.inputs["Surface"])
