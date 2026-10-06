@@ -1,103 +1,88 @@
-# Voxel Islands + Coral Reef (Roblox)
+# Spearfishing Islands (Roblox)
 
-Four themed blocky, studded islands plus an underwater reef, built from the reference shots.
-The islands are built the same way as the coral reef:
-- **Parts** make up the terrain: ground, stacked slab cliffs with sand, grass or snow lips, paths, stairs, buildings and falls.
-- **Deformed Blender meshes** are only used where they make it look good. Each rock is picked for the spot
-  it goes in and scaled to fit it:
+Islands for a stud-style spearfishing game, rebuilt to the **SpearFish_Map_Prompts** pack
+(`SpearFish_Map_Promptsdddd.zip`: style bible, problem list, one prompt per map, reference images).
 
-  | Spot | Mesh |
-  |---|---|
-  | straight run of cliff | **Cliff Wall**: a wide rock face as tall as the drop, set into the slab cliff |
-  | narrow or very tall cliff face | **Buttress**: a tall tapering column |
-  | outside corner of a terrace | **Corner Rock**: an L-shaped rock wrapping the corner |
-  | top of the tallest cliffs | **Overhang**: a lip of rock hanging over the edge |
-  | foot of the very tallest cliffs | big crag / rock cluster |
-  | mountain | crag spires |
-  | waterline | **Beach Boulders**: smooth round boulders |
-  | beside the paths | **Flat Stones**: stepping stones |
-  | open terraces | **Round Boulder** |
-  | sea | sea stacks / icebergs, and the rock arch |
+Order from the pack: **VoxelIsland first (for approval)**, then DesertCoast, FrostCoast, VolcanicIsland.
 
-  Every theme has its own coloured set (Desert, Ice, Basalt).
-
-The dock is a **T-shaped pier**: a 48-stud walkway out into the water, then a 46-wide crossbar with lanterns,
-ladders, cargo and boats moored alongside.
-
-| Map | Origin | What's on it |
+| Island | Origin | Status |
 |---|---|---|
-| **VoxelIsland** | 0, 0, 0 | green terraced mountain with a stair path spiralling to a summit lookout, two cliff mesas (banner, cave), rock arch, cobblestone village plaza, dock + rowboat, waterfall, turquoise shallows, sea stacks |
-| **DesertCoast** | 1300, 0, 0 | red sandstone mesas around an oasis lake with a waterfall, a ziggurat, obelisks and sandstone pillars, an adobe village with market stalls, pots and a well, palms and cacti, desert rock stacks offshore |
-| **FrostCoast** | 2600, 0, 0 | snowy mountain with a spiral path to a flag lookout, ice cliffs, a frozen pond and frozen waterfall, log-cabin village with snowmen, snow pines, ice crystals, icebergs out at sea |
-| **VolcanicIsland** | 3900, 0, 0 | volcano cone with a glowing crater lava pool, lava rivers and lava falls down the terraces, basalt columns, obsidian shards, charred pines, stilt-hut village with braziers |
-| **CoralReef** | 0, 0, 900 | sandy reef slab, rock shelves / pinnacles / arches, boulders, ruined pillars, a tilted shipwreck and ~190 corals |
+| **VoxelIsland** (grass, starter) | 0, 0, 0 | **rebuilt, waiting for approval** |
+| DesertCoast | 1300, 0, 0 | next, after VoxelIsland is approved (old version still in `roblox/`) |
+| FrostCoast | 2600, 0, 0 | after that |
+| VolcanicIsland | 3900, 0, 0 | after that |
 
-## Previews (`previews/`)
+## VoxelIsland: what changed
 
-- `AllIslands.png`: the four islands side by side.
-- `<Map>_poster.png`: overview, top view, village, detail and falls close-ups for each island.
-- `<Map>_cliffs.png`: close-up of a cliff wall rock set into the part cliffs.
-- `<Map>_assets.png`: every custom asset for that island, rendered in Blender and labelled.
-- The single renders are also there: `<Map>.png`, `_top`, `_village`, `_detail`, `_falls`, `CoralReef.png`.
-- `assets_contact_sheet.png` shows the shared asset set.
+**Kept:** the island's shape, meaning the terraces, mesas, spiral stair path to the summit, the stone arch at the
+top left, the dock at the bottom left, the plaza in the middle and the sandy beach with sea stacks.
+
+**Rebuilt to the style bible:**
+- **Cliffs:** big slabs (16 wide, 4.5-6 thick, tilted 3-10 degrees) with a grass lip, one continuous sand strip
+  and 3 height bands (lavender top, periwinkle middle, deep periwinkle base). No more per-block colour noise.
+- **Ground:** 2 tones in large soft patches, with sand, path stone and wood planks for the paths.
+- **Clutter:** no scattered tufts, rocks, ferns or mushrooms. Trees stand in clumps, and flowers and bushes are
+  in clusters at path edges and tree clumps. About 89% of the walkable ground is open.
+- **Hero rocks:** 3 sea stacks as tall slab towers with grass caps. No lumpy mesh rocks.
+- **Gameplay layout:**
+  - **Hub plaza:** fish fountain, benches in pairs, spawn.
+  - **Fish Market:** striped awning, ice trays, hanging fish, scale, big fish sign.
+  - **Spear Shop:** timber-frame cottage with recessed windows, blue gable roof, chimney, spear rack and target board.
+  - **Upgrade Station:** shed, logs, sawhorse, blueprint easel, scaffolding.
+  - **Lighthouse landmark** on the summit.
+  - **T-dock:** a 34 x 18 platform with spear rack, buckets, lanterns and a SPEARFISHING sign, over a coral reef.
+  - **Travel Boat:** a sailboat with a green sail, at a second pier past the arch.
+- **Upgrade tiers:**
+  - `Tier1`: short pier, simple stalls, dirt plaza with a well.
+  - `Tier2`: T-pier, shop buildings, stone plaza with fountain, lanterns.
+  - `Tier3`: second fishing platform, bunting, spinning lighthouse beam.
+- **Part count:** 11.8k parts including all tiers (budget 12,000). Small decor has CanCollide and CastShadow off.
+
+The review sheet with every view, the build stages, the tiers and the checklist is
+`previews/spear/VoxelIsland_review.png`.
 
 ## Use it in Roblox Studio
+1. Right-click **Workspace** → **Insert from File…** → `roblox/VoxelIsland.rbxm`.
+2. **View → Command Bar**, paste all of `roblox/LightingAndWater.lua` and press Enter. This:
+   - moves the island into `Workspace/Islands`
+   - fills clear terrain water
+   - moves the Baseplate away
+   - applies the island's lighting preset (ClockTime 14, atmosphere, colour correction, bloom, water `#2E9BE6`)
+3. **Studs:** every Plastic part uses Roblox's built-in **Inlet** surface (an inset square per stud, the same size
+   everywhere). To use a MaterialVariant instead:
+   - Upload `exports/studs/StudInset_color.png`.
+   - Run the builder with `StudMode = "Variant"` and the asset id filled in.
+4. **Tiers:** the island ships at tier 3. To switch:
+   `require(workspace.Islands.VoxelIsland.IslandTiers).SetTier(workspace.Islands.VoxelIsland, 1)`.
+5. **Teleports:** call `require(island.IslandLighting).Apply(island)` to switch the lighting.
 
-### Option A: drop in the finished maps (easiest)
-1. In Studio, right-click **Workspace** → **Insert from File…** and pick any of `roblox/VoxelIsland.rbxm`,
-   `DesertCoast.rbxm`, `FrostCoast.rbxm`, `VolcanicIsland.rbxm`, `CoralReef.rbxm`. They sit side by side,
-   so you can insert all of them.
-2. Open **View → Command Bar**, paste in all of `roblox/LightingAndWater.lua` and press Enter.
-   It fills real terrain water around every inserted island and moves the default **Baseplate** to
-   ServerStorage (it sits at water level and flickers). It also sets the lighting: Future lighting,
-   atmosphere, colour correction and bloom. **This makes a big difference.**
-3. **Deformed mesh rocks (recommended).**
-   - **File → Import 3D** → `exports/meshes/VoxelRockMeshes.fbx` (the rocks, crags, stacks and arches for every theme).
-   - Paste all of `roblox/MeshSwap.lua` into the Command Bar and press Enter.
-   - Every part rock on every map becomes its deformed mesh. The part terrain stays as it is, so the meshes
-     sit in the slab cliffs like the reef. The part rocks are kept in `ServerStorage.VoxelPartRocks`.
-   - **Placement details:**
-     - Pieces are placed from their exact baked bounds, so the importer's scale and `.001` names don't matter.
-     - Meshes the importer laid on their side are stood back up.
-     - Running it again is safe. Set `UNDO = true` to go back to parts.
-   - **Optional (not the default look):** set `TERRAIN_MESH = true` and import `exports/meshes/<Map>_Terrain.fbx`.
-     This covers the whole island's cliffs with one deformed mesh, and the part ground becomes invisible collision.
+**Builder script instead of the .rbxm:** `roblox/builders/VoxelIslandBuilder.server.lua` is a standalone Luau
+builder. Put it in ServerScriptService and press Play, or paste it into the Command Bar. It builds the same model.
 
-**Updating from an older version?** First delete the old maps, the imported meshes and `ServerStorage.VoxelPartRocks`.
-Then do the steps above again.
+Folder layout: `Workspace/Islands/VoxelIsland/{Terrain, Dock, Reef, Buildings, Props, Lighting, Spawns, Tier1, Tier2, Tier3}`.
 
-### Option B: builder scripts
-`roblox/builders/<Map>Builder.server.lua` builds one map from code (assets and layout are inside it).
-- **Set it up:** right-click **ServerScriptService** → **Insert from File…** → `roblox/builders/<Map>Builder.rbxmx`
-  (or paste the `.lua` file into a Script).
-- **Run it:** press **Play**. `CONFIG` at the top sets the origin, studs, water, lighting and so on.
-- `roblox/AssetLibrary.lua` holds all 129 asset shapes for your own code:
-  `Builder.spawnAsset("PalmTree", CFrame.new(x, y, z), scale, tint, parent)`.
+## How it's built
+- `spear/` (Python) generates everything:
+  - `core.py`: parts with full rotations in nested frames, plus exact octagons.
+  - `terrain.py`: slab stacks, stairs, paths.
+  - `terraced.py`: takes the island shape from the original generator (`gen/island.py`) and rebuilds the surfaces,
+    cliffs, sea shelves and reef ring.
+  - `props.py`, `buildings.py`: the asset and building kits.
+  - `voxel_island.py`: the VoxelIsland layout.
+  - `emit.py` + `builder_template.lua`: write the standalone Luau builder.
+- `tools/export_spear.luau` (Lune) runs that builder offline, writes `roblox/<Map>.rbxm` and tests the tier toggle.
+- `tools/render_spear.py` (Blender) renders the previews from the same data, one inset stud per world stud.
+  `tools/render_spear_all.sh` renders the full set.
+- `tools/check_spear.py` runs the self-review checklist. `tools/compose_spear.py` makes the review sheet.
 
-## How it's made
-- **`gen/`** (Python) is the single source of truth:
-  - `assets.py` + `theme_assets.py`: asset shapes as box lists.
-  - `fit_rocks.py`: the rocks made for one kind of spot (cliff wall, buttress, corner, overhang, beach, terrace).
-  - `themes.py`: colours, trees, clutter and rocks for each theme.
-  - `island.py`: the layout engine. It builds the height field, mesas, spiral and bent paths, and slab cliffs
-    whose layers line up around the island. It also places the mesh rocks tucked into cliff feet, the accents,
-    falls, village and props.
-  - `maps.py`: the reef.
-- **`tools/blender_meshes.py`**: each rock's blocky shape goes through voxel remesh, noise **deformation** and
-  decimation into facets. The up-facing faces become a separate top mesh, and everything gets a tiling stud
-  texture with box-projected UVs.
-- **`tools/terrainmesh.py`** (optional `TERRAIN_MESH` look): does the same for each whole island. It wobbles and bulges the cliffs while the
-  tops snap back to their exact heights, colours each face (grass, sand band, rock, beach, lava, ice) and splits
-  the result into 64-stud chunks.
-- **`tools/blender_build.py`**: renders the previews and the per-asset tiles. `tools/compose_previews.py`
-  builds the posters and sheets from them.
-- **Checks:**
-  - `tools/qa_island.py`: no prop floats (0 of ~3,600 across the four islands).
-  - `tools/check_zfight.py`: no overlapping coplanar faces in any asset.
-  - `tools/test_meshswap.luau`: runs MeshSwap offline on every map, in all four modes: normal, lying-on-side import, and each of those with `TERRAIN_MESH`.
+```
+python3 spear/build.py VoxelIsland
+lune run tools/export_spear.luau . VoxelIsland
+python3 tools/check_spear.py VoxelIsland
+./tools/render_spear_all.sh VoxelIsland && python3 tools/compose_spear.py VoxelIsland
+```
 
-Run `./build.sh` to regenerate everything. It needs `python3` + Pillow, `blender` 4.x and
-[`lune`](https://github.com/lune-org/lune). Change a theme's `seed` in `gen/themes.py` to get a new layout.
-
-Part counts are about 32–35k for each island (mostly clutter, all anchored and static) and 13k for the reef.
-MeshSwap lowers them. For phones, turn on StreamingEnabled.
+## Older pipeline
+`gen/`, `tools/blender_*.py`, `roblox/MeshSwap.lua` and the other `roblox/*.rbxm` files are the previous generator.
+The new islands reuse its island shapes only. DesertCoast, FrostCoast and VolcanicIsland will move to the new
+pipeline after VoxelIsland is approved.
