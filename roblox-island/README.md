@@ -12,34 +12,28 @@ Order from the pack: **VoxelIsland first (for approval)**, then DesertCoast, Fro
 | FrostCoast | 2600, 0, 0 | after that |
 | VolcanicIsland | 3900, 0, 0 | after that |
 
-## VoxelIsland: what changed
+## VoxelIsland (compact version)
 
-**Kept:** the island's shape, meaning the terraces, mesas, spiral stair path to the summit, the stone arch at the
-top left, the dock at the bottom left, the plaza in the middle and the sandy beach with sea stacks.
+A small, hand-laid island about 190 studs across (`spear/small_island.py`). The earlier full-size
+version is still available as `spear/voxel_island.py` (`python3 spear/build.py VoxelIslandLarge`).
 
-**Rebuilt to the style bible:**
-- **Cliffs:** big slabs (16 wide, 4.5-6 thick, tilted 3-10 degrees) with a grass lip, one continuous sand strip
-  and 3 height bands (lavender top, periwinkle middle, deep periwinkle base). No more per-block colour noise.
-- **Ground:** 2 tones in large soft patches, with sand, path stone and wood planks for the paths.
-- **Clutter:** no scattered tufts, rocks, ferns or mushrooms. Trees stand in clumps, and flowers and bushes are
-  in clusters at path edges and tree clumps. About 89% of the walkable ground is open.
-- **Hero rocks:** 3 sea stacks as tall slab towers with grass caps. No lumpy mesh rocks.
-- **Gameplay layout:**
-  - **Hub plaza:** fish fountain, benches in pairs, spawn.
-  - **Fish Market:** striped awning, ice trays, hanging fish, scale, big fish sign.
-  - **Spear Shop:** timber-frame cottage with recessed windows, blue gable roof, chimney, spear rack and target board.
-  - **Upgrade Station:** shed, logs, sawhorse, blueprint easel, scaffolding.
-  - **Lighthouse landmark** on the summit.
-  - **T-dock:** a 34 x 18 platform with spear rack, buckets, lanterns and a SPEARFISHING sign, over a coral reef.
-  - **Travel Boat:** a sailboat with a green sail, at a second pier past the arch.
-- **Upgrade tiers:**
-  - `Tier1`: short pier, simple stalls, dirt plaza with a well.
-  - `Tier2`: T-pier, shop buildings, stone plaza with fountain, lanterns.
-  - `Tier3`: second fishing platform, bunting, spinning lighthouse beam.
-- **Part count:** 11.9k parts including all tiers (budget 12,000). Small decor has CanCollide and CastShadow off.
-
-The review sheet with every view, the build stages, the tiers and the checklist is
-`previews/spear/VoxelIsland_review.png`.
+- **Terraces:** a beach ring (y=3), the main lawn (y=12) and a hill (y=24). The cliffs between them are
+  banded slabs with grass lips.
+- **Hub:** a plain stone floor with no centerpiece. Fish Market, Spear Shop and Upgrades stalls stand
+  around it, each with a glowing pad (`ShopPad_*`).
+- **Portal:** a ledge west of the hub holds the Blender portal (`exports/portal/Portal.fbx`, snapped onto
+  `PortalSpot` by `roblox/PlacePortal.lua`).
+- **Lighthouse:** on the hill with its keeper's cottage, reached by stone stairs. A waterfall runs from
+  the hill into a pond.
+- **Dock:** wooden stairs lead down to a T-dock with rails over a coral reef. Tier 3 adds fishing wings
+  and a canopy.
+- **Nature:** clumps of six tree types, palm pairs around the beach, a beach camp, grass tufts and
+  flower clusters.
+- **Size:** about 5,000 parts. The self-review checklist passes 10/10.
+- **Tiers:**
+  - Tier 1: short pier, dirt hub floor.
+  - Tier 2: T-dock, stone floor, lanterns.
+  - Tier 3: wings, canopy, pennants, lighthouse beam.
 
 ## Use it in Roblox Studio
 1. Right-click **Workspace** → **Insert from File…** → `roblox/VoxelIsland.rbxm`.

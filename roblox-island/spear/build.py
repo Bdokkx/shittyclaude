@@ -6,10 +6,10 @@ import time
 
 from emit import emit
 
-ISLANDS = {"VoxelIsland": ("voxel_island", (0, 0, 0))}
+ISLANDS = {"VoxelIsland": ("small_island", (0, 0, 0)), "VoxelIslandLarge": ("voxel_island", (0, 0, 0))}
 
 if __name__ == "__main__":
-    names = sys.argv[1:] or list(ISLANDS)
+    names = sys.argv[1:] or ["VoxelIsland"]          # VoxelIslandLarge = the earlier full-size version
     for name in names:
         mod, origin = ISLANDS[name]
         t = time.time()

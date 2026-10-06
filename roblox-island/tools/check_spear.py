@@ -43,8 +43,8 @@ def check(name):
     item(loose == 0, "No loose single bricks", "%d small decor parts, %d without a cluster" % (len(small), loose))
 
     # open ground: walkable top area vs. footprint of everything standing on it
-    tops = [p for p in parts if p["stage"] == "terrain" and abs(p["R"][1][1] - 1) < 1e-6 and p["size"][1] <= 1.01
-            and p["pos"][1] > 1]
+    tops = [p for p in parts if p["stage"] == "terrain" and abs(p["R"][1][1] - 1) < 1e-6
+            and p["pos"][1] + p["size"][1] / 2 > 1]
     walk = sum(p["size"][0] * p["size"][2] for p in tops)
     cells = set()
     for p in parts:
