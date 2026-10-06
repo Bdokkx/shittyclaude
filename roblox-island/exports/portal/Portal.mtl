@@ -1,0 +1,42 @@
+# Blender 4.0.2 MTL File: 'None'
+# www.blender.org
+
+newmtl Studs_portal_4A4280
+Ns 90.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd studs_portal_4A4280.png
+
+newmtl Studs_portal_5A519E
+Ns 90.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd studs_portal_5A519E.png
+
+newmtl Studs_portal_7C74C4
+Ns 90.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd studs_portal_7C74C4.png
+
+newmtl Studs_portal_A39BE0
+Ns 90.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd studs_portal_A39BE0.png

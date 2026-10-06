@@ -317,3 +317,89 @@ def crate_cluster(m, seed, wood=WOOD, dark=WOOD_DK):
         crate(m, 2.0, wood, dark, ry=rng.uniform(10, 30))
     with m.at((-2.4, 0, -1.3)):
         crate(m, 1.6, wood, dark, ry=rng.uniform(20, 40))
+
+
+def birch(m, size, seed, greens=("#8FD45A", "#74C24A"), bark=("#F2EFE6", "#3A3A3A")):
+    """Slim white birch: tall straight trunk with dark marks, light-green leaf blocks. ~15 / 19 / 23."""
+    rng = random.Random(seed)
+    h = (15, 19, 23)[size]
+    with m.ctx():
+        m.box((0, h * 0.35, 0), (1.2, h * 0.7, 1.2), bark[0])
+        for k in range(int(h * 0.7 / 2.6)):
+            m.box((0.45 * (-1) ** k, 1.6 + k * 2.6, 0.45 * (-1) ** (k // 2)), (0.4, 0.35, 0.4), bark[1], collide=False)
+        m.beam((0, h * 0.45, 0), (2.2, h * 0.62, 0.6), 0.55, bark[0])
+        for k, (dy, r, w) in enumerate(((0.55, 1.8, 5.0), (0.7, 1.4, 4.4), (0.84, 0.9, 3.6), (0.95, 0.3, 2.6))):
+            a = rng.uniform(0, 6.28)
+            m.box((math.cos(a) * r * 0.6, h * dy, math.sin(a) * r * 0.6), (w, w * 0.8, w), greens[k % 2],
+                  ry=rng.uniform(0, 90))
+
+
+def cherry(m, size, seed, pinks=("#FFB3D9", "#FF8FC7"), trunk="#6B4226"):
+    """Cherry blossom: angled trunk, spreading branches, wide pink canopy blocks. ~12 / 15 / 18."""
+    rng = random.Random(seed)
+    h = (12, 15, 18)[size]
+    with m.ctx():
+        x, y = 0.0, 0.0
+        for k in range(2):
+            nx = x + rng.uniform(-1.0, 1.0)
+            m.beam((x, y, 0), (nx, y + h * 0.28 + 0.6, 0), 2.0 - 0.4 * k, trunk)
+            x, y = nx, y + h * 0.28
+        for s_ in (-1, 1):
+            m.beam((x, y - 0.6, 0), (x + s_ * 3.6, y + 1.8, rng.uniform(-1.5, 1.5)), 1.0, trunk)
+        cy = y + h * 0.12
+        for k, (dx, dz, w) in enumerate(((0, 0, h * 0.62), (h * 0.3, 0.8, h * 0.42), (-h * 0.3, -0.6, h * 0.44),
+                                         (0.5, h * 0.25, h * 0.38), (-0.4, -h * 0.25, h * 0.36))):
+            m.box((x + dx, cy + (0.6 if k == 0 else rng.uniform(-0.6, 0.3)), dz), (w, w * 0.55, w),
+                  pinks[k % 2], ry=rng.uniform(0, 90))
+
+
+def poplar(m, size, seed, greens=("#3E9C45", "#2F8A3C"), trunk="#6B4226"):
+    """Tall narrow poplar / cypress column. ~16 / 20 / 25."""
+    rng = random.Random(seed)
+    h = (16, 20, 25)[size]
+    with m.ctx():
+        m.box((0, 1.6, 0), (1.4, 3.2, 1.4), trunk)
+        y = 2.4
+        for k in range(5):
+            w = 4.4 * (1 - 0.13 * k) if k else 3.8
+            th = (h - 2.4) / 5 * 1.15
+            m.box((rng.uniform(-0.2, 0.2), y + th / 2, rng.uniform(-0.2, 0.2)), (w, th, w), greens[k % 2],
+                  ry=45 * (k % 2))
+            y += th * 0.85
+        m.box((0, y + 0.8, 0), (1.6, 1.8, 1.6), greens[0])
+
+
+def apple(m, size, seed):
+    """Round fruit tree: oak shape with red apples."""
+    oak(m, size, seed, greens=("#55B848", "#3F9E3C"))
+    rng = random.Random(seed + 1)
+    h = (14, 17, 21)[size]
+    with m.ctx(collide=False, shadow=False):
+        for k in range(6):
+            a = rng.uniform(0, 6.28)
+            r = h * 0.3
+            m.box((math.cos(a) * r, h * 0.6 + rng.uniform(-1, 2), math.sin(a) * r), (0.9, 0.9, 0.9), "#E8403A")
+
+
+def tuft(m, seed, greens=("#5DBB46", "#7AD155", "#4FA83A")):
+    """Small clump of grass blades (part of a cluster)."""
+    rng = random.Random(seed)
+    with m.ctx(collide=False, shadow=False):
+        for k in range(3):
+            h = rng.uniform(1.0, 1.9)
+            m.box((rng.uniform(-0.35, 0.35), h / 2, rng.uniform(-0.35, 0.35)), (0.35, h, 0.35), greens[k % 3],
+                  rx=rng.uniform(-18, 18), rz=rng.uniform(-18, 18))
+
+
+def tuft_cluster(m, seed, greens=("#5DBB46", "#7AD155", "#4FA83A"), flower=None):
+    """3-4 grass tufts close together, sometimes with one tiny flower."""
+    rng = random.Random(seed)
+    for k in range(rng.randint(3, 4)):
+        a = k * 2.1 + rng.uniform(-0.4, 0.4)
+        r = rng.uniform(0.6, 1.4)
+        with m.at((math.cos(a) * r, 0, math.sin(a) * r)):
+            tuft(m, seed * 7 + k, greens)
+    if flower:
+        with m.ctx(collide=False, shadow=False):
+            m.box((0, 0.8, 0), (0.25, 1.6, 0.25), greens[2])
+            m.box((0, 1.7, 0), (0.8, 0.35, 0.8), flower, ry=45)

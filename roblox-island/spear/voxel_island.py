@@ -37,6 +37,18 @@ HUB_R = 66.0          # flattened plateau radius
 FLOOR_R = 16.0        # stone floor radius
 
 
+def plant_tree(m, rnd, near_hub, size=None, seed=0):
+    """Pick a tree type by zone: fruit / blossom / oak / birch near the village, pines, birches and poplars
+    further out."""
+    size = rnd.choice((0, 1, 1, 2)) if size is None else size
+    pick = rnd.random()
+    if near_hub:
+        fn = P.oak if pick < 0.34 else P.apple if pick < 0.52 else P.cherry if pick < 0.7 else P.birch if pick < 0.86 else P.poplar
+    else:
+        fn = P.pine if pick < 0.5 else P.birch if pick < 0.68 else P.poplar if pick < 0.82 else P.oak if pick < 0.94 else P.cherry
+    fn(m, size, seed)
+
+
 def adiff(a, b):
     return abs((a - b + 180) % 360 - 180)
 
@@ -97,7 +109,6 @@ def build():
             exits.append((a, f))
     print("    hub exits at", sorted(round(a) for a, _ in exits))
 
-    levels, height = ground_and_cliffs(m, g, C, seed=21, water_levels=(-1.5, -5.0, -12.0))
     dock = first("Dock")
     dock_x, dock_z = dock[1], dock[3]
     arch = first("Arch")
@@ -116,57 +127,82 @@ def build():
                     return False
         return True
 
-    # ------------------------------------------------------------ hub layout: portal cliff, then stalls
-    portal_at = None
-    CH = 9.0                      # portal cliff height above the hub floor
-
-    def cliff_ok(x, z, ry, w, d):
-        a = math.radians(ry)
-        rx_, rz_ = math.cos(a), -math.sin(a)
-        fx, fz = math.sin(a), math.cos(a)
-        for u in range(-int(w / 2), int(w / 2) + 1, 2):
-            for v in range(-int(d / 2), int(d / 2) + 1, 2):
-                c = g.cell_of(x + rx_ * u + fx * v, z + rz_ * u + fz * v)
-                if c not in g.top or g.kind[c] == "path" or not HY - 0.3 <= g.top[c] <= HY + CH - 1:
-                    return False
-        return True
-
-    taken = [a for a, _ in exits]
-    for a in sorted(range(0, 360, 5), key=lambda a: adiff(a, 135)):    # SW cliff, seen from the dock
-        if any(adiff(a, t) < 34 for t in taken):
-            continue
-        for r in (48, 44, 52, 40, 56):
-            x, z = px + math.cos(math.radians(a)) * r, pz + math.sin(math.radians(a)) * r
-            ry = face((x, z), (px, pz))
-            sx_, sz_ = x - math.sin(math.radians(ry)) * 23, z - math.cos(math.radians(ry)) * 23
-            if cliff_ok(x, z, ry, 28, 28) and flat_footprint(sx_, sz_, ry, 10, 16):
-                portal_at = ((x, z), ry, a)
-                break
-        if portal_at:
-            break
-    if portal_at:
-        taken.append(portal_at[2])
-    stalls = []
-    for name in ("market", "shop", "upgrade"):
-        best = None
-        for a in range(0, 360, 5):
-            # clearances at r~25: path 7 wide (+-8 deg) + stall 12 wide (+-14 deg); portal cliff +-30
-            if any(adiff(a, t) < (26 if t in [e[0] for e in exits] else
-                                  34 if (portal_at and t == portal_at[2]) else 36) for t in taken):
+    # ------------------------------------------------------------ hub layout: 3 stalls around the floor
+    exit_angles = [a for a, _ in exits]
+    stalls, taken = [], []
+    placed_xy = []
+    for ex_clear, sep in ((22, 0), (18, 0), (14, 0)):
+        for name in ("market", "shop", "upgrade"):
+            if any(s_[0] == name for s_ in stalls):
                 continue
-            for r in (30, 33, 36, 40, 44):
-                x, z = px + math.cos(math.radians(a)) * r, pz + math.sin(math.radians(a)) * r
-                ry = face((x, z), (px, pz))
-                if flat_footprint(x + math.sin(math.radians(ry)) * 0.5, z, ry, 20, 11):
-                    score = adiff(a, 90)          # prefer the dock side so the shops are seen from the pier
-                    if best is None or score < best[0]:
-                        best = (score, a, (x, z), ry)
-                    break
-        if best:
-            stalls.append((name, best[2], best[3]))
-            taken.append(best[1])
-            print("   ", name, "stall at", [round(v) for v in best[2]])
+            best = None
+            for a in range(0, 360, 5):
+                if any(adiff(a, t) < ex_clear for t in exit_angles):
+                    continue
+                for r in (28, 31, 34, 38, 42):
+                    x, z = px + math.cos(math.radians(a)) * r, pz + math.sin(math.radians(a)) * r
+                    if any(math.hypot(x - qx, z - qz) < 24 for qx, qz in placed_xy):
+                        continue
+                    ry = face((x, z), (px, pz))
+                    ra = math.radians(ry)
+                    if flat_footprint(x, z, ry, 16, 11) and \
+                            flat_footprint(x - math.sin(ra) * 9, z - math.cos(ra) * 9, ry, 9, 6):
+                        score = adiff(a, 90)          # prefer the dock side so the shops are seen from the pier
+                        if best is None or score < best[0]:
+                            best = (score, a, (x, z), ry)
+                        break
+            if best:
+                stalls.append((name, best[2], best[3]))
+                taken.append(best[1])
+                placed_xy.append(best[2])
+                print("   ", name, "stall at", [round(v) for v in best[2]], "angle", best[1])
+
+    # ------------------------------------------------------------ portal cliff: a 7x7-cell plateau raised
+    # into the terrain grid (so its walls are normal banded slab cliffs) with stone steps down to the hub
+    CH = 9.0
+    portal_at, best = None, None
+    for cc, t in g.top.items():
+        x, z = g.wx(cc[0]), g.wx(cc[1])
+        dd = math.hypot(x - px, z - pz)
+        if not 42 <= dd <= 84:
+            continue
+        a = math.degrees(math.atan2(z - pz, x - px))
+        if any(adiff(a, e) < 26 for e in exit_angles) or any(adiff(a, t2) < 34 for t2 in taken):
+            continue
+        d = max(DIRS, key=lambda d: d[0] * (px - x) + d[1] * (pz - z))      # face the hub
+        plat = [(cc[0] + i, cc[1] + j) for i in range(-3, 4) for j in range(-3, 4)]
+        if not all(q in g.top and g.kind[q] not in ("path", "beach") and HY - 0.3 <= g.top[q] <= HY + CH + 12
+                   for q in plat):
+            continue
+        u = (abs(d[1]), abs(d[0]))
+        steps = [(cc[0] + d[0] * (4 + k) + u[0] * w, cc[1] + d[1] * (4 + k) + u[1] * w)
+                 for k in range(5) for w in (-1, 0, 1)]
+        if not all(q in g.top and abs(g.top[q] - HY) < 0.3 and g.kind[q] == "land" for q in steps):
+            continue
+        land_in_front = [(cc[0] + d[0] * (9 + k) + u[0] * w, cc[1] + d[1] * (9 + k) + u[1] * w) for k in range(2)
+                         for w in (-1, 0, 1)]
+        if not all(q in g.top and abs(g.top[q] - HY) < 0.3 for q in land_in_front):
+            continue
+        score = abs(dd - 56) + adiff(a, -60) * 0.2
+        if best is None or score < best[0]:
+            best = (score, cc, d, plat, steps, a)
+    if best:
+        _, cc, d, plat, steps, a = best
+        for q in plat:
+            g.top[q] = HY + CH
+            g.kind[q], g.surf[q] = "land", "grass"
+            changed.discard(q)
+        for q in steps:
+            k = (q[0] - cc[0]) * d[0] + (q[1] - cc[1]) * d[1] - 4      # 0 at the platform, 4 at the hub
+            g.top[q] = HY + CH * (5 - k) / 6.0
+            g.kind[q], g.surf[q] = "path", ""
+            g.path[q] = (g.top[q], "cobble", (float(d[0]), float(d[1])), 0.0)
+        x, z = g.wx(cc[0]), g.wx(cc[1])
+        portal_at = ((x, z), math.degrees(math.atan2(-d[0], -d[1])), a, d)
+        taken.append(a)
     print("    portal cliff at", portal_at and [round(v) for v in portal_at[0]])
+
+    levels, height = ground_and_cliffs(m, g, C, seed=21, water_levels=(-1.5, -5.0, -12.0))
 
     stall_y = {name: HY for name, _, _ in stalls}
     if "upgrade" not in stall_y:      # on a terrace toward the lighthouse (spec: between the shops and the landmark)
@@ -341,7 +377,7 @@ def build():
                 d = math.hypot(ex - px, ez - pz)
                 if d > FLOOR_R + 1:
                     sx_, sz_ = px + (ex - px) / d * (FLOOR_R - 1), pz + (ez - pz) / d * (FLOOR_R - 1)
-                    path_strip(m, [(sx_, sz_), (ex, ez)], 7, C["path"], C["path_border"], lambda x, z: HY)
+                    path_strip(m, [(sx_, sz_), (ex, ez)], 9, C["path"], C["path_border"], lambda x, z: HY)
         kinds = {"market": ("FISH MARKET", P.ACCENTS["sky"], "#4FC3F7", "ShopPad_FishMarket", Bd.goods_fish, Bd.icon_fish),
                  "shop": ("SPEAR SHOP", P.ACCENTS["red"], "#FF5A5A", "ShopPad_SpearShop", Bd.goods_spears, Bd.icon_spear),
                  "upgrade": ("UPGRADES", "#FFC93C", "#FFB020", "ShopPad_Upgrades", Bd.goods_upgrades, Bd.icon_hammer)}
@@ -354,29 +390,21 @@ def build():
                         m.box((s_ * 6.5, 13.0, 4.6), (0.3, 3.4, 0.3), C["wood_dark"])
                         m.box((s_ * 6.5 + 0.9 * s_, 14.2, 4.6), (1.6, 1.0, 0.15), stripe, collide=False)
         if portal_at:
-            (x, z), ry, _ = portal_at
-            with m.at((x, HY, z), ry=ry):
-                with m.ctx(stage="terrain", folder="Terrain"):
-                    lay = [(0, 3.2, BANDS[2], 28.5), (3.2, 6.2, BANDS[1], 27.5), (6.2, CH - 1.0, BANDS[0], 26.5)]
-                    for k, (y0, y1, col, w) in enumerate(lay):
-                        with m.at((0.4 * (-1) ** k, (y0 + y1) / 2, 0.3 * (-1) ** k), rx=2.5 * (-1) ** k, rz=-2 * (-1) ** k):
-                            m.box((0, 0, 0), (w, y1 - y0 + 0.4, w), col)
-                    m.box((0, CH - 0.85, 0), (27.4, 0.9, 27.4), C["sand"])
-                    m.box((0, CH - 0.2, 0), (28.0, 0.8, 28.0), C["grass"])
-                    stairs(m, (0, HY - HY, -14.0 - 9 * 2.0), CH, (0, 1), 9, 2.0, (C["path"], "#B4AFC4"),
-                           C["path_border"], base_y=0)
-                with m.at((0, CH + 0.2, 3.0)):
-                    Bd.portal(m)
+            (x, z), ry, _, _ = portal_at
+            pb = Bd.portal_bounds()
+            with m.at((x, HY + CH, z), ry=ry):
+                # invisible marker the Blender portal snaps to (roblox/PlacePortal.lua)
+                spot = m.box(((pb[0][0] + pb[1][0]) / 2, (pb[0][1] + pb[1][1]) / 2, (pb[0][2] + pb[1][2]) / 2),
+                             (pb[1][0] - pb[0][0], pb[1][1] - pb[0][1], pb[1][2] - pb[0][2]), "#B67CFF",
+                             name="PortalSpot", transparency=1.0, collide=False, shadow=False)
                 with m.ctx(stage="props", folder="Props"):
                     for s_ in (-1, 1):
-                        with m.at((s_ * 10.5, CH + 0.2, 10.5)):
+                        with m.at((s_ * 10.5, 0, 10.5)):
                             P.bush(m, 70 + s_)
-                        with m.at((s_ * 10.5, CH + 0.2, -10.0)):
+                        with m.at((s_ * 10.5, 0, -10.0)):
                             P.flowers(m, 75 + s_, ("pink", "sky") if s_ > 0 else ("yellow", "pink"))
-                        with m.at((s_ * 7.0, 0, -14.0 - 9 * 2.0 + 1.0)):
+                        with m.at((s_ * 8.0, -CH, -35.0)):
                             P.lantern_post(m)
-                        with m.at((s_ * 12.5, 0, -12.5)):
-                            P.bush(m, 78 + s_)
         ly = g.top_at(peak[0], peak[2]) or peak[1]
         with m.at((peak[0], ly, peak[2]), ry=face((peak[0], peak[2]), (dock_x, dock_z))):
             Bd.lighthouse(m, C, beam_tier=3)
@@ -520,12 +548,10 @@ def build():
                          and g.cell_of(p[1], p[3]) not in changed), key=lambda p: (p[1], p[3])):
             if all(math.hypot(p[1] - q[1], p[3] - q[3]) > 6.5 for q in kept):
                 kept.append(p)
+        trng = random.Random(31)
         for k, p in enumerate(kept):
             with m.at((p[1], p[2], p[3]), ry=p[4]):
-                if math.hypot(p[1] - px, p[3] - pz) < 95 and k % 3 != 0:
-                    P.oak(m, (0, 1, 2)[k % 3], 1000 + k)
-                else:
-                    P.pine(m, TREES[p[0]], 1000 + k)
+                plant_tree(m, trng, math.hypot(p[1] - px, p[3] - pz) < 100, TREES[p[0]], 1000 + k)
         # oak clumps around the open hub lawn (frame it without blocking it)
         for k, a in enumerate(range(0, 360, 40)):
             if any(adiff(a, t) < 28 for t in taken) or (portal_at and adiff(a, portal_at[2]) < 30):
@@ -536,7 +562,7 @@ def build():
             if c in g.top and abs(g.top[c] - HY) < 0.3 and g.kind[c] == "land" and clear(x, z, 4) and \
                     all(abs(g.top.get((c[0] + i, c[1] + j), -9) - HY) < 0.3 for i in (-1, 0, 1) for j in (-1, 0, 1)):
                 with m.at((x, HY, z), ry=a * 7):
-                    P.oak(m, k % 3, 1800 + k)
+                    plant_tree(m, random.Random(k), True, k % 3, 1800 + k)
                 with m.at((x + 4, HY, z + 3)):
                     P.flowers(m, 1850 + k, ("red", "yellow") if k % 2 else ("pink", "sky"))
         # fill pass: clumps of trees on every open grass terrace so no area is left bare
@@ -546,12 +572,12 @@ def build():
         for c, t in g.top.items():
             if g.kind[c] != "land" or c in changed or g.surf.get(c) not in ("grass", "rocktop"):
                 continue
-            if any(g.kind.get((c[0] + a, c[1] + b)) == "path" for a in range(-2, 3) for b in range(-2, 3)):
+            if any(g.kind.get((c[0] + a, c[1] + b)) == "path" for a in range(-1, 2) for b in range(-1, 2)):
                 continue
             if not all(abs(g.top.get((c[0] + a, c[1] + b), -99) - t) < 0.3 for a in (-1, 0, 1) for b in (-1, 0, 1)):
                 continue
             x, z = g.wx(c[0]), g.wx(c[1])
-            if noise2(x, z, 77, 46) < 0.42 or not clear(x, z, 5):
+            if noise2(x, z, 77, 46) < 0.3 or not clear(x, z, 5):
                 continue
             cand.append((c, x, z, t))
         rng2 = random.Random(9)
@@ -559,19 +585,43 @@ def build():
         n_fill = 0
         for c, x, z, t in cand:
             jx, jz = rng2.uniform(-1.2, 1.2), rng2.uniform(-1.2, 1.2)
-            if any(math.hypot(x + jx - a, z + jz - b) < 7.5 for a, b in trees_at):
+            if any(math.hypot(x + jx - a, z + jz - b) < 6.8 for a, b in trees_at):
                 continue
             trees_at.append((x + jx, z + jz))
             n_fill += 1
             with m.at((x + jx, t, z + jz), ry=rng2.uniform(0, 360)):
-                if math.hypot(x - px, z - pz) < 105 and rng2.random() < 0.6:
-                    P.oak(m, rng2.choice((0, 1, 1, 2)), 2000 + n_fill)
-                else:
-                    P.pine(m, rng2.choice((0, 1, 1, 2)), 2000 + n_fill)
+                plant_tree(m, rng2, math.hypot(x - px, z - pz) < 105, None, 2000 + n_fill)
             if n_fill % 4 == 0:
                 with m.at((x + jx + 3.2, t, z + jz + 1.5)):
                     (P.bush if n_fill % 8 else P.flowers)(m, 2500 + n_fill)
         print("    fill trees", n_fill, "total trees", len(trees_at))
+        # grass tufts: clusters of 3-4 tufts all over the lawns (not on paths, cliff edges or the hub floor)
+        trng2 = random.Random(57)
+        tuft_at = []
+        for c, t in sorted(g.top.items()):
+            if g.kind[c] != "land" or g.surf.get(c) not in ("grass", "rocktop"):
+                continue
+            x, z = g.wx(c[0]) + trng2.uniform(-1.5, 1.5), g.wx(c[1]) + trng2.uniform(-1.5, 1.5)
+            if trng2.random() > 0.3 + 0.25 * noise2(x, z, 91, 30):
+                continue
+            if any(g.kind.get((c[0] + a, c[1] + b)) == "path" for a in (-1, 0, 1) for b in (-1, 0, 1)):
+                continue
+            if not all(abs(g.top.get((c[0] + a, c[1] + b), -99) - t) < 0.3 for a in (-1, 0, 1) for b in (-1, 0, 1)):
+                continue
+            if math.hypot(x - px, z - pz) < FLOOR_R + 3 or not clear(x, z, 1) or \
+                    any(math.hypot(x - a, z - b) < 2.6 for a, b in trees_at):
+                continue
+            tuft_at.append((x, z))
+            fl = (P.ACCENTS["yellow"], P.ACCENTS["white"], P.ACCENTS["pink"], None, None, None)[len(tuft_at) % 6]
+            with m.at((x, t, z), ry=trng2.uniform(0, 360)):
+                P.tuft_cluster(m, 3000 + len(tuft_at), flower=fl)
+        for c in beach_cells[::3]:            # dune grass on the beaches
+            x, z = g.wx(c[0]), g.wx(c[1])
+            if clear(x, z, 2) and trng2.random() < 0.5:
+                with m.at((x + trng2.uniform(-1, 1), g.top[c], z + trng2.uniform(-1, 1)), ry=trng2.uniform(0, 360)):
+                    P.tuft_cluster(m, 4000 + len(tuft_at), greens=("#9CCB5A", "#B8D86A", "#7FB34A"))
+                tuft_at.append((x, z))
+        print("    grass tuft clusters", len(tuft_at))
         # beach palm clumps: 2 palms leaning out + bush + flowers
         palms_at = []
         for c in beach_cells[::7]:
@@ -607,12 +657,6 @@ def build():
                     with m.at((p[1], p[2], p[3])):
                         P.flowers(m, 1200 + len(flowers), (("red", "yellow"), ("pink", "yellow"), ("red", "pink"))[len(flowers) % 3])
         stair_rails(m, g, C)
-        wood = {c for c, v in g.path.items() if v[1] == "wood"}
-        for p in old:
-            c = g.cell_of(p[1], p[3])
-            if p[0] == "Fence" and c not in changed and clear(p[1], p[3], 1) and \
-                    not any((c[0] + a, c[1] + b) in wood for a in (-1, 0, 1) for b in (-1, 0, 1)):
-                fence(m, p[1], p[2], p[3], p[4], C["wood"], C["wood_dark"])
         with m.ctx(tier=2):
             for p in old:
                 if p[0] in ("Torch", "LampPost") and g.cell_of(p[1], p[3]) not in changed and clear(p[1], p[3], 1) \
@@ -632,7 +676,7 @@ def build():
     cams = {
         "overhead": ((235, 165, 335), (0, 22, 0), 30),
         "dock": ((dock_x, DECK_Y + 5.5, z0 + 64), (6, 45, 0), 24),
-        "plaza": ((px + 6, HY + 5.5, pz + 36), (px - 2, HY + 7, pz - 30), 24),
+        "plaza": ((px - 6, HY + 6, pz - 14), (px + 4, HY + 6, pz + 30), 26),
         "village": ((px + 80, HY + 70, pz + 90), (px, HY, pz - 8), 28),
         "lighthouse": ((peak[0] + 45, ly + 25, peak[2] + 45), (peak[0], ly + 18, peak[2]), 28),
         "reef": ((dock_x + 20, DECK_Y + 3, z0 + 78), (dock_x, -10, z0 + 60), 26),
@@ -644,7 +688,7 @@ def build():
         y_ = {n: v for n, v in stall_y.items()}[name]
         cams[name] = ((x + fx * 30 - fz * 10, y_ + 12, z + fz * 30 + fx * 10), (x, y_ + 7, z), 32)
     if portal_at:
-        (x, z), ry, _ = portal_at
+        (x, z), ry, _, _ = portal_at
         a = math.radians(ry)
         fx, fz = -math.sin(a), -math.cos(a)
         cams["portal"] = ((x + fx * 44 - fz * 14, HY + 16, z + fz * 44 + fx * 14), (x, HY + 13, z), 30)

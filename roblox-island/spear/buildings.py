@@ -376,45 +376,83 @@ def upgrade_station(m, tier, C, seed=3):
 # ---------------------------------------------------------------- landmark, plaza, gate, boats
 
 def lighthouse(m, C, beam_tier=3):
-    """Chunky, slightly leaning lighthouse: stone base, red/white octagonal bands, gallery with railing,
-    glowing lamp room, stepped red cap. Door faces -Z."""
+    """Lighthouse landmark (door faces -Z):
+    two-tier stone foundation with steps, keeper's cottage attached at the back, tapering octagonal
+    tower in red/white bands with trim rings, framed windows, arched door with a little roof,
+    corbelled gallery with railing, glass lamp room with mullions and a glowing lamp, stepped red
+    dome with a ball finial and a weather vane."""
     red, white = C["lh_red"], C["lh_white"]
-    m.octagon(2.0, 6.8, 4.0, STONE_DK)
-    m.octagon(4.25, 7.2, 0.5, STONE)
-    with m.at((0, 4.5, 0), rx=2.5, rz=-1.5):
-        y, r = 0.0, 5.3
-        for k in range(6):
-            h = 4.4
+    stone, stone_dk = P.STONE, P.STONE_DK
+    m.octagon(1.0, 9.0, 2.0, stone_dk)                                  # foundation
+    m.octagon(2.2, 8.2, 0.4, stone)
+    m.octagon(3.0, 7.6, 1.2, stone_dk)
+    m.octagon(3.75, 7.9, 0.3, stone)
+    for k in range(3):                                                    # steps up to the door
+        m.span((-3.0, 0, -9.0 - (2 - k) * 1.3), (3.0, 1.3 * (k + 1), -7.7 - (2 - k) * 1.3 + 0.01), stone)
+    with m.at((0, 0, 8.0)):                                               # keeper's cottage at the back
+        m.span((-6.5, 0, 0), (6.5, 1.2, 9.5), stone_dk)
+        with m.at((0, 1.2, 9.0), ry=180):
+            wall(m, 12, 7.0, 0.7, "#F1E3C2", [(0, 0, 3.6, 6.0)])
+            door(m, 0, 3.6, 6.0, C["wood_dark"], y0=0.0, step=None)
+        for s_ in (-1, 1):
+            with m.at((s_ * 6.0, 1.2, 4.5), ry=-90 * s_):
+                wall(m, 8.4, 7.0, 0.7, "#F1E3C2", [(0, 2.6, 2.6, 2.6)])
+                window(m, 0, 3.9, 2.6, 2.6, C["wood_dark"], shutters=C["roof"])
+        for x in (-6.2, 6.2):
+            m.box((x, 4.7, 9.0), (1.0, 7.0, 1.0), C["wood_dark"])
+        with m.at((0, 0, 4.6)):
+            top = gable_roof(m, 12.6, 9.6, 8.2, 30, red, "#B23B3B", overhang=1.2, gable="#F1E3C2", gable_t=0.7)
+        m.span((3.0, 7.0, 6.0), (5.0, top + 2.2, 8.0), stone)
+        m.span((2.7, top + 2.2, 5.7), (5.3, top + 2.8, 8.3), stone_dk)
+    with m.at((0, 4.0, 0), rx=1.5, rz=-1.0):
+        y, r = 0.0, 5.6
+        for k in range(7):
+            h = 4.2
             m.octagon(y + h / 2, r, h, white if k % 2 == 0 else red)
-            m.octagon(y + h - 0.2, r + 0.25, 0.4, STONE_DK if k % 2 == 0 else white)   # trim ring
+            m.octagon(y + h - 0.15, r + 0.25, 0.3, P.STONE_DK if k % 2 == 0 else white)
             y += h
-            r -= 0.32
-        with m.at((0, 0, -5.3)):        # door stands proud of the round wall (no hole to recess into)
-            door(m, 0, 3.6, 6.4, STONE_DK, planks=(WOOD, WOOD_DK), step=None, recess=-0.3, y0=0.0)
-            m.span((-2.6, 6.9, -1.4), (2.6, 7.4, 0.0), STONE_DK)             # little roof over the door
-        with m.at((0, 0, -5.6)):
-            m.span((-2.8, -0.4, -2.2), (2.8, 0.1, 0.4), STONE)               # landing step
-        for k, yy in enumerate((10.2, 19.0)):
-            with m.at((0, 0, -(5.3 - 0.32 * (2 + 2 * k)))):
-                window(m, 0, yy, 1.8, 2.6, STONE_DK, recess=-0.15)
-        # gallery deck + railing
-        m.octagon(y + 0.5, 6.4, 1.0, STONE_DK)
-        for k in range(16):
-            a = k * math.pi / 8
-            m.box((math.cos(a) * 5.9, y + 2.0, math.sin(a) * 5.9), (0.4, 2.0, 0.4), METAL)
-        with m.ctx(collide=False):
-            m.octagon(y + 3.0, 6.1, 0.4, METAL)
-        # lamp room
+            r -= 0.3
+        with m.at((0, 0, -5.6)):                                        # arched door + little roof
+            door(m, 0, 3.6, 6.2, stone_dk, planks=(WOOD, WOOD_DK), step=None, recess=-0.3, y0=0.0)
+            m.span((-2.4, 6.6, -1.8), (2.4, 7.1, 0.1), red)
+            m.span((-2.7, 7.1, -2.0), (2.7, 7.5, 0.1), "#B23B3B")
+        for k, yy in enumerate((11.0, 19.5, 26.5)):
+            for side in (-1, 1) if k == 1 else (-1,):
+                ry_ = 0 if side == -1 else 180
+                rr = 5.6 - 0.3 * (yy / 4.2)
+                with m.at((0, 0, 0), ry=ry_ + (90 if k == 2 else 0)):
+                    with m.at((0, 0, -rr)):
+                        window(m, 0, yy, 1.8, 2.6, P.STONE_DK, recess=-0.15)
+        # corbels + gallery deck + railing
         for k in range(8):
             a = k * math.pi / 4 + math.pi / 8
-            m.box((math.cos(a) * 3.2, y + 4.2, math.sin(a) * 3.2), (0.5, 6.4, 0.5), METAL)
-        m.box((0, y + 4.0, 0), (3.6, 4.0, 3.6), C["lamp"], mat="Neon", light=("PointLight", 3, 40, C["lamp"]),
-              shadow=False)
-        m.octagon(y + 7.8, 4.4, 1.0, red)
-        m.octagon(y + 8.9, 3.2, 1.2, red)
-        m.octagon(y + 10.1, 1.9, 1.2, red)
-        m.box((0, y + 11.6, 0), (0.6, 2.2, 0.6), METAL)
-        m.box((0, y + 12.8, 0), (1.0, 1.0, 1.0), "#FFD447")
+            m.box((math.cos(a) * 3.9, y - 0.6, math.sin(a) * 3.9), (1.0, 1.2, 1.0), stone_dk)
+        m.octagon(y + 0.5, 6.6, 1.0, stone_dk)
+        m.octagon(y + 1.05, 6.3, 0.15, stone)
+        for k in range(16):
+            a = k * math.pi / 8
+            m.box((math.cos(a) * 6.0, y + 2.0, math.sin(a) * 6.0), (0.35, 2.0, 0.35), P.METAL)
+        with m.ctx(collide=False):
+            m.octagon(y + 3.0, 6.2, 0.3, P.METAL)
+        # glass lamp room
+        with m.ctx(collide=False):
+            m.octagon(y + 4.0, 3.4, 5.0, "#CFEFFF", mat="Glass")
+        for k in range(8):
+            a = k * math.pi / 4 + math.pi / 8
+            m.box((math.cos(a) * 3.55, y + 4.0, math.sin(a) * 3.55), (0.45, 5.2, 0.45), P.METAL)
+        m.octagon(y + 1.7, 3.8, 0.8, P.METAL)
+        m.box((0, y + 4.0, 0), (2.4, 3.0, 2.4), C["lamp"], mat="Neon", ry=45,
+              light=("PointLight", 3, 40, C["lamp"]), shadow=False)
+        m.octagon(y + 6.9, 4.4, 0.8, red)                               # stepped dome
+        m.octagon(y + 7.8, 3.6, 1.0, red)
+        m.octagon(y + 8.8, 2.6, 1.0, red)
+        m.octagon(y + 9.7, 1.5, 0.8, "#B23B3B")
+        m.box((0, y + 10.9, 0), (0.5, 1.6, 0.5), P.METAL)
+        m.box((0, y + 12.0, 0), (1.1, 1.1, 1.1), "#FFD447", ry=45, rx=35)
+        with m.at((0, y + 13.2, 0)):                                    # weather vane
+            m.box((0, 0, 0), (0.25, 1.6, 0.25), P.METAL)
+            m.box((0.9, 0.5, 0), (2.2, 0.25, 0.15), P.METAL)
+            m.box((1.9, 0.5, 0), (0.6, 0.6, 0.12), P.METAL, rz=45)
         with m.ctx(tier=beam_tier, collide=False, shadow=False):   # rotating beam (spun by the Spinner script)
             m.box((0, y + 4.0, 0), (1.4, 1.4, 44), "#FFF3B0", mat="Neon", name="LighthouseBeam", transparency=0.7,
                   light=("SpotLight", 4, 60, "#FFF3B0"))
@@ -654,14 +692,9 @@ def simple_stall(m, title, stripe, cloth, pad_name, goods=None, ink="#2A3A5C", i
 
 
 def goods_fish(m):
-    for k, x in enumerate((-3.6, 0, 3.6)):                       # ice trays with fish on the counter
-        m.box((x, 4.95, -3.4), (3.0, 0.45, 1.8), "#DFF4FF", collide=False)
-        for f in range(2):
-            P.fish(m, P.ACCENTS[("sky", "orange", "pink", "yellow")[(k + f) % 4]], 1.6,
-                   ry=180 * f + 6, pos=(x - 0.6 + 1.2 * f, 5.45, -3.4))
-    for k, x in enumerate((-4.5, -1.5, 1.5, 4.5)):               # fish hanging from the front beam
-        m.box((x, 8.6, -4.0), (0.12, 1.4, 0.12), P.ROPE, collide=False)
-        P.fish(m, P.ACCENTS[("yellow", "sky", "pink", "orange")[k]], 1.9, rz=-80, pos=(x, 7.1, -4.0))
+    for k, x in enumerate((-3.6, 0, 3.6)):                       # low ice trays with small fish on the counter
+        m.box((x, 4.85, -3.4), (3.0, 0.3, 1.8), "#DFF4FF", collide=False)
+        P.fish(m, P.ACCENTS[("sky", "orange", "pink")[k]], 1.3, ry=90, rz=90, pos=(x, 5.15, -3.4))
     for k, x in enumerate((-4, -1.3, 1.3, 4)):                   # jars + baskets on the shelves
         m.box((x, 5.75, 3.6), (1.4, 1.2, 1.2), ("#5BB6E3", "#C8A06A", "#5BB6E3", "#C8A06A")[k])
         m.box((x, 8.35, 3.6), (1.6, 1.2, 1.2), ("#C8A06A", "#FF8A3D", "#C8A06A", "#FF8A3D")[k])
@@ -835,3 +868,16 @@ def rail_line(m, a, b, y, color=(WOOD, WOOD_DK), every=4.0, h=3.0):
     with m.at(((a[0] + b[0]) / 2, y, (a[1] + b[1]) / 2), ry=ry):
         m.box((0, h - 0.25, 0), (0.45, 0.45, L + 0.4), color[0])
         m.box((0, h * 0.5, 0), (0.35, 0.35, L), color[0])
+
+
+def portal_bounds():
+    """Bounds of the Blender portal (exports/portal/portal_bounds.json, written by tools/portal_mesh.py)
+    in its own space: ground at y=0, front facing -Z."""
+    import json
+    import os
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "exports", "portal",
+                        "portal_bounds.json")
+    if os.path.exists(path):
+        b = json.load(open(path))
+        return b["min"], b["max"]
+    return [-12.0, 0.0, -8.0], [12.0, 24.0, 8.0]

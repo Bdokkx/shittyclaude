@@ -44,8 +44,8 @@ def main(m):
     img = Image.new("RGB", (W, 3800), BG)
     d = ImageDraw.Draw(img)
     d.text((40, 24), m.upper() + "  -  rebuild for review", font=font(56), fill=ACC)
-    d.text((40, 96), "open hub (no centerpiece) with 3 simple shop stalls + glowing pads, portal on a cliff by the hub, "
-                     "big T-dock with rails, beach camp, fishing jetty, waterfall, lighthouse",
+    d.text((40, 96), "open hub with 3 shop stalls + glowing pads, Blender portal on a cliff by the hub, 230+ trees "
+                     "(6 kinds), grass tufts, big railed T-dock, beach camp, jetty, waterfall, new lighthouse",
            font=font(24, False), fill=INK)
     panel(img, m + "_overhead", (40, 150, 1560, 1005), "overhead 45 deg (checklist b)")
     panel(img, m + "_dock", (1600, 150, 2360, 575), "end of the dock (checklist a)")

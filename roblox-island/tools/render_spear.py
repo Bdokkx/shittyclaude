@@ -33,6 +33,8 @@ BEAM = OPTS.get("beam", "0") == "1"
 
 
 def visible(p):
+    if p.get("transparency", 0) >= 0.99:
+        return False          # invisible markers (PortalSpot)
     if p.get("name") == "LighthouseBeam" and not BEAM:
         return False          # the beam spins in game; in a still it reads as a stick
     if STAGES is not None and p["stage"] not in STAGES:
@@ -225,6 +227,26 @@ def build_meshes(parts):
 
 parts = [p for p in data["parts"] if visible(p)]
 build_meshes(parts)
+
+# the Blender portal, placed on its PortalSpot marker exactly like roblox/PlacePortal.lua does
+import mathutils  # noqa: E402
+spots = [p for p in data["parts"] if p.get("name") == "PortalSpot" and (STAGES is None or "buildings" in STAGES)]
+if spots:
+    sys.path.insert(0, os.path.join(ROOT, "tools"))
+    import portal_mesh
+    pobjs = portal_mesh.build(scene.collection, os.path.join(ROOT, "exports", "portal"))
+    mn, mx = portal_mesh.bounds(pobjs)
+    sp = spots[0]
+    c = [(mn[i] + mx[i]) / 2 for i in range(3)]
+    R = sp["R"]
+    A = mathutils.Matrix(((1, 0, 0), (0, 0, -1), (0, 1, 0)))
+    Rm = mathutils.Matrix(R)
+    lin = A @ Rm @ A.transposed()
+    t = A @ (mathutils.Vector(sp["pos"]) - Rm @ mathutils.Vector(c))
+    M = lin.to_4x4()
+    M.translation = t
+    for ob in pobjs:
+        ob.matrix_world = M
 
 # signs
 FACE_N = {"Front": (0, 0, -1), "Back": (0, 0, 1), "Left": (-1, 0, 0), "Right": (1, 0, 0), "Top": (0, 1, 0)}
