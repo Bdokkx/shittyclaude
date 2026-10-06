@@ -14,7 +14,7 @@ Order from the pack: **VoxelIsland first (for approval)**, then DesertCoast, Fro
 
 ## VoxelIsland (compact version)
 
-A small, hand-laid island about 190 studs across (`spear/small_island.py`). The earlier full-size
+A hand-laid island about 290 studs across (`spear/small_island.py`). The earlier full-size
 version is still available as `spear/voxel_island.py` (`python3 spear/build.py VoxelIslandLarge`).
 
 - **Terraces:** a beach ring (y=3), the main lawn (y=12) and a hill (y=24). The cliffs between them are
@@ -29,7 +29,7 @@ version is still available as `spear/voxel_island.py` (`python3 spear/build.py V
   and a canopy.
 - **Nature:** clumps of six tree types, palm pairs around the beach, a beach camp, grass tufts and
   flower clusters.
-- **Size:** about 5,000 parts. The self-review checklist passes 10/10.
+- **Size:** about 10,000 parts. Four open **quest clearings** on the lawn (invisible `QuestClearing_1..4` markers, each with a QUEST sign) are kept free for your quests. The self-review checklist passes 10/10.
 - **Tiers:**
   - Tier 1: short pier, dirt hub floor.
   - Tier 2: T-dock, stone floor, lanterns.

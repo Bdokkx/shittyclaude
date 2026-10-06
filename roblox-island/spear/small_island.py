@@ -23,7 +23,7 @@ BEACH, MAIN, HILL = 3.0, 12.0, 24.0
 
 class Grid:
     """Same interface as terraced.Grid, filled from hand-made outlines."""
-    S, N = 4, 52
+    S, N = 4, 76
 
     def __init__(self):
         self.top, self.kind, self.surf, self.path, self.plaza = {}, {}, {}, {}, set()
@@ -41,10 +41,10 @@ class Grid:
 def build():
     m = Model("VoxelIsland")
     g = Grid()
-    beach = blob(0, 4, 74, seed=11, amp=0.08)
-    main = blob(-2, -4, 50, seed=12, amp=0.09)
-    hx, hz = 22.0, -30.0
-    hill = blob(hx, hz, 21, seed=13, amp=0.07)
+    beach = blob(0, 6, 112, seed=11, amp=0.08)
+    main = blob(-2, -6, 78, seed=12, amp=0.09)
+    hx, hz = 34.0, -48.0
+    hill = blob(hx, hz, 27, seed=13, amp=0.07)
     for i in range(g.N):
         for j in range(g.N):
             x, z = g.wx(i), g.wx(j)
@@ -58,7 +58,7 @@ def build():
                 continue
             g.top[(i, j)], g.kind[(i, j)], g.surf[(i, j)] = t, k, "grass" if k == "land" else "sand"
 
-    hub = (-4.0, 10.0)
+    hub = (-6.0, 14.0)
     FLOOR_R = 12.0
 
     # ---- wooden stairs: hub -> south down to the beach (3 cells wide)
@@ -90,7 +90,7 @@ def build():
             g.path[c] = (g.top[c], "cobble", (0.0, -1.0), 0.0)
     hill_stair_foot = (g.wx(hi), g.wx(j2) + 4)
     # ---- portal ledge: 6x6 cells raised west of the hub, stone steps facing the hub (east)
-    pc = g.cell_of(hub[0] - 34, hub[1] - 2)
+    pc = g.cell_of(hub[0] - 40, hub[1] - 4)
     PL = MAIN + 7.5
     ledge = [(pc[0] + a, pc[1] + b) for a in range(-3, 3) for b in range(-3, 3)]
     for c in ledge:
@@ -299,9 +299,9 @@ def build():
         colors = ["pink", "orange", "yellow", "sky", "lime", "purple"]
         spots = [(dx - 22, z0 + 66, 5.5), (dx + 26, z0 + 72, 5.0), (dx + 2, z0 + 84, 4.5),
                  (dx + 44, z0 + 46, 4.0), (dx - 44, z0 + 42, 4.0)]
-        for k in range(10):
-            a = math.radians(-90 + k * 32)
-            r = 112
+        for k in range(14):
+            a = math.radians(-90 + k * 26)
+            r = 160
             x, z = math.cos(a) * r, math.sin(a) * r + 4
             if math.hypot(x - dx, z - z0 - 40) > 55:
                 spots.append((x, z, rng.choice((3.5, 4.5, 5.5))))
@@ -323,6 +323,36 @@ def build():
                 if k % 3 == 0:
                     with m.at((-7, 0, 5)):
                         P.kelp(m, 400 + k, height=rng.uniform(7, 8.5))
+
+    # ------------------------------------------------------------ quest clearings (open lawns for your quests)
+    clearings = []
+    for want in (-150, -100, -30, 20, 160, 200, 250):
+        best_c = None
+        for r in (50, 56, 62, 44, 68):
+            a = math.radians(want)
+            x, z = hub[0] + math.cos(a) * r, hub[1] + math.sin(a) * r
+            if flat(x, z, 18, 18, 0, MAIN) and clear(x, z, 12) and \
+                    all(math.hypot(x - q[0], z - q[1]) > 40 for q in clearings):
+                best_c = (x, z)
+                break
+        if best_c:
+            clearings.append(best_c)
+    with m.ctx(stage="props", folder="Props"):
+        for k, (x, z) in enumerate(clearings):
+            m.box((x, MAIN + 2, z), (24, 4, 24), "#FFD447", name="QuestClearing_%d" % (k + 1), transparency=1.0,
+                  collide=False, shadow=False)
+            with m.at((x, MAIN, z), ry=face((x, z), hub)):
+                with m.at((0, 0, -11)):
+                    P.sign_board(m, "QUEST", w=5, h=1.8, color="#FFF1D6", text_color="#B5523B", height=4.6)
+                for j in range(6):
+                    a = math.radians(j * 60 + 30)
+                    with m.at((math.cos(a) * 11.5, 0, math.sin(a) * 11.5)):
+                        if j % 2:
+                            P.flowers(m, 1700 + k * 10 + j, ("red", "yellow") if k % 2 else ("pink", "sky"))
+                        else:
+                            P.bush(m, 1700 + k * 10 + j)
+            keep.append(((x, z), 14))
+    print("    quest clearings", [(round(x), round(z)) for x, z in clearings])
 
     # ------------------------------------------------------------ props
     with m.ctx(stage="props", folder="Props"):
@@ -425,7 +455,7 @@ def build():
     with m.ctx(stage="terrain", folder="Terrain"):
         for k, ang in enumerate((205, 335)):
             a = math.radians(ang)
-            x, z = math.cos(a) * 96, math.sin(a) * 96 + 4
+            x, z = math.cos(a) * 138, math.sin(a) * 138 + 6
             with m.at((x, -6, z), ry=ang):
                 top = slab_stack(m, 40 + k, (24, 20)[k], 12, BANDS, cap=C["grass"], cap_strip=C["sand"])
                 with m.ctx(stage="props", folder="Props"):
@@ -435,7 +465,7 @@ def build():
                         P.flowers(m, 60 + k, ("pink", "yellow"))
 
     cams = {
-        "overhead": ((150, 120, 210), (0, 8, 0), 32),
+        "overhead": ((220, 170, 300), (0, 8, 0), 32),
         "dock": ((dx, DECK_Y + 5.5, z0 + 52), (0, 18, -10), 26),
         "plaza": ((hub[0] - 2, MAIN + 6, hub[1] - 12), (hub[0] + 2, MAIN + 6, hub[1] + 30), 26),
         "village": ((hub[0] + 52, MAIN + 46, hub[1] + 62), (hub[0], MAIN, hub[1] - 4), 28),
@@ -443,7 +473,7 @@ def build():
         "portal": ((portal_pos[0] + 34, PL + 9, portal_pos[1] + 14), (portal_pos[0], PL + 9, portal_pos[1]), 30),
         "dockdeck": ((dx + 46, DECK_Y + 22, z0 + 80), (dx, DECK_Y, z0 + 34), 28),
         "reef": ((dx + 20, DECK_Y + 3, z0 + 70), (dx, -10, z0 + 52), 26),
-        "west": ((-150, 70, 60), (-10, 10, 0), 30),
+        "west": ((-210, 95, 80), (-10, 10, 0), 30),
     }
     for name, (x, z), ry in stalls:
         a = math.radians(ry)
@@ -459,5 +489,5 @@ def build():
         cams["beach"] = ((bx + bx / L * 34 + bz / L * 10, 9, bz + bz / L * 34 - bx / L * 10), (bx, 9, bz), 30)
     cams["stairs"] = ((dx + 10, 10, z0 + 14), (dx, 14, hub[1] - 10), 28)
     spawn = (hub[0], MAIN + 1.5, hub[1])
-    water = (-260, -14, -260, 260, 0, 260)
+    water = (-330, -14, -330, 330, 0, 330)
     return m, PRESET, water, spawn, cams
