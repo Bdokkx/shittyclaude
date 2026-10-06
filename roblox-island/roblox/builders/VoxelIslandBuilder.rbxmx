@@ -17235,7 +17235,7 @@ local TRANSP = { [9269]=0.82,[9434]=0.82,[9587]=0.82,[9604]=1,[9961]=0.7 }
 -- [part] = "portal" | "fire" | "pad"  (particles / touch zones)
 local EFFECTS = { [9269]="pad",[9434]="pad",[9587]="pad",[10069]="fire" }
 -- {part, text, color, face}
-local TEXTS = { {8877,"SPEARFISHING",91,"Front"},{9083,"TRAVEL",92,"Front"},{9208,"FISH MARKET",93,"Front"},{9375,"SPEAR SHOP",93,"Front"},{9540,"UPGRADES",93,"Front"} }
+local TEXTS = { {8877,"SPEARFISHING",91,"Front"},{8877,"SPEARFISHING",91,"Back"},{9083,"TRAVEL",92,"Front"},{9208,"FISH MARKET",93,"Front"},{9375,"SPEAR SHOP",93,"Front"},{9540,"UPGRADES",93,"Front"} }
 local PRESET = { ClockTime=14,Brightness=2.5,Ambient={122,134,168},OutdoorAmbient={154,166,200},EnvironmentDiffuseScale=0.5,EnvironmentSpecularScale=0.3,AtmosphereColor={199,223,255},AtmosphereDecay={159,196,255},AtmosphereDensity=0.25,AtmosphereHaze=1,CCTint={255,255,255},CCSaturation=0.15,CCContrast=0.05,BloomIntensity=0.4,WaterColor={46,155,230} }
 local WATER = { -300,-14,-300,300,0,300 }
 

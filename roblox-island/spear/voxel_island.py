@@ -324,6 +324,7 @@ def build():
                     m.box((0, 8.6, 0), (12.4, 0.8, 1.0), C["wood_dark"])
                     board = m.box((0, 10.0, -0.1), (11.0, 2.2, 0.5), "#FFF1D6")
                     m.text(board, "SPEARFISHING", "#2A5DA8", "Front")
+                    m.text(board, "SPEARFISHING", "#2A5DA8", "Back")
                 for side in (-1, 1):                            # boats tied at the rail openings
                     with m.at((side * (TX + 4.5), 0.2, T0 + 12), ry=0):
                         rowboat(m, C["wood"], C["wood_dark"], P.ACCENTS["white"])
@@ -691,7 +692,7 @@ def build():
         (x, z), ry, _, _ = portal_at
         a = math.radians(ry)
         fx, fz = -math.sin(a), -math.cos(a)
-        cams["portal"] = ((x + fx * 44 - fz * 14, HY + 16, z + fz * 44 + fx * 14), (x, HY + 13, z), 30)
+        cams["portal"] = ((x + fx * 40 + fz * 16, HY + CH + 9, z + fz * 40 - fx * 16), (x, HY + CH + 9, z), 30)
     if camp:
         x, y, z = camp
         L = math.hypot(x, z) or 1
