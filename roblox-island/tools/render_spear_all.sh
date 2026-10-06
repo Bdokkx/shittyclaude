@@ -8,5 +8,5 @@ $R --views=overhead --stages=terrain,dock,reef --suffix=_stage2_dock_reef --samp
 $R --views=overhead --stages=terrain,dock,reef,buildings --suffix=_stage3_buildings --samples=32
 $R --views=overhead --tier=1 --suffix=_tier1 --samples=32
 $R --views=overhead --tier=2 --suffix=_tier2 --samples=32
-$R --views=overhead --tier=3 --beam=1 --suffix=_tier3 --samples=32
+$R --views=overhead --tier=3 --suffix=_tier3 --samples=32
 $R --samples=48

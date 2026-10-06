@@ -389,11 +389,14 @@ def lighthouse(m, C, beam_tier=3):
             m.octagon(y + h - 0.2, r + 0.25, 0.4, STONE_DK if k % 2 == 0 else white)   # trim ring
             y += h
             r -= 0.32
-        with m.at((0, 0, -5.3)):
-            door(m, 0, 3.6, 6.4, STONE_DK, planks=(WOOD, WOOD_DK), step=None, recess=0.4, y0=0.0)
+        with m.at((0, 0, -5.3)):        # door stands proud of the round wall (no hole to recess into)
+            door(m, 0, 3.6, 6.4, STONE_DK, planks=(WOOD, WOOD_DK), step=None, recess=-0.3, y0=0.0)
+            m.span((-2.6, 6.9, -1.4), (2.6, 7.4, 0.0), STONE_DK)             # little roof over the door
+        with m.at((0, 0, -5.6)):
+            m.span((-2.8, -0.4, -2.2), (2.8, 0.1, 0.4), STONE)               # landing step
         for k, yy in enumerate((10.2, 19.0)):
             with m.at((0, 0, -(5.3 - 0.32 * (2 + 2 * k)))):
-                window(m, 0, yy, 1.8, 2.6, STONE_DK, recess=0.5)
+                window(m, 0, yy, 1.8, 2.6, STONE_DK, recess=-0.15)
         # gallery deck + railing
         m.octagon(y + 0.5, 6.4, 1.0, STONE_DK)
         for k in range(16):

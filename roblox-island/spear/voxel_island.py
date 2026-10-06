@@ -13,7 +13,7 @@ import buildings as Bd
 import props as P
 from core import Model
 from terrain import slab_stack
-from terraced import Grid, fence, find_spot, ground_and_cliffs, rowboat
+from terraced import Grid, fence, find_spot, ground_and_cliffs, rowboat, stair_rails
 
 C = dict(
     grass="#6CCB4A", grass2="#4FA83A", rock="#8A97E6", rock_dark="#5E6BC4", rock_light="#B3BCF2",
@@ -44,31 +44,56 @@ def build():
     def first(name):
         return next((p for p in old if p[0] == name), None)
 
-    # plaza radius: distance from the centre to the nearest cell that is not plaza-level path
-    near = min(math.hypot(g.wx(c[0]) - px, g.wx(c[1]) - pz) for c in g.top
-               if not (c in g.plaza or (g.kind[c] == "path" and abs(g.top[c] - PY) < 0.6)))
-    PR = max(12.0, min(24.0, near - 3.0))
-    print("    plaza radius", PR)
-
+    PY = g.top[g.cell_of(px, pz)]                # the plaza floor (a round sunken bowl ~64 studs wide)
+    PR = 15.0                                   # 30-stud centre floor + fountain; shops stand around it
     dock = first("Dock")
     dock_x, dock_z = dock[1], dock[3]
     arch = first("Arch")
-    keep = [((px, pz), PR + 4), ((peak[0], peak[2]), 12), ((arch[1], arch[3]), 18), ((dock_x, dock_z), 10)]
-    taken = []
-    spots = {}
-    for name, r, prefer, lv in (("market", 10, lambda x, z: max(0, x - px) * 3 + max(0, z - pz), (PY, 14, 34)),
-                                ("shop", 9.5, lambda x, z: max(0, px - x) * 3 + max(0, z - pz), (PY, 14, 34)),
-                                ("upgrade", 10, lambda x, z: max(0, z - pz + 5) * 4, (34, PY, 44))):
-        spot = None
-        for level in lv:
-            spot = find_spot(g, (px, pz), r, level, keep, prefer, rmin=PR + r + 3, rmax=95, taken=taken)
-            if spot:
-                spots[name] = (spot[0], level, spot[1])
-                print("   ", name, "at", spots[name])
-                break
+    keep = [((px, pz), PR + 2), ((peak[0], peak[2]), 12), ((arch[1], arch[3]), 18), ((dock_x, dock_z), 10)]
+
+    def ok_cell(c, level):
+        return (c in g.top and abs(g.top[c] - level) < 0.6 and
+                (g.kind[c] == "land" or c in g.plaza) and not (c in g.path and g.path[c][1] == "wood"))
+
+    def ring_spot(angle, size, taken, level=PY, spread=60):
+        """Spot around the plaza, facing its centre, whose whole (w x d) footprint is plaza-level ground."""
+        w, d = size
+        for da in sorted(range(-spread, spread + 1, 5), key=abs):
+            for dist in [PR + d / 2 + k for k in (2, 4, 6, 9, 13)]:
+                a_ = math.radians(angle + da)
+                x, z = px + math.cos(a_) * dist, pz + math.sin(a_) * dist
+                if any(math.hypot(x - tx, z - tz) < (w + tw) / 2 + 1 for (tx, tz), tw in taken):
+                    continue
+                fx, fz = -math.cos(a_), -math.sin(a_)           # front direction (toward the plaza)
+                rx, rz = -fz, fx
+                ok = True
+                for u in range(-int(w / 2), int(w / 2) + 1, 2):
+                    for v in range(-int(d / 2), int(d / 2) + 1, 2):
+                        if not ok_cell(g.cell_of(x + rx * u + fx * v, z + rz * u + fz * v), level):
+                            ok = False
+                            break
+                    if not ok:
+                        break
+                if ok:
+                    return (x, z)
+        return None
+
+    spots, taken = {}, []
+    for name, angle, size in (("market", 180, (22, 12)), ("shop", 0, (19, 15)), ("upgrade", -90, (30, 14))):
+        r = max(size) / 2
+        spot = ring_spot(angle, size, taken)
+        if spot is None and name == "upgrade":       # the terrace toward the lighthouse, or beside the plaza
+            for lvl in (34, 24, 44):
+                spot = find_spot(g, (px, pz), 9.5, lvl, keep, lambda x, z: max(0, z - pz) * 4, rmin=30, rmax=90)
+                if spot:
+                    break
+        else:
+            lvl = PY
         if spot:
-            taken.append(spot)
+            spots[name] = (spot[0], lvl, spot[1])
+            taken.append((spot, size[0]))
             keep.append((spot, r + 3))
+            print("   ", name, "at", spots[name])
 
     def face(pos, target):
         return math.degrees(math.atan2(-(target[0] - pos[0]), -(target[1] - pos[1])))
@@ -96,7 +121,7 @@ def build():
         edge_cells.sort(key=lambda c: math.atan2(g.wx(c[1]), g.wx(c[0])))
         spots_reef = [(dock_x - 16, dock_z + 58, 5.5), (dock_x + 26, dock_z + 64, 5.0), (dock_x + 4, dock_z + 76, 4.5),
                       (dock_x + 30, dock_z + 40, 4.0), (dock_x - 28, dock_z + 36, 4.0)]
-        step = max(1, len(edge_cells) // 12)
+        step = max(1, len(edge_cells) // 9)
         for c in edge_cells[::step]:
             x, z = g.wx(c[0]), g.wx(c[1])
             if math.hypot(x - dock_x, z - dock_z - 40) > 50:
@@ -106,8 +131,8 @@ def build():
             with m.at((x, -12, z), ry=rng.uniform(0, 90)):
                 top = slab_stack(m, 100 + k, h, rng.uniform(10, 15), BANDS, cap=C["sea_sand"], taper=0.8,
                                  depth=rng.uniform(8, 12))
-                with m.at((rng.uniform(-2, 2), top + 0.6, rng.uniform(-2, 2))):
-                    P.coral_tubes(m, 200 + k, P.ACCENTS[colors[ci % 6]])
+                with m.at((rng.uniform(-2, 2), top + 0.6, rng.uniform(-2, 2))):   # stays under the surface
+                    P.coral_tubes(m, 200 + k, P.ACCENTS[colors[ci % 6]], tall=max(0.4, min(1.0, (-2.5 - (top - 11.4)) / 9.5)))
                 ci += 1
                 for j in range(2 if k < 5 else 1):     # the dock reef gets the most coral
                     a = rng.uniform(0, 6.28)
@@ -117,7 +142,7 @@ def build():
                     ci += 1
                 if k % 3 == 0:
                     with m.at((-7, 0, 5)):
-                        P.kelp(m, 400 + k, height=rng.uniform(8, 10))
+                        P.kelp(m, 400 + k, height=rng.uniform(7, 8.5))
 
     # ------------------------------------------------------------ dock (tiers) + travel boat
     z0 = dock_z
@@ -239,47 +264,129 @@ def build():
                     with m.at((0, 13.6, -3.4), ry=90):
                         Bd.fish_icon(m, 3.6, P.ACCENTS["white"], P.ACCENTS["orange"])
 
-    # ------------------------------------------------------------ props: clumped trees, path fences,
+    # ------------------------------------------------------------ props: trees, beach palms, rails,
     # lanterns, flower / bush clusters (no scattered clutter)
     blocked = keep + [((dock_x, dock_z + 20), 26)]
 
     def clear(x, z, r=0):
         return all(math.hypot(x - a, z - b) > rr + r for (a, b), rr in blocked)
 
+    # ------------------------------------------------------------ waterfall from a terrace into a pond
+    best = None
+    for c, t in g.top.items():
+        if g.kind[c] != "land" or abs(t - 24) > 0.6:
+            continue
+        x, z = g.wx(c[0]), g.wx(c[1])
+        dd = math.hypot(x - px, z - pz)
+        if not 40 < dd < 95 or not clear(x, z, 9):
+            continue
+        for d in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            up = (c[0] + d[0], c[1] + d[1])
+            up2 = (c[0] + 2 * d[0], c[1] + 2 * d[1])
+            if g.kind.get(up) != "land" or g.top.get(up, 0) < t + 9 or g.top.get(up2, 0) < t + 9:
+                continue
+            pc = (c[0] - 2 * d[0], c[1] - 2 * d[1])           # pond centre, two cells out from the cliff
+            if all(g.kind.get((pc[0] + a, pc[1] + b)) == "land" and abs(g.top.get((pc[0] + a, pc[1] + b), 0) - t) < 0.6
+                   for a in range(-2, 3) for b in range(-2, 3)):
+                if best is None or dd < best[0]:
+                    best = (dd, c, d, pc, g.top[up])
+    if best:
+        _, c, d, pc, upper = best
+        fy = g.top[c]
+        with m.ctx(stage="buildings", folder="Props"):
+            with m.at((g.wx(pc[0]), fy, g.wx(pc[1]))):
+                m.octagon(0.3, 7.2, 1.0, "#B9B4C8")
+                with m.ctx(collide=False):
+                    m.octagon(0.45, 6.2, 1.0, "#4FC3F7", mat="Glass")
+                for k in range(3):        # lily pads
+                    m.box((2.5 - k * 2.6, 1.0, (-1) ** k * 2.0), (1.6, 0.2, 1.6), "#4FA83A", ry=k * 25, collide=False)
+            ex, ez = g.wx(c[0]) + d[0] * 2.1, g.wx(c[1]) + d[1] * 2.1     # the cliff face
+            # local +Z points away from the cliff (toward the pond); the fall hangs in front of the slabs
+            with m.at((ex, 0, ez), ry=math.degrees(math.atan2(-d[0], -d[1]))), m.ctx(collide=False, shadow=False):
+                n = 4
+                for k in range(n):
+                    y0, y1 = upper - (upper - fy) * k / n, upper - (upper - fy) * (k + 1) / n
+                    m.span((-3.2, y1 - 0.2, 1.6 + k * 0.45), (3.2, y0 + 0.4, 2.6 + k * 0.45),
+                           "#6FD3FA" if k % 2 else "#4FC3F7", mat="Glass")
+                    for xs in (-1.6, 1.2):          # white streaks on every step of the fall
+                        m.span((xs - 0.25, y1, 2.62 + k * 0.45), (xs + 0.25, y0, 2.8 + k * 0.45), "#FFFFFF")
+                m.span((-3.5, upper - 0.4, -6.0), (3.5, upper + 0.35, 2.6), "#4FC3F7", mat="Glass")   # channel on top
+                for k in range(3):        # foam where it lands
+                    m.box((-2 + k * 2, fy + 0.9, 4.2 + k * 0.4), (1.8, 0.8, 1.8), "#FFFFFF", ry=k * 20)
+        blocked.append(((g.wx(pc[0]), g.wx(pc[1])), 10))
+        print("    waterfall at", (g.wx(c[0]), fy, g.wx(c[1])), "drop", upper - fy)
+
     with m.ctx(stage="props", folder="Props"):
-        trees = [p for p in old if p[0] in TREES and clear(p[1], p[3], 3)]
-        clumped = []
-        for p in trees:
-            n = sum(1 for q in trees if q is not p and math.hypot(p[1] - q[1], p[3] - q[3]) < 18)
-            if n >= 1:
-                clumped.append((n, p))
-        clumped.sort(key=lambda t: (-t[0], t[1][1]))
+        # trees: every original tree spot that is clear of the buildings; oaks around the village
         kept = []
-        for n, p in clumped:
-            if len(kept) >= 72:
-                break
-            if all(math.hypot(p[1] - q[1], p[3] - q[3]) > 7 for q in kept):
+        for p in sorted((p for p in old if p[0] in TREES and clear(p[1], p[3], 4)), key=lambda p: (p[1], p[3])):
+            if len(kept) < 78 and all(math.hypot(p[1] - q[1], p[3] - q[3]) > 6.5 for q in kept):
                 kept.append(p)
         for k, p in enumerate(kept):
             with m.at((p[1], p[2], p[3]), ry=p[4]):
-                P.pine(m, TREES[p[0]], 1000 + k)
+                if math.hypot(p[1] - px, p[3] - pz) < 80 and k % 3 != 0:
+                    P.oak(m, (0, 1, 2)[k % 3], 1000 + k)
+                else:
+                    P.pine(m, TREES[p[0]], 1000 + k)
+        # beach: palm clumps (2-3 palms + bush + flowers at the base) and hero rocks
+        def water_near(c, r):
+            return any((c[0] + a, c[1] + b) not in g.top for a in range(-r, r + 1) for b in range(-r, r + 1))
+
+        def cliff_near(c, r):
+            return any(g.top.get((c[0] + a, c[1] + b), 0) > g.top[c] + 2 for a in range(-r, r + 1) for b in range(-r, r + 1))
+
+        # open beach near the waterline (not right at the edge, not under a cliff)
+        beach_cells = [c for c in g.top if g.kind[c] == "beach" and water_near(c, 3) and not water_near(c, 1)
+                       and not cliff_near(c, 3)]
+        beach_cells.sort(key=lambda c: math.atan2(g.wx(c[1]), g.wx(c[0])))
+        palms_at, rocks_at = [], []
+        for c in beach_cells[::7]:
+            x, z = g.wx(c[0]), g.wx(c[1])
+            near_path = any(g.kind.get((c[0] + a, c[1] + b)) == "path" for a in range(-3, 4) for b in range(-3, 4))
+            if near_path or not clear(x, z, 8):
+                continue
+            if len(rocks_at) < 3 and all(math.hypot(x - a, z - b) > 90 for a, b in rocks_at + palms_at) \
+                    and len(palms_at) >= len(rocks_at) * 2:
+                rocks_at.append((x, z))
+                with m.ctx(stage="terrain", folder="Terrain"), m.at((x, g.top[c] - 1, z), ry=(c[0] * 37) % 360):
+                    slab_stack(m, 70 + len(rocks_at), 9, 10, BANDS, cap=C["grass"], cap_strip=C["sand"], taper=0.7)
+                with m.at((x + 6.5, g.top[c], z + 1.5)):
+                    P.flowers(m, 80 + len(rocks_at), ("red", "yellow", "pink"))
+                with m.at((x - 5.0, g.top[c], z - 4.0)):
+                    P.bush(m, 85 + len(rocks_at))
+            elif len(palms_at) < 7 and all(math.hypot(x - a, z - b) > 45 for a, b in palms_at + rocks_at):
+                palms_at.append((x, z))
+                n = 3 if len(palms_at) % 2 else 2
+                for j in range(n):
+                    a_ = j * 2.4 + c[0]
+                    with m.at((x + math.cos(a_) * 4.5, g.top[c], z + math.sin(a_) * 4.5), ry=(j * 140 + c[1] * 13) % 360):
+                        P.palm(m, (2, 1, 0)[j], 1500 + len(palms_at) * 5 + j)
+                with m.at((x + 1.0, g.top[c], z - 1.5)):
+                    P.bush(m, 1550 + len(palms_at))
+                with m.at((x - 2.5, g.top[c], z + 3.0)):
+                    P.flowers(m, 1560 + len(palms_at), ("pink", "yellow"))
         bushes, flowers = [], []
         for p in old:
-            if p[0] == "Bush" and len(bushes) < 12 and clear(p[1], p[3], 2) and \
+            if p[0] == "Bush" and len(bushes) < 10 and clear(p[1], p[3], 2) and \
                     any(math.hypot(p[1] - q[1], p[3] - q[3]) < 14 for q in kept) and \
-                    all(math.hypot(p[1] - a, p[3] - b) > 22 for a, b in bushes):
+                    all(math.hypot(p[1] - a, p[3] - b) > 20 for a, b in bushes):
                 bushes.append((p[1], p[3]))
                 with m.at((p[1], p[2], p[3])):
                     P.bush(m, 1100 + len(bushes))
             if p[0] == "Flowers" and len(flowers) < 14 and clear(p[1], p[3], 2):
                 c = g.cell_of(p[1], p[3])
                 near_path = any(g.kind.get((c[0] + a, c[1] + b)) == "path" for a in (-1, 0, 1) for b in (-1, 0, 1))
-                if near_path and all(math.hypot(p[1] - a, p[3] - b) > 26 for a, b in flowers):
+                if near_path and all(math.hypot(p[1] - a, p[3] - b) > 22 for a, b in flowers):
                     flowers.append((p[1], p[3]))
                     with m.at((p[1], p[2], p[3])):
                         P.flowers(m, 1200 + len(flowers), (("red", "yellow"), ("pink", "yellow"), ("red", "pink"))[len(flowers) % 3])
+        # railings: proper stair rails on the wooden stairs, fences only along the stone paths
+        stair_rails(m, g, C)
+        wood = {c for c, v in g.path.items() if v[1] == "wood"}
         for p in old:
-            if p[0] == "Fence" and clear(p[1], p[3], 1):
+            c = g.cell_of(p[1], p[3])
+            if p[0] == "Fence" and clear(p[1], p[3], 1) and not any((c[0] + a, c[1] + b) in wood
+                                                                    for a in (-1, 0, 1) for b in (-1, 0, 1)):
                 fence(m, p[1], p[2], p[3], p[4], C["wood"], C["wood_dark"])
         with m.ctx(tier=2):
             for p in old:
@@ -288,26 +395,11 @@ def build():
                         P.lantern_post(m)
             for k, a in enumerate((45, 135, 225, 315)):
                 r = math.radians(a)
-                with m.at((px + math.cos(r) * (PR * 0.62), PY + 0.4, pz + math.sin(r) * (PR * 0.62)),
+                with m.at((px + math.cos(r) * (PR * 0.66), PY + 0.4, pz + math.sin(r) * (PR * 0.66)),
                           ry=math.degrees(math.atan2(math.cos(r), math.sin(r)))):
-                    for s in (-1, 1):
-                        with m.at((s * 3.6, 0, 0)):
+                    for s_ in (-1, 1):
+                        with m.at((s_ * 3.6, 0, 0)):
                             P.bench(m)
-            def entry(a):      # is there a path leaving the plaza in this direction?
-                r = math.radians(a)
-                for d in (PR + 2, PR + 6):        # anything but grass next to the plaza is a way in
-                    c = g.cell_of(px + math.cos(r) * d, pz + math.sin(r) * d)
-                    if g.kind.get(c) != "land":
-                        return True
-                return False
-            placed = []
-            for a in range(0, 360, 15):
-                if len(placed) < 4 and not any(entry(a + o) for o in (-20, -10, 0, 10, 20)) and \
-                        all(abs((a - b + 180) % 360 - 180) > 60 for b in placed):
-                    placed.append(a)
-                    r = math.radians(a)
-                    with m.at((px + math.cos(r) * (PR - 3.0), PY + 0.4, pz + math.sin(r) * (PR - 3.0)), ry=-a + 90):
-                        P.planter(m, 1300 + len(placed))
         with m.ctx(tier=3):    # bunting across the plaza + flower boxes by the shops
             poles = [(px + math.cos(math.radians(a)) * (PR - 1), pz + math.sin(math.radians(a)) * (PR - 1))
                      for a in (25, 155, 205, 335)]
@@ -346,6 +438,15 @@ def build():
         ang = math.radians(face((x, z), (px, pz)))
         fx, fz = -math.sin(ang), -math.cos(ang)
         cams[name] = ((x + fx * 34 - fz * 12, y + 20, z + fz * 34 + fx * 12), (x, y + 5, z), 32)
+    if palms_at:
+        bx, bz = palms_at[0]
+        L = math.hypot(bx, bz) or 1
+        cams["beach"] = ((bx + bx / L * 46 + bz / L * 14, 9, bz + bz / L * 46 - bx / L * 14), (bx, 9, bz), 30)
+        print("    palm clumps", [(round(a), round(b)) for a, b in palms_at])
+    cams["stairs"] = ((dock_x + 10, 14, dock_z + 16), (dock_x, 20, dock_z - 40), 28)
+    if best:
+        wx_, wz_ = g.wx(best[1][0]), g.wx(best[1][1])
+        cams["waterfall"] = ((wx_ - best[2][0] * 36 + 12, 36, wz_ - best[2][1] * 36 + 12), (wx_, 28, wz_), 30)
     spawn = (px + 4, PY + 1.5, pz + PR * 0.5)
     water = (-300, -14, -300, 300, 0, 300)
     return m, PRESET, water, spawn, cams

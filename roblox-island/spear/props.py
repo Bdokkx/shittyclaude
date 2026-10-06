@@ -91,9 +91,8 @@ def palm(m, size, seed, greens=("#3FAE4A", "#2E8F3C"), trunk=("#B98552", "#9A6A3
             a = k * 60 + rng.uniform(-10, 10)
             with m.at((x, y + 1.1, 0), ry=a):
                 # each frond: a long flat leaf rising then two drooping pieces
-                m.box((0, 0.6, -2.6), (2.4, 0.5, 5.4), greens[k % 2], rx=-12)
-                m.box((0, -0.4, -6.6), (2.0, 0.5, 3.6), greens[(k + 1) % 2], rx=22)
-                m.box((0, -1.8, -8.6), (1.4, 0.5, 2.0), greens[k % 2], rx=48)
+                m.box((0, 0.6, -2.8), (2.6, 0.5, 5.8), greens[k % 2], rx=-12)
+                m.box((0, -0.9, -7.4), (2.0, 0.5, 4.6), greens[(k + 1) % 2], rx=30)
         for s in (-1, 1):
             m.box((x + s * 0.9, y - 0.4, 0.8), (1.1, 1.1, 1.1), "#7A4E2D")
 

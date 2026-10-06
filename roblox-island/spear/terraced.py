@@ -68,24 +68,29 @@ def ground_and_cliffs(m, g, C, seed, water_levels):
             style = g.path[c][1] if c in g.path else "cobble"
             if c in g.plaza:
                 return C["path_border"]
-            if style == "wood":
-                return C["wood"] if (c[0] + c[1]) % 2 else C["wood_dark"]
+            if style == "wood":       # plank stripes run across the stair, alternating per step
+                return C["wood"] if int(round(g.top[c] * 2)) % 2 else C["wood_dark"]
             return C["path"]
         if k == "beach":
             return C["sand2"] if noise2(x, z, seed + 1, 48) > 0.64 else C["sand"]
-        if s == "rocktop":
-            return C["rocktop"]
         return C["grass2"] if noise2(x, z, seed + 2, 52) > 0.62 else C["grass"]
 
-    tops = {c: (round(g.top[c], 2), top_color(c)) for c in g.top}
+    def is_edge(c):
+        """Cell at the top of a visible cliff: its sides need rock colour under the top tile."""
+        t = g.top[c]
+        return g.kind[c] != "path" and any(g.top.get((c[0] + d[0], c[1] + d[1]), -9) < t - 1.5 for d in DIRS)
+
+    edge = {c: False for c in g.top}     # cliff faces are covered by the slab runs: one solid part per tile
+    tops = {c: (round(g.top[c], 2), top_color(c), edge[c]) for c in g.top}
     with m.ctx(stage="terrain", folder="Terrain"):
-        for i0, j0, i1, j1, (t, col) in greedy(tops):
-            m.span((g.wx(i0) - S / 2, t - 1, g.wx(j0) - S / 2), (g.wx(i1) + S / 2, t, g.wx(j1) + S / 2), col)
-        # hidden fill under the tops, merged in 5-stud height steps (cliff faces are covered by slabs)
-        bodies = {c: max(2.0, math.floor((g.top[c] - 1) / 10) * 10) for c in g.top}
+        for i0, j0, i1, j1, (t, col, e) in greedy(tops):
+            # interior cells and stair steps are one solid part; cliff-edge cells get a 1-stud top + rock body
+            m.span((g.wx(i0) - S / 2, (t - 1) if e else -2.0, g.wx(j0) - S / 2),
+                   (g.wx(i1) + S / 2, t, g.wx(j1) + S / 2), col)
+        bodies = {c: round(g.top[c], 2) for c in g.top if edge[c]}
         for i0, j0, i1, j1, t in greedy(bodies):
-            m.span((g.wx(i0) - S / 2, -2.0, g.wx(j0) - S / 2), (g.wx(i1) + S / 2, t, g.wx(j1) + S / 2),
-                   C["body"], shadow=False)
+            m.span((g.wx(i0) - S / 2, -2.0, g.wx(j0) - S / 2), (g.wx(i1) + S / 2, t - 1, g.wx(j1) + S / 2),
+                   C["rock_dark"], shadow=False)
 
     # sea: distance from land in cells -> shelf1 / shelf2 / floor
     N = g.N
@@ -117,12 +122,9 @@ def ground_and_cliffs(m, g, C, seed, water_levels):
             tone = C["sea_sand"]
         sea_cells[c] = (lv, tone)
     with m.ctx(stage="reef", folder="Reef"):
-        for i0, j0, i1, j1, (lv, col) in greedy(sea_cells):
-            m.span((g.wx(i0) - S / 2, lv - 1, g.wx(j0) - S / 2), (g.wx(i1) + S / 2, lv, g.wx(j1) + S / 2), col)
-        shelves = {c: v[0] for c, v in sea_cells.items() if v[0] > water_levels[2]}
-        for i0, j0, i1, j1, lv in greedy(shelves):       # shelves need a body down to the floor
+        for i0, j0, i1, j1, (lv, col) in greedy(sea_cells):   # one solid part per shelf rectangle
             m.span((g.wx(i0) - S / 2, water_levels[2] - 1, g.wx(j0) - S / 2),
-                   (g.wx(i1) + S / 2, lv - 1, g.wx(j1) + S / 2), C["rock_dark"], shadow=False)
+                   (g.wx(i1) + S / 2, lv, g.wx(j1) + S / 2), col)
         # open sea floor beyond the grid
         lo, hi = g.wx(-4) - S / 2, g.wx(N + 3) + S / 2
         for a, b in (((-400, -400), (400, lo)), ((-400, hi), (400, 400)), ((-400, lo), (lo, hi)), ((hi, lo), (400, hi))):
@@ -185,8 +187,6 @@ def ground_and_cliffs(m, g, C, seed, water_levels):
                     lip, strip, bands = C["sand"], None, (C["sand"], C["sand2"], C["sand2"])
                 elif kind == "path":
                     lip, strip, bands = tops[c0][1], None, (C["rock_light"], C["rock"], C["rock_dark"])
-                elif kind == "rocktop":
-                    lip, strip, bands = C["rocktop"], None, (C["rock_light"], C["rock"], C["rock_dark"])
                 else:
                     lip, strip, bands = C["grass"], C["sand"], (C["rock_light"], C["rock"], C["rock_dark"])
                 slab_face(m, cx, cz, d, w, t, t2, lip, strip, bands, rng)
@@ -196,7 +196,7 @@ def ground_and_cliffs(m, g, C, seed, water_levels):
 def slab_face(m, cx, cz, d, w, y_top, y_low, lip, strip, bands, rng, inward=3.0):
     ry = math.degrees(math.atan2(d[0], d[1]))
     with m.at((cx, 0, cz), ry=ry):        # local +Z points out of the cliff
-        o = rng.uniform(1.0, 2.2)
+        o = rng.uniform(0.6, 1.4)
         jit = rng.uniform(-0.03, 0.03)
         m.span((-w / 2, y_top - 0.8 + jit, -inward), (w / 2, y_top + 0.2 + jit, o), lip)
         y = y_top - 0.8
@@ -204,7 +204,8 @@ def slab_face(m, cx, cz, d, w, y_top, y_low, lip, strip, bands, rng, inward=3.0)
             m.span((-w / 2 + 0.15, y - 0.9, -inward), (w / 2 - 0.15, y, o - 0.4), strip)
             y -= 0.9
         height = y_top - y_low
-        if w < 6 and height <= 4.5:      # single-cell step on a jagged outline: the lip is enough
+        if height <= 5.5:      # low step: one slab fills everything under the lip (nothing floats)
+            m.span((-w / 2 + 0.2, y_low - 0.6, -inward), (w / 2 - 0.2, y, max(0.3, o - 0.25)), bands[1])
             return
         k = 0
         while y > y_low - 0.4:
@@ -214,7 +215,7 @@ def slab_face(m, cx, cz, d, w, y_top, y_low, lip, strip, bands, rng, inward=3.0)
             yc = y - th / 2
             f = (yc - y_low) / max(height, 1e-3)
             col = bands[0] if f > 0.62 else bands[1] if f > 0.28 else bands[2]
-            out = rng.uniform(-0.4, 1.8) if k else rng.uniform(-0.2, o - 0.5)
+            out = rng.uniform(0.0, 1.6) if k else max(0.3, o - 0.25)     # first layer always under the lip
             ww = w + rng.uniform(-1.2, 0.8)
             with m.at((rng.uniform(-0.8, 0.8), yc, 0), rx=rng.uniform(3, 10) * rng.choice((-1, 1)),
                       rz=rng.uniform(-2.5, 2.5)):
@@ -274,3 +275,23 @@ def rowboat(m, wood, dark, stripe):
     m.box((0, 0.6, 0.8), (2.6, 0.4, 1.0), dark)
     for s in (-1, 1):
         m.box((s * 2.6, 0.9, 0.8), (3.0, 0.3, 0.4), dark, rz=s * 20)
+
+
+def stair_rails(m, g, C):
+    """Wooden stairs (wood-style path cells): a post + rail on every open side of every step, so the
+    stair reads as one continuous railed staircase instead of loose fences."""
+    for c, (h, style, (dx, dz), dist) in g.path.items():
+        if style != "wood" or c not in g.top:
+            continue
+        t = g.top[c]
+        tx, tz = (1, 0) if abs(dx) >= abs(dz) else (0, 1)          # travel axis
+        for s in (-1, 1):
+            side = (tz * s, tx * s)                                 # perpendicular
+            nb = (c[0] + side[0], c[1] + side[1])
+            if g.kind.get(nb) == "path":
+                continue
+            ex = g.wx(c[0]) + side[0] * (g.S / 2 - 0.4)
+            ez = g.wx(c[1]) + side[1] * (g.S / 2 - 0.4)
+            with m.ctx(stage="dock", folder="Dock"):
+                m.box((ex, t + 1.6, ez), (0.7, 3.2, 0.7), C["wood_dark"])
+                m.box((ex, t + 3.0, ez), (0.5 + abs(tx) * 3.9, 0.5, 0.5 + abs(tz) * 3.9), C["wood"])

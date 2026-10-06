@@ -41,7 +41,7 @@ def panel(canvas, name, box, label):
 
 def main(m):
     W = 2400
-    img = Image.new("RGB", (W, 3300), BG)
+    img = Image.new("RGB", (W, 3800), BG)
     d = ImageDraw.Draw(img)
     d.text((40, 24), m.upper() + "  -  rebuild for review", font=font(56), fill=ACC)
     d.text((40, 96), "same island shape, rebuilt to the style bible: banded slab cliffs, calm 2-tone ground, no clutter, "
@@ -61,27 +61,32 @@ def main(m):
     for k, (n, lab) in enumerate(row):
         x = 40 + k * (w + 30)
         panel(img, n, (x, 1495, x + w, 1955), lab)
-    d.text((40, 1985), "BUILD STAGES", font=font(34), fill=ACC)
+    row = [(m + "_beach", "beach palms"), (m + "_stairs", "wood stairs from the dock"), (m + "_waterfall", "waterfall + pond")]
+    for k, (n, lab) in enumerate(row):
+        x = 40 + k * (w + 30)
+        panel(img, n, (x, 1985, x + w, 2445), lab)
+    oy = 490
+    d.text((40, 1985 + oy), "BUILD STAGES", font=font(34), fill=ACC)
     row = [(m + "_overhead_stage1_terrain", "1 terrain"), (m + "_overhead_stage2_dock_reef", "2 + dock & reef"),
            (m + "_overhead_stage3_buildings", "3 + buildings"), (m + "_overhead", "4 + props & lighting")]
     w = (W - 80 - 3 * 30) // 4
     for k, (n, lab) in enumerate(row):
         x = 40 + k * (w + 30)
-        panel(img, n, (x, 2035, x + w, 2365), lab)
-    d.text((40, 2395), "UPGRADE TIERS", font=font(34), fill=ACC)
+        panel(img, n, (x, 2035 + oy, x + w, 2365 + oy), lab)
+    d.text((40, 2395 + oy), "UPGRADE TIERS", font=font(34), fill=ACC)
     row = [(m + "_overhead_tier1", "Tier 1: short pier, stalls, dirt plaza + well"),
            (m + "_overhead_tier2", "Tier 2: T-pier, shop buildings, stone plaza + fountain, lanterns"),
            (m + "_overhead_tier3", "Tier 3: 2nd fishing platform, bunting, lit lighthouse beam")]
     w = (W - 80 - 2 * 30) // 3
     for k, (n, lab) in enumerate(row):
         x = 40 + k * (w + 30)
-        panel(img, n, (x, 2445, x + w, 2845), lab)
+        panel(img, n, (x, 2445 + oy, x + w, 2845 + oy), lab)
     out = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "check_spear.py"), m], capture_output=True,
                          text=True).stdout.splitlines()
-    d.text((40, 2880), "SELF-REVIEW CHECKLIST (style bible section 8)", font=font(30), fill=ACC)
+    d.text((40, 2880 + oy), "SELF-REVIEW CHECKLIST (style bible section 8)", font=font(30), fill=ACC)
     f = font(20, False)
     for k, line in enumerate(out[1:]):
-        d.text((40 + (k // 6) * 1180, 2925 + (k % 6) * 30), line.strip()[:110], font=f, fill=INK)
+        d.text((40 + (k // 6) * 1180, 2925 + oy + (k % 6) * 30), line.strip()[:110], font=f, fill=INK)
     path = os.path.join(PREV, m + "_review.png")
     img.save(path, optimize=True)
     print(path)

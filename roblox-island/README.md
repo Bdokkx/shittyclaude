@@ -36,7 +36,7 @@ top left, the dock at the bottom left, the plaza in the middle and the sandy bea
   - `Tier1`: short pier, simple stalls, dirt plaza with a well.
   - `Tier2`: T-pier, shop buildings, stone plaza with fountain, lanterns.
   - `Tier3`: second fishing platform, bunting, spinning lighthouse beam.
-- **Part count:** 11.8k parts including all tiers (budget 12,000). Small decor has CanCollide and CastShadow off.
+- **Part count:** 11.9k parts including all tiers (budget 12,000). Small decor has CanCollide and CastShadow off.
 
 The review sheet with every view, the build stages, the tiers and the checklist is
 `previews/spear/VoxelIsland_review.png`.
