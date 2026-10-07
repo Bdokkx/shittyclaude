@@ -17,6 +17,9 @@ local island = lobby:FindFirstChild("Island")
 local decor = lobby:FindFirstChild("Decor")
 for _, c in island:GetChildren() do c:Destroy() end
 for _, c in decor:GetChildren() do c:Destroy() end
+for _, c in lobby.Markers:GetChildren() do
+	if c.Name ~= "LobbySpawn" then c:Destroy() end -- re-export safe: only the original marker is kept
+end
 
 local function hex(h)
 	h = h:gsub("#", "")
@@ -53,7 +56,13 @@ for _, d in data.parts do
 		l.Color = hex(d.light[4])
 		l.Parent = p
 	end
-	if d.folder == "Island" then
+	if d.transparency and d.transparency > 0 then
+		p.Transparency = d.transparency
+	end
+	if d.folder == "Markers" then
+		p.Name = d.name
+		p.Parent = lobby:FindFirstChild("Markers")
+	elseif d.folder == "Island" then
 		p.Name = d.name or (d.stage == "terrain" and "Ground" or "Part")
 		p.Parent = island
 		if d.name == "Grass" then island.PrimaryPart = p end
@@ -86,6 +95,7 @@ local function need(path)
 end
 need("Markers/LobbySpawn")
 need("SpawnLocation")
+assert(need("Markers/NPCSpot").Transparency == 1 and not need("Markers/NPCSpot").CanCollide)
 assert(need("CoinsBoard/Board"):GetAttribute("Leaderboard") == "Coins")
 assert(need("StreakBoard/Board"):GetAttribute("Leaderboard") == "Streak")
 assert(need("CoinsBoard/Header/Label/Text").Text == "TOP COINS")

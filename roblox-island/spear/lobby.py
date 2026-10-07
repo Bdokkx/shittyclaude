@@ -32,6 +32,7 @@ SAND = ("#F3E2B6", "#E9D29C")        # plaza tiles
 TRIM = "#C9AE78"
 STONE = "#B9B4C8"
 STONE_DK = "#8E89A0"
+ACC_PURPLE = "#B67CFF"
 
 
 def outline(r=49.0, seed=5, amp=0.035, p=3.2, n=160):
@@ -208,9 +209,9 @@ def plaza_ring(m, sp, k):
             with m.ctx(stage="props", folder="Decor", tag="Lantern:%d" % next(k)):
                 with m.at((x, 0.6, z), ry=math.degrees(math.atan2(-x, -z)) + 90):
                     P.lantern_post(m, h=8)
-    # benches facing the plaza from east and west, with a planter either side
+    # benches facing the plaza from the east (the west side holds the NPC stand), planters both sides
     for s in (-1, 1):
-        for z in (-6, 6):
+        for z in ((-6, 6) if s > 0 else ()):
             with m.ctx(stage="props", folder="Decor", tag="Bench:%d" % next(k)):
                 with m.at((s * 28.5, 0, z), ry=90 * s):
                     P.bench(m)
@@ -227,6 +228,39 @@ def plaza_ring(m, sp, k):
                 with m.at((s * 10.0, 0, z), ry=180 if s < 0 else 0):
                     P.lantern_post(m, h=8)
             sp.block(s * 10.0, z, 2.0)
+
+
+def npc_stand(m, sp, k, pos=(-31.0, 0.0, 0.0)):
+    """Open stand for an NPC on the west side of the plaza: stone platform, four posts, striped roof and a
+    floating yellow "!". Markers/NPCSpot (invisible) is where the NPC stands; its front (LookVector) faces the
+    plaza, so a script can do  npc:PivotTo(Lobby.Markers.NPCSpot.CFrame * CFrame.new(0, 3, 0)).
+    Local frame: front = -Z (towards the plaza)."""
+    sp.block(pos[0], pos[2], 7.0)
+    roof, roof2 = ACC_PURPLE, "#FFF7EC"
+    with m.at(pos, ry=-90):
+        with m.ctx(stage="props", folder="Decor", tag="NPCStand:%d" % next(k), collide=True):
+            m.octagon(0.45, 5.4, 0.9, STONE_DK)
+            m.octagon(1.0, 4.9, 0.3, STONE)
+            m.octagon(1.12, 3.6, 0.2, SAND[1])
+            m.box((0, 0.3, -5.9), (4.4, 0.6, 1.6), STONE)
+            for x in (-3.8, 3.8):
+                for z in (-3.8, 3.8):
+                    m.box((x, 1.4, z), (1.4, 0.6, 1.4), STONE_DK)
+                    m.box((x, 5.4, z), (0.8, 7.6, 0.8), C["wood_dark"])
+            for x in (-3.8, 3.8):                                       # low side rails (open front + back)
+                m.box((x, 3.0, 0), (0.4, 0.4, 7.6), C["wood"])
+            m.box((0, 3.0, 3.8), (7.6, 0.4, 0.4), C["wood"])
+            # stepped striped roof
+            m.octagon(9.5, 5.6, 0.6, C["wood_dark"])
+            for i, (r, y) in enumerate(((5.2, 10.1), (4.0, 10.7), (2.8, 11.3), (1.6, 11.9))):
+                m.octagon(y, r, 0.6, roof if i % 2 == 0 else roof2)
+            m.box((0, 12.6, 0), (0.8, 0.8, 0.8), "#FFD447")
+        with m.ctx(stage="props", folder="Decor", tag="NPCStand:%d" % next(k), collide=False, shadow=False):
+            # floating "!" so players can spot the NPC from the spawn
+            m.box((0, 16.2, 0), (1.2, 3.0, 1.2), "#FFD447", mat="Neon")
+            m.box((0, 13.9, 0), (1.2, 1.0, 1.2), "#FFD447", mat="Neon")
+        with m.ctx(stage="marker", folder="Markers", tag="Marker", collide=False, shadow=False):
+            m.box((0, 1.72, 0), (3.0, 1.0, 3.0), "#FFFFFF", name="NPCSpot", transparency=1.0)
 
 
 def fence(m, rim, sp, k):
@@ -334,6 +368,7 @@ def build():
         terrain(m, rim)
         plaza(m, sp)
         boards_decor(m, sp, counter)
+        npc_stand(m, sp, counter)
         plaza_ring(m, sp, counter)
         fence(m, rim, sp, counter)
         plants(m, rim, sp, counter)
@@ -343,6 +378,7 @@ def build():
         "overview": ((ox + 95, oy + 55, oz + 120), (ox, oy - 10, oz), 32),
         "plaza": ((ox + 0, oy + 14, oz + 62), (ox, oy + 6, oz - 30), 24),
         "boards": ((ox - 26, oy + 8, oz + 8), (ox + 4, oy + 9, oz - 34), 24),
+        "npc": ((ox - 8, oy + 9, oz + 16), (ox - 31, oy + 6, oz), 26),
         "under": ((ox - 120, oy - 40, oz + 90), (ox, oy - 25, oz), 32),
     }
     return m, cams
