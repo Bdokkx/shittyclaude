@@ -15,7 +15,8 @@ Fixed from the original:
   - the rock body had CanCollide off, so players fell into the cliffs -> cliffs collide
 
 October theme: autumn grass and trees, fallen leaves, hay bales, jack-o'-lanterns, a pumpkin inlay on the
-plaza, and a Pumpkin Patch quest area on the west side: the NPC stand (Markers/NPCSpot) between two fenced
+plaza, and a Pumpkin Patch quest area on the west side: an open NPC spot (Markers/NPCSpot) with scenery
+around it, between two fenced
 fields whose pumpkins are separate models in Lobby/PumpkinPatch (QuestPumpkin, PrimaryPart = the core).
 """
 import math
@@ -224,7 +225,7 @@ def plaza_ring(m, sp, k):
             with m.ctx(stage="props", folder="Decor", tag="Lantern:%d" % next(k)):
                 with m.at((x, 0.6, z), ry=math.degrees(math.atan2(-x, -z)) + 90):
                     P.lantern_post(m, h=8)
-    # benches facing the plaza from the east (the west side holds the NPC stand), planters both sides
+    # benches facing the plaza from the east (the west side holds the NPC spot), hay bales on the east
     for s in (-1, 1):
         for z in ((-6, 6) if s > 0 else ()):
             with m.ctx(stage="props", folder="Decor", tag="Bench:%d" % next(k)):
@@ -255,55 +256,60 @@ def plaza_ring(m, sp, k):
             sp.block(s * 10.2, z + 2.6, 1.2)
 
 
-def npc_stand(m, sp, k, pos=(-31.0, 0.0, 0.0)):
-    """Open stand for an NPC on the west side of the plaza: stone platform, four posts, striped roof and a
-    floating yellow "!". Markers/NPCSpot (invisible) is where the NPC stands; its front (LookVector) faces the
-    plaza, so a script can do  npc:PivotTo(Lobby.Markers.NPCSpot.CFrame * CFrame.new(0, 3, 0)).
+def npc_spot(m, sp, k, pos=(-31.0, 0.0, 0.0)):
+    """A spot for an NPC on the west side of the plaza - no building, just a trodden dirt clearing with autumn
+    scenery around the back and sides (hay bales, pumpkins, corn, a maple) and the open side facing the plaza.
+    Markers/NPCSpot (invisible) is where the NPC stands; its front (LookVector) faces the plaza, so a script can
+    do  npc:PivotTo(Lobby.Markers.NPCSpot.CFrame * CFrame.new(0, 3, 0)).
     Local frame: front = -Z (towards the plaza)."""
     sp.block(pos[0], pos[2], 7.0)
-    roof, roof2 = A.ORANGE[0], A.PURPLE
+    sp.block(pos[0] - 10.5, pos[2], 4.5)                                 # the maple behind it
+    rng = random.Random(77)
     with m.at(pos, ry=-90):
-        with m.ctx(stage="props", folder="Decor", tag="NPCStand:%d" % next(k), collide=True):
-            m.octagon(0.45, 5.4, 0.9, STONE_DK)
-            m.octagon(1.0, 4.9, 0.3, STONE)
-            m.octagon(1.12, 3.6, 0.2, SAND[1])
-            m.box((0, 0.3, -5.9), (4.4, 0.6, 1.6), STONE)
-            for x in (-3.8, 3.8):
-                for z in (-3.8, 3.8):
-                    m.box((x, 1.4, z), (1.4, 0.6, 1.4), STONE_DK)
-                    m.box((x, 5.4, z), (0.8, 7.6, 0.8), C["wood_dark"])
-            for x in (-3.8, 3.8):                                       # low side rails (open front + back)
-                m.box((x, 3.0, 0), (0.4, 0.4, 7.6), C["wood"])
-            m.box((0, 3.0, 3.8), (7.6, 0.4, 0.4), C["wood"])
-            # stepped striped roof
-            m.octagon(9.5, 5.6, 0.6, C["wood_dark"])
-            for i, (r, y) in enumerate(((5.2, 10.1), (4.0, 10.7), (2.8, 11.3), (1.6, 11.9))):
-                m.octagon(y, r, 0.6, roof if i % 2 == 0 else roof2)
-            m.box((0, 12.6, 0), (0.8, 0.8, 0.8), "#FFD447")
-            # quest sign across the front, under the roof
-            m.box((0, 8.3, -4.2), (8.4, 1.9, 0.3), C["wood_dark"])
-            sign = m.box((0, 8.3, -4.4), (7.6, 1.5, 0.2), "#FFF1D6")
-            m.text(sign, "PUMPKIN QUEST", "#C2410C", "Front")
-            for x in (-2.7, 2.7):                                         # pumpkins on the back corners
-                with m.at((x, 1.22, 2.7), ry=x * 10):
-                    A.pumpkin(m, 0.6, int(x * 10))
-            for x in (-4.6, 4.6):                                         # hay bales either side of the step
-                with m.at((x, 0, -6.9)):
-                    A.hay_bale(m, w=3.6, seed=int(x),
-                               top=lambda m_, x=x: A.pumpkin(m_, 0.7, int(x) + 5, carved=x > 0))
-        with m.ctx(stage="props", folder="Decor", tag="NPCStand:%d" % next(k), collide=False, shadow=False):
-            # floating "!" so players can spot the NPC from the spawn
-            m.box((0, 16.2, 0), (1.2, 3.0, 1.2), "#FFD447", mat="Neon")
-            m.box((0, 13.9, 0), (1.2, 1.0, 1.2), "#FFD447", mat="Neon")
+        with m.ctx(stage="props", folder="Decor", tag="NPCClearing:%d" % next(k), collide=True):
+            # flat, walkable ground: dirt clearing with a lighter centre and stepping stones from the plaza
+            m.octagon(0.1, 5.2, 0.2, "#A7794A")
+            m.octagon(0.22, 3.4, 0.08, "#C9A27A")
+            for z, x in ((-6.2, -0.4), (-7.6, 0.5)):
+                m.box((x, 0.08, z), (2.0, 0.16, 1.2), STONE, ry=rng.uniform(-15, 15))
+        with m.ctx(stage="props", folder="Decor", tag="NPCScenery:%d" % next(k), collide=True):
+            # back: two hay bales with a third on top, pumpkins on and in front of them
+            for x in (-2.3, 2.3):
+                with m.at((x, 0, 6.2)):
+                    A.hay_bale(m, w=4.2, seed=int(x * 3))
+            with m.at((0.3, 2.2, 6.2), ry=6):
+                A.hay_bale(m, w=3.8, seed=9, top=lambda m_: A.pumpkin(m_, 0.9, 31, carved=True))
+            with m.at((-3.4, 2.2, 6.0), ry=20):
+                A.pumpkin(m, 0.6, 32)
+            with m.at((3.2, 0, 4.0), ry=-25):
+                A.pumpkin(m, 0.8, 33, carved=True)
+            # sides: pumpkin piles and a crate of pumpkins, corn stalks at the back corners
+            with m.at((-5.4, 0, 1.0), ry=60):
+                A.pumpkin_pile(m, 34, n=3, carved_first=False)
+            with m.at((5.6, 0, 0.6), ry=-40):
+                A.pumpkin_pile(m, 35, n=2, carved_first=True)
+            with m.at((-5.2, 0, 4.6), ry=12):
+                P.crate(m, 2.6)
+                with m.at((0, 2.6, 0)):
+                    A.pumpkin(m, 0.55, 36)
+            for x, z in ((-6.4, 6.4), (-5.4, 7.6), (6.0, 6.8), (6.8, 5.4), (5.0, 7.9)):
+                with m.at((x, 0, z)):
+                    A.corn_stalk(m, int(x * 7 + z))
+            for x, z in ((-1.6, -5.6), (1.8, -5.0), (5.2, -3.2)):          # leaves in front
+                with m.at((x, 0, z)):
+                    A.leaf_litter(m, int(x * 11 + z))
+        with m.ctx(stage="props", folder="Decor", tag="Tree:%d" % next(k)):
+            with m.at((0, 0, 10.5), ry=35):
+                P.oak(m, 1, 140, greens=("#D7372C", "#B82C24"))
         with m.ctx(stage="marker", folder="Markers", tag="Marker", collide=False, shadow=False):
-            m.box((0, 1.72, 0), (3.0, 1.0, 3.0), "#FFFFFF", name="NPCSpot", transparency=1.0)
+            m.box((0, 0.76, 0), (3.0, 1.0, 3.0), "#FFFFFF", name="NPCSpot", transparency=1.0)
 
 
 FIELDS = ((-44.0, -25.0, -27.0, -8.0), (-44.0, 8.0, -27.0, 25.0))     # x0, z0, x1, z1 (local)
 
 
 def pumpkin_patch(m, sp, k):
-    """Two fenced pumpkin fields north and south of the NPC stand, gates facing the plaza. Soil rows with
+    """Two fenced pumpkin fields north and south of the NPC spot, gates facing the plaza. Soil rows with
     vines; 5 big QuestPumpkin models per field (Lobby/PumpkinPatch) plus small decorative ones, a scarecrow
     in the north field and a corn row in the south one."""
     rng = random.Random(44)
@@ -497,12 +503,14 @@ def build():
         terrain(m, rim)
         plaza(m, sp)
         boards_decor(m, sp, counter)
-        npc_stand(m, sp, counter)
+        npc_spot(m, sp, counter)
         pumpkin_patch(m, sp, counter)
         plaza_ring(m, sp, counter)
         fence(m, rim, sp, counter)
         plants(m, rim, sp, counter)
         hanging(m, rim, counter)
+    for p in m.parts:          # no PointLights anywhere (lanterns and jack-o'-lanterns glow with Neon only)
+        p["light"] = None
     ox, oy, oz = ORIGIN
     cams = {
         "overview": ((ox + 95, oy + 55, oz + 120), (ox, oy - 10, oz), 32),

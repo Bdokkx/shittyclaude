@@ -137,6 +137,9 @@ assert(need("CoinsBoard/Board"):GetAttribute("Leaderboard") == "Coins")
 assert(need("StreakBoard/Board"):GetAttribute("Leaderboard") == "Streak")
 assert(need("CoinsBoard/Header/Label/Text").Text == "TOP COINS")
 assert(need("StreakBoard/Header/Label/Text").Text == "TOP STREAKS")
+for _, d in back:GetDescendants() do
+	assert(not d:IsA("Light"), "no lights wanted in the lobby: " .. d:GetFullName())
+end
 local quest = need("PumpkinPatch"):GetChildren()
 assert(#quest >= 6, "expected quest pumpkins")
 for _, q in quest do
