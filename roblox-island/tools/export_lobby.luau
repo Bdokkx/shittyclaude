@@ -9,6 +9,7 @@ local roblox = require("@lune/roblox")
 local serde = require("@lune/serde")
 local process = require("@lune/process")
 local Instance, CFrame, Vector3, Color3, Enum = roblox.Instance, roblox.CFrame, roblox.Vector3, roblox.Color3, roblox.Enum
+local UDim2 = roblox.UDim2
 
 local src, jsonPath, out = process.args[1], process.args[2], process.args[3]
 local lobby = roblox.deserializeModel(fs.readFile(src))[1]
@@ -17,6 +18,10 @@ local island = lobby:FindFirstChild("Island")
 local decor = lobby:FindFirstChild("Decor")
 for _, c in island:GetChildren() do c:Destroy() end
 for _, c in decor:GetChildren() do c:Destroy() end
+for _, name in { "PumpkinPatch" } do -- folders this exporter creates (re-export safe)
+	local f = lobby:FindFirstChild(name)
+	if f then f:Destroy() end
+end
 for _, c in lobby.Markers:GetChildren() do
 	if c.Name ~= "LobbySpawn" then c:Destroy() end -- re-export safe: only the original marker is kept
 end
@@ -27,8 +32,17 @@ local function hex(h)
 end
 
 local data = serde.decode("json", fs.readFile(jsonPath))
-local groups, count = {}, 0
-for _, d in data.parts do
+local groups, count, made = {}, 0, {}
+local function folderOf(name)
+	local f = lobby:FindFirstChild(name)
+	if not f then
+		f = Instance.new("Folder")
+		f.Name = name
+		f.Parent = lobby
+	end
+	return f
+end
+for i, d in data.parts do
 	if d.stage == "keep" then continue end
 	local p = Instance.new("Part")
 	local R = d.R
@@ -72,14 +86,37 @@ for _, d in data.parts do
 		if not g then
 			g = Instance.new("Model")
 			g.Name = kind
-			g.Parent = decor
+			g.Parent = folderOf(d.folder)
 			groups[d.tag] = g
 		end
 		p.Name = d.name or kind
 		p.Parent = g
 		if not g.PrimaryPart then g.PrimaryPart = p end
 	end
+	made[i] = p
 	count += 1
+end
+
+-- sign text (SurfaceGui + TextLabel on the given face)
+for _, t in data.texts do
+	local part = made[t.part + 1] -- texts on kept parts (the boards) have no new part and are skipped
+	if part then
+		local gui = Instance.new("SurfaceGui")
+		gui.Name = "Label"
+		gui.Face = Enum.NormalId[t.face]
+		gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+		gui.PixelsPerStud = 50
+		local label = Instance.new("TextLabel")
+		label.Name = "Text"
+		label.Size = UDim2.fromScale(1, 1)
+		label.BackgroundTransparency = 1
+		label.Text = t.text
+		label.TextScaled = true
+		label.FontFace = roblox.Font.fromEnum(Enum.Font.FredokaOne)
+		label.TextColor3 = hex(t.color)
+		label.Parent = gui
+		gui.Parent = part
+	end
 end
 fs.writeFile(out, roblox.serializeModel({ lobby }))
 
@@ -100,6 +137,11 @@ assert(need("CoinsBoard/Board"):GetAttribute("Leaderboard") == "Coins")
 assert(need("StreakBoard/Board"):GetAttribute("Leaderboard") == "Streak")
 assert(need("CoinsBoard/Header/Label/Text").Text == "TOP COINS")
 assert(need("StreakBoard/Header/Label/Text").Text == "TOP STREAKS")
+local quest = need("PumpkinPatch"):GetChildren()
+assert(#quest >= 6, "expected quest pumpkins")
+for _, q in quest do
+	assert(q.Name == "QuestPumpkin" and q.PrimaryPart, "QuestPumpkin needs a PrimaryPart")
+end
 assert(need("Island").PrimaryPart and need("Island").PrimaryPart.Name == "Grass")
-print(string.format("Lobby.rbxm: %d new parts in Island + %d Decor models; boards, spawn and markers kept", count,
-	#back.Decor:GetChildren()))
+print(string.format("Lobby.rbxm: %d new parts, %d Decor models, %d QuestPumpkins; boards, spawn and markers kept",
+	count, #back.Decor:GetChildren(), #quest))

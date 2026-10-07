@@ -13,10 +13,15 @@ Fixed from the original:
   - lone 1x1 flower bricks -> proper flower clusters on a leafy base
   - Walk and Plaza overlapped with coplanar tops (flicker) -> the walk starts at the plaza trim
   - the rock body had CanCollide off, so players fell into the cliffs -> cliffs collide
+
+October theme: autumn grass and trees, fallen leaves, hay bales, jack-o'-lanterns, a pumpkin inlay on the
+plaza, and a Pumpkin Patch quest area on the west side: the NPC stand (Markers/NPCSpot) between two fenced
+fields whose pumpkins are separate models in Lobby/PumpkinPatch (QuestPumpkin, PrimaryPart = the core).
 """
 import math
 import random
 
+import autumn as A
 import props as P
 from core import Model, poly_contains
 from terrain import greedy, noise2
@@ -24,8 +29,8 @@ from voxel_island import C, PRESET
 
 ORIGIN = (0.0, 60.0, -340.0)
 CELL = 4.0
-GRASS = ("#6CCB4A", "#5EBE45")
-LIP = "#4FA83A"
+GRASS = ("#8CBF45", "#9DBA44")       # late-season grass
+LIP = "#6E9A35"
 DIRT = ("#B07A4A", "#9A6238")
 BANDS = (C["rock_light"], C["rock"], C["rock_dark"])
 SAND = ("#F3E2B6", "#E9D29C")        # plaza tiles
@@ -168,10 +173,16 @@ def plaza(m, sp):
                     m.box((i * 4, 0.65, j * 4), (3.6, 0.1, 3.6), SAND[1])
         m.octagon(0.66, 13.0, 0.12, TRIM)
         m.octagon(0.70, 11.6, 0.12, SAND[0])
-        m.octagon(0.74, 4.0, 0.12, C["roof"])
-        for ry in (0, 90):
-            m.box((0, 0.76, 0), (1.6, 0.12, 18.0), C["roof_trim"], ry=ry)
-        m.box((0, 0.8, -8.5), (2.6, 0.12, 2.6), "#FFD447", ry=45)           # north marker
+        # pumpkin inlay: body, darker ribs, stem + leaf, and a purple ring
+        m.octagon(0.73, 9.2, 0.1, A.PURPLE)
+        m.octagon(0.75, 8.2, 0.1, SAND[0])
+        m.box((0, 0.78, 0.6), (11.0, 0.1, 8.4), A.ORANGE[0])
+        m.box((0, 0.78, 0.6), (8.4, 0.1, 10.0), A.ORANGE[0])
+        for x in (-2.6, 2.6):
+            m.box((x, 0.8, 0.6), (0.6, 0.1, 9.0), A.ORANGE[1])
+        m.box((0, 0.8, 0.6), (0.6, 0.1, 9.6), A.ORANGE[1])
+        m.box((0, 0.8, -5.2), (1.4, 0.1, 2.6), A.STEM)
+        m.box((1.8, 0.8, -5.0), (2.4, 0.1, 1.2), A.LEAF, ry=-25)
         # walk: darker edges + stepping tiles
         for x in (-7.5, 7.5):
             m.box((x, 0.65, 35.0), (1.0, 0.1, 22.0), TRIM)
@@ -199,7 +210,11 @@ def boards_decor(m, sp, k):
         with m.ctx(stage="props", folder="Decor", tag="Lantern:%d" % next(k)):
             with m.at((s * 25.0, 0, -32.5), ry=90 if s < 0 else -90):
                 P.lantern_post(m, h=9)
+        with m.ctx(stage="props", folder="Decor", tag="JackOLantern:%d" % next(k)):
+            with m.at((s * 25.0, 0, -29.0), ry=180 + s * 20):
+                A.pumpkin_pile(m, 50 + s)
         sp.block(s * 25.0, -32.5, 2.5)
+        sp.block(s * 25.0, -29.0, 3.0)
 
 
 def plaza_ring(m, sp, k):
@@ -216,18 +231,28 @@ def plaza_ring(m, sp, k):
                 with m.at((s * 28.5, 0, z), ry=90 * s):
                     P.bench(m)
             sp.block(s * 28.5, z, 3.6)
-        for z in (-15, 15):
-            with m.ctx(stage="props", folder="Decor", tag="Planter:%d" % next(k)):
-                with m.at((s * 28.5, 0, z), ry=90):
-                    P.planter(m, 60 + z + s, colors=("pink", "yellow", "white"))
-            sp.block(s * 28.5, z, 3.2)
+        for z in ((-15, 15) if s > 0 else ()):
+            with m.ctx(stage="props", folder="Decor", tag="HayBale:%d" % next(k)):
+                with m.at((28.5, 0, z)):
+                    A.hay_bale(m, ry=90, seed=z, top=lambda m_, z=z: A.pumpkin(m_, 0.8, 70 + z, carved=z > 0))
+            sp.block(28.5, z, 3.2)
+    # jack-o'-lanterns on the plaza corners, next to the lanterns (on the trim, outside the spawn zone)
+    for x in (-1, 1):
+        for z in (-1, 1):
+            with m.ctx(stage="props", folder="Decor", tag="JackOLantern:%d" % next(k)):
+                with m.at((x * 23.0, 0.35, z * 23.0), ry=math.degrees(math.atan2(x, z)) + 180):
+                    A.pumpkin(m, 0.9, 80 + x * 3 + z, carved=True)
     # lanterns along the walk and a pair of stone pillars at the walk end
     for z in (30, 40):
         for s in (-1, 1):
             with m.ctx(stage="props", folder="Decor", tag="Lantern:%d" % next(k)):
                 with m.at((s * 10.0, 0, z), ry=180 if s < 0 else 0):
                     P.lantern_post(m, h=8)
+            with m.ctx(stage="props", folder="Decor", tag="JackOLantern:%d" % next(k)):
+                with m.at((s * 10.2, 0, z + 2.6), ry=-90 * s):
+                    A.pumpkin(m, 0.6, 90 + z + s, carved=z == 30, light=False)
             sp.block(s * 10.0, z, 2.0)
+            sp.block(s * 10.2, z + 2.6, 1.2)
 
 
 def npc_stand(m, sp, k, pos=(-31.0, 0.0, 0.0)):
@@ -236,7 +261,7 @@ def npc_stand(m, sp, k, pos=(-31.0, 0.0, 0.0)):
     plaza, so a script can do  npc:PivotTo(Lobby.Markers.NPCSpot.CFrame * CFrame.new(0, 3, 0)).
     Local frame: front = -Z (towards the plaza)."""
     sp.block(pos[0], pos[2], 7.0)
-    roof, roof2 = ACC_PURPLE, "#FFF7EC"
+    roof, roof2 = A.ORANGE[0], A.PURPLE
     with m.at(pos, ry=-90):
         with m.ctx(stage="props", folder="Decor", tag="NPCStand:%d" % next(k), collide=True):
             m.octagon(0.45, 5.4, 0.9, STONE_DK)
@@ -255,12 +280,82 @@ def npc_stand(m, sp, k, pos=(-31.0, 0.0, 0.0)):
             for i, (r, y) in enumerate(((5.2, 10.1), (4.0, 10.7), (2.8, 11.3), (1.6, 11.9))):
                 m.octagon(y, r, 0.6, roof if i % 2 == 0 else roof2)
             m.box((0, 12.6, 0), (0.8, 0.8, 0.8), "#FFD447")
+            # quest sign across the front, under the roof
+            m.box((0, 8.3, -4.2), (8.4, 1.9, 0.3), C["wood_dark"])
+            sign = m.box((0, 8.3, -4.4), (7.6, 1.5, 0.2), "#FFF1D6")
+            m.text(sign, "PUMPKIN QUEST", "#C2410C", "Front")
+            for x in (-2.7, 2.7):                                         # pumpkins on the back corners
+                with m.at((x, 1.22, 2.7), ry=x * 10):
+                    A.pumpkin(m, 0.6, int(x * 10))
+            for x in (-4.6, 4.6):                                         # hay bales either side of the step
+                with m.at((x, 0, -6.9)):
+                    A.hay_bale(m, w=3.6, seed=int(x),
+                               top=lambda m_, x=x: A.pumpkin(m_, 0.7, int(x) + 5, carved=x > 0))
         with m.ctx(stage="props", folder="Decor", tag="NPCStand:%d" % next(k), collide=False, shadow=False):
             # floating "!" so players can spot the NPC from the spawn
             m.box((0, 16.2, 0), (1.2, 3.0, 1.2), "#FFD447", mat="Neon")
             m.box((0, 13.9, 0), (1.2, 1.0, 1.2), "#FFD447", mat="Neon")
         with m.ctx(stage="marker", folder="Markers", tag="Marker", collide=False, shadow=False):
             m.box((0, 1.72, 0), (3.0, 1.0, 3.0), "#FFFFFF", name="NPCSpot", transparency=1.0)
+
+
+FIELDS = ((-44.0, -25.0, -27.0, -8.0), (-44.0, 8.0, -27.0, 25.0))     # x0, z0, x1, z1 (local)
+
+
+def pumpkin_patch(m, sp, k):
+    """Two fenced pumpkin fields north and south of the NPC stand, gates facing the plaza. Soil rows with
+    vines; 5 big QuestPumpkin models per field (Lobby/PumpkinPatch) plus small decorative ones, a scarecrow
+    in the north field and a corn row in the south one."""
+    rng = random.Random(44)
+    q = 0
+    for f, (x0, z0, x1, z1) in enumerate(FIELDS):
+        sp.block_rect(x0 - 1, z0 - 1, x1 + 1, z1 + 1)
+        zm = (z0 + z1) / 2
+        with m.ctx(stage="props", folder="Decor", tag="PatchFence:%d" % next(k)):
+            for a, b in (((x0, z0), (x1, z0)), ((x0, z1), (x1, z1)), ((x0, z0), (x0, z1)),
+                         ((x1, z0), (x1, zm - 2.2)), ((x1, zm + 2.2), (x1, z1))):
+                P_rail(m, a, b, h=2.4)
+            for z in (zm - 2.2, zm + 2.2):                              # gate posts with a pumpkin on top
+                m.box((x1, 1.6, z), (1.2, 3.2, 1.2), C["wood_dark"])
+                with m.at((x1, 3.2, z), ry=-90):
+                    A.pumpkin(m, 0.55, int(z), carved=True, light=False)
+        rows = (z0 + 4.0, zm, z1 - 4.0)
+        rx0, rx1 = x0 + 3.2, x1 - 2.2
+        with m.ctx(stage="props", folder="Decor", tag="SoilRows:%d" % next(k)):
+            for i, z in enumerate(rows):
+                with m.at(((rx0 + rx1) / 2, 0, z)):
+                    A.soil_row(m, rx1 - rx0, 60 + f * 3 + i)
+        for i, z in enumerate(rows):
+            xs = [rx0 + 2.2 + j * 4.2 for j in range(3)]
+            if i == 1:
+                xs = [x + 2.1 for x in xs[:2]]
+            with m.ctx(stage="props", folder="Decor", tag="Vines:%d" % next(k), collide=False, shadow=False):
+                m.box(((rx0 + rx1) / 2, 0.5, z + 0.5), (rx1 - rx0 - 1.0, 0.25, 0.25), A.VINE)
+                for x in [rx0 + 1.2 + 1.6 * j for j in range(int((rx1 - rx0 - 2) / 1.6))]:
+                    m.box((x, 0.55, z + rng.choice((-0.7, 0.8))), (0.9, 0.15, 0.8), A.LEAF, ry=rng.uniform(0, 90))
+            for j, x in enumerate(xs):
+                big = (i + j) % 2 == 0 or i == 1
+                if big:
+                    q += 1
+                    with m.ctx(stage="props", folder="PumpkinPatch", tag="QuestPumpkin:%d" % q):
+                        with m.at((x, 0.4, z), ry=rng.uniform(0, 360)):
+                            A.pumpkin(m, 1.0, 200 + q)
+                else:
+                    with m.ctx(stage="props", folder="Decor", tag="Pumpkin:%d" % next(k)):
+                        with m.at((x, 0.4, z), ry=rng.uniform(0, 360)):
+                            A.pumpkin(m, 0.6, 300 + q + j)
+        if f == 0:
+            with m.ctx(stage="props", folder="Decor", tag="Scarecrow:%d" % next(k)):
+                with m.at((x0 + 1.6, 0, zm), ry=-90):
+                    A.scarecrow(m)
+        else:
+            with m.ctx(stage="props", folder="Decor", tag="CornRow:%d" % next(k)):
+                z = z0 + 1.6
+                while z < z1 - 1.0:
+                    with m.at((x0 + 1.4, 0, z)):
+                        A.corn_stalk(m, int(z * 10))
+                    z += 1.9
+    return q
 
 
 def fence(m, rim, sp, k):
@@ -283,21 +378,34 @@ def fence(m, rim, sp, k):
         with m.ctx(stage="props", folder="Decor", tag="GatePost:%d" % next(k)):
             m.box((x, 1.6, z), (2.0, 3.2, 2.0), STONE)
             m.box((x, 3.4, z), (2.4, 0.4, 2.4), STONE_DK)
-            m.box((x, 4.1, z), (1.2, 1.0, 1.2), C["lamp"], mat="Neon", light=("PointLight", 1.2, 14, C["lamp"]),
-                  collide=False, shadow=False)
+            with m.at((x, 3.6, z)):
+                A.pumpkin(m, 0.8, 120 + s, carved=True)
 
 
-def P_rail(m, a, b):
+def P_rail(m, a, b, h=3.0):
     from buildings import rail_line
-    rail_line(m, a, b, 0.0, color=(C["wood"], C["wood_dark"]), every=4.5, h=3.0)
+    rail_line(m, a, b, 0.0, color=(C["wood"], C["wood_dark"]), every=4.5, h=h)
 
 
 def plants(m, rim, sp, k):
     rng = random.Random(9)
-    trees = [  # hand placed: framing the boards, the plaza sides and the walk
-        (P.cherry, 1, -38, -30), (P.oak, 2, 37, -31), (P.birch, 1, -42, -12), (P.pine, 1, 42, -14),
-        (P.apple, 1, -38, 12), (P.oak, 1, 39, 10), (P.poplar, 1, -18, 40), (P.poplar, 1, 18, 40),
-        (P.pine, 0, -30, -42), (P.birch, 0, 30, -42), (P.cherry, 0, 36, 30), (P.birch, 0, -36, 30),
+    def maple(m_, size, seed):
+        P.oak(m_, size, seed, greens=("#D7372C", "#B82C24"))
+
+    def orange_oak(m_, size, seed):
+        P.oak(m_, size, seed, greens=("#F28C28", "#E2582A"))
+
+    def gold_birch(m_, size, seed):
+        P.birch(m_, size, seed, greens=("#FFC83D", "#F2A922"))
+
+    def amber_poplar(m_, size, seed):
+        P.poplar(m_, size, seed, greens=("#F2A22A", "#D9822B"))
+
+    trees = [  # hand placed: framing the boards, the plaza sides and the walk (the west side is the patch)
+        (maple, 1, -38, -31), (orange_oak, 2, 37, -31), (P.pine, 1, 42, -14),
+        (maple, 1, 39, 10), (amber_poplar, 1, -18, 40), (amber_poplar, 1, 18, 40),
+        (P.pine, 0, -30, -42), (gold_birch, 0, 30, -42), (orange_oak, 0, 36, 30), (gold_birch, 0, -36, 31),
+        (gold_birch, 1, 44, -4),
     ]
     for i, (fn, size, x, z) in enumerate(trees):
         if not sp.take(x, z, 4.0, edge=4.0):
@@ -307,24 +415,45 @@ def plants(m, rim, sp, k):
                 fn(m, size, 100 + i)
     # bushes, flower clusters and grass tufts on the free lawn
     cand = [(rng.uniform(-46, 46), rng.uniform(-46, 46)) for _ in range(900)]
+    # small pumpkin piles out on the lawn
+    npile = 0
+    for x, z in cand[:300]:
+        if npile < 5 and sp.take(x, z, 3.2, edge=4.0):
+            with m.ctx(stage="props", folder="Decor", tag="PumpkinPile:%d" % next(k)):
+                with m.at((x, 0, z), ry=rng.uniform(0, 360)):
+                    A.pumpkin_pile(m, 600 + npile, n=rng.choice((2, 3)), carved_first=False)
+            npile += 1
     nb = nf = nt = 0
     for x, z in cand:
         if nb < 14 and sp.take(x, z, 3.2, edge=4.0):
             with m.ctx(stage="props", folder="Decor", tag="Bush:%d" % next(k)):
                 with m.at((x, 0, z)):
-                    P.bush(m, 300 + nb, berry=rng.choice((P.ACCENTS["red"], P.ACCENTS["pink"], None)))
+                    P.bush(m, 300 + nb, greens=rng.choice((("#6E9A35", "#8CBF45"), ("#C8502A", "#E07B2C"),
+                                                           ("#B5452B", "#D9822B"))), berry=None)
             nb += 1
         elif nf < 18 and sp.take(x, z, 2.2, edge=3.0):
             with m.ctx(stage="props", folder="Decor", tag="Flowers:%d" % next(k)):
                 with m.at((x, 0, z)):
-                    P.flowers(m, 400 + nf, rng.choice((("red", "yellow"), ("pink", "white"), ("purple", "yellow"),
-                                                      ("orange", "red"))))
+                    P.flowers(m, 400 + nf, rng.choice((("orange", "yellow"), ("purple", "yellow"),
+                                                      ("orange", "red"))), leaf=LIP)
             nf += 1
         elif nt < 40 and sp.take(x, z, 1.6, edge=2.5):
             with m.ctx(stage="props", folder="Decor", tag="Grass:%d" % next(k)):
                 with m.at((x, 0, z)):
-                    P.tuft_cluster(m, 500 + nt, flower=rng.choice((None, None, P.ACCENTS["yellow"], P.ACCENTS["white"])))
+                    P.tuft_cluster(m, 500 + nt, greens=("#8CBF45", "#B5B84A", "#6E9A35"),
+                                   flower=rng.choice((None, None, P.ACCENTS["orange"])))
             nt += 1
+    # fallen leaves everywhere, including the plaza edge (flat, no collision)
+    for i, (x, z) in enumerate(cand[300:]):
+        if i > 260:
+            break
+        if poly_contains(scale(rim, 0.94), x, z) and not (abs(x) < 15 and abs(z) < 15) and \
+                all(math.hypot(x - a, z - b) >= q + 0.6 for a, b, q in sp.taken if q > 1.3):
+            with m.ctx(stage="props", folder="Decor", tag="Leaves:%d" % next(k)):
+                on_plaza = (abs(x) < 22 and abs(z) < 22) or (abs(x) < 8 and z > 0)
+                on_trim = not on_plaza and abs(x) < 24 and abs(z) < 24
+                with m.at((x, 0.6 if on_plaza else 0.35 if on_trim else 0, z)):
+                    A.leaf_litter(m, 800 + i)
 
 
 def hanging(m, rim, k):
@@ -354,8 +483,8 @@ def hanging(m, rim, k):
                     with m.at((w * 0.15, 0, 0)):
                         P.pine(m, 0, 700 + i)
                 else:
-                    with m.at((0, 0, 0)):
-                        P.tuft_cluster(m, 720 + i, flower=P.ACCENTS["pink"])
+                    with m.at((0, 0, 0), ry=30):
+                        A.pumpkin(m, 0.9, 720 + i)
 
 
 def build():
@@ -369,6 +498,7 @@ def build():
         plaza(m, sp)
         boards_decor(m, sp, counter)
         npc_stand(m, sp, counter)
+        pumpkin_patch(m, sp, counter)
         plaza_ring(m, sp, counter)
         fence(m, rim, sp, counter)
         plants(m, rim, sp, counter)
@@ -378,7 +508,8 @@ def build():
         "overview": ((ox + 95, oy + 55, oz + 120), (ox, oy - 10, oz), 32),
         "plaza": ((ox + 0, oy + 14, oz + 62), (ox, oy + 6, oz - 30), 24),
         "boards": ((ox - 26, oy + 8, oz + 8), (ox + 4, oy + 9, oz - 34), 24),
-        "npc": ((ox - 8, oy + 9, oz + 16), (ox - 31, oy + 6, oz), 26),
+        "npc": ((ox - 6, oy + 12, oz + 22), (ox - 33, oy + 3, oz), 22),
+        "patch": ((ox + 2, oy + 30, oz + 30), (ox - 34, oy, oz - 4), 24),
         "under": ((ox - 120, oy - 40, oz + 90), (ox, oy - 25, oz), 32),
     }
     return m, cams
