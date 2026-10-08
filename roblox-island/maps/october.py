@@ -178,22 +178,24 @@ def ghost(m, seed):
     rng = random.Random(seed)
     with m.ctx(collide=False, shadow=False):
         y = rng.uniform(7, 14)
-        m.box((0, y, 0), (2.6, 2.6, 2.2), "#F4F1FF", transparency=0.15)
+        m.box((0, y, 0), (2.6, 2.6, 2.2), "#F4F1FF", transparency=0.15, name="Body")   # first part = PrimaryPart
         m.box((0, y - 1.8, 0.2), (2.2, 1.4, 1.8), "#F4F1FF", transparency=0.25, rx=12)
         m.box((0.3, y - 3.0, 0.6), (1.4, 1.2, 1.2), "#F4F1FF", transparency=0.35, rx=24)
         for x in (-0.5, 0.5):
             m.box((x, y + 0.4, -1.12), (0.45, 0.7, 0.05), "#1E1A22")
         m.box((0, y - 0.4, -1.12), (0.5, 0.5, 0.05), "#1E1A22")
         for s in (-1, 1):
-            m.box((s * 1.6, y - 0.3, 0), (0.8, 1.6, 0.8), "#F4F1FF", transparency=0.2, rz=s * 35)
+            m.box((s * 1.6, y - 0.3, 0), (0.8, 1.6, 0.8), "#F4F1FF", transparency=0.2, rz=s * 35,
+                  name="ArmL" if s < 0 else "ArmR")
 
 
 def bat(m, seed):
     rng = random.Random(seed)
     with m.ctx(collide=False, shadow=False):
-        m.box((0, 0, 0), (0.7, 0.6, 0.9), "#1E1A22")
-        for s in (-1, 1):
-            m.box((s * 1.0, 0.15, 0), (1.4, 0.15, 0.8), "#1E1A22", rz=s * rng.uniform(15, 35))
+        m.box((0, 0, 0), (0.7, 0.6, 0.9), "#1E1A22", name="Body")                     # first part = PrimaryPart
+        for s in (-1, 1):                                    # wings hinge at x = +-0.35 (AnimateScenery flaps them)
+            m.box((s * 1.0, 0.15, 0), (1.4, 0.15, 0.8), "#1E1A22", rz=s * rng.uniform(15, 35),
+                  name="WingL" if s < 0 else "WingR")
             m.box((s * 0.25, 0.45, -0.3), (0.2, 0.3, 0.2), "#1E1A22")
 
 
@@ -293,8 +295,8 @@ def scenery(m, g, sp, k, place, scatter, seed):
                     with m.at((x, h, z), ry=rng.uniform(0, 360)):
                         ghost(m, i)
                 break
-    with m.ctx(stage="props", folder="Scenery", tag="Bats:%d" % next(k), collide=False):
-        for i in range(10):
+    for i in range(10):                                          # one Model per bat so each can fly on its own
+        with m.ctx(stage="props", folder="Scenery", tag="Bat:%d" % next(k), collide=False):
             with m.at((-110 + rng.uniform(-14, 14), 34 + rng.uniform(-4, 8), 72 + rng.uniform(-14, 14)),
                       ry=rng.uniform(0, 360), rz=rng.uniform(-15, 15)):
                 bat(m, i)

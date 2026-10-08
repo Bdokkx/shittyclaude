@@ -17,7 +17,8 @@ from core import IDENT  # noqa: E402
 LINE = {"Snow": "#2F80ED"}
 PRESETS = {"default": dict(ClockTime=14, WaterColor="#2E9BE6", AtmosphereColor="#C7DFFF"),
            "October": dict(ClockTime=17.4, WaterColor="#24386E", AtmosphereColor="#9A6AB8")}   # dusk, previews only
-NEW_MAPS = {"October": dict(template="Meadow", attrs=dict(MapId="October", DisplayName="PUMPKIN HOLLOW"))}
+NEW_MAPS = {"October": dict(template="Meadow", attrs=dict(MapId="October", DisplayName="PUMPKIN HOLLOW"),
+                           scripts={"AnimateScenery": "maps/AnimateScenery.client.lua"})}
 L = 120.0
 EXTRA_CAMS = {"October": {
     "house": ((-60, L + 14, 40), (-110, L + 14, 72), 26),

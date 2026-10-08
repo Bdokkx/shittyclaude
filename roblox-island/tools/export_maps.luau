@@ -141,6 +141,21 @@ for name, d in data do
 		gui.Parent = part
 	end
 end
+-- client-side animation scripts (RunContext = Client, so they run wherever the map sits in Workspace)
+for name, d in data do
+	if d.scripts then
+		local m = maps:FindFirstChild(name)
+		for sname, path in d.scripts do
+			local old = m:FindFirstChild(sname)
+			if old then old:Destroy() end
+			local sc = Instance.new("Script")
+			sc.Name = sname
+			sc.RunContext = Enum.RunContext.Client
+			sc.Source = fs.readFile(path)
+			sc.Parent = m
+		end
+	end
+end
 fs.writeFile(out, roblox.serializeModel(root))
 
 -- sanity: reload; markers/barriers untouched, every map has its field, obstacles are colliders
