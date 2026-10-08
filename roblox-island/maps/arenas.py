@@ -24,6 +24,8 @@ import props as P                        # noqa: E402
 from core import Model, poly_contains    # noqa: E402
 from terrain import greedy, noise2, slab_stack   # noqa: E402
 
+import october                           # noqa: E402
+
 FX, FZ = 75.0, 150.0         # field half extents
 KEEP_X, KEEP_Z = 78.0, 153.0  # field + trim; nothing new may enter this box above the floor
 CELL = 4.0
@@ -31,6 +33,7 @@ LEVELS = (0.0, 5.0, 10.0, 16.0)
 BORDER_TOP = -0.9
 
 THEMES = {
+    "October": october.THEME,
     "Meadow": dict(
         grass=("#6CCB4A", "#5EBE45", "#7AD155"), lip="#4FA83A", dirt=("#B07A4A", "#9A6238"),
         rock=("#B3BCF2", "#8A97E6", "#5E6BC4"), border="#C9AE78", trim="#8A6A3E",
@@ -601,7 +604,7 @@ def picnic(m, seed):
 
 def build(name):
     th = THEMES[name]
-    seed = {"Meadow": 11, "Farm": 23, "Snow": 37, "Desert": 41}[name]
+    seed = {"Meadow": 11, "Farm": 23, "Snow": 37, "Desert": 41, "October": 53}[name]
     m = Model(name)
     k = iter(range(1, 1000000))
     rim = outline(seed=seed)
@@ -610,6 +613,7 @@ def build(name):
         "Farm": [(-128, 20, -96, 64, 0.0), (-128, -40, -104, -20, 0.0), (88, -110, 124, -30, 0.0), (90, 40, 122, 80, 0.0)],
         "Snow": [(96, -60, 124, -20, 5.0), (-122, 30, -96, 66, 0.0)],
         "Desert": [(-124, 50, -88, 96, 0.0)],
+        "October": [(-130, 50, -92, 96, 10.0), (90, 64, 120, 92, 0.0), (90, -90, 126, -34, 0.0), (-114, -72, -88, -44, 0.0)],
     }[name]
     g = Ground(rim, seed, pads)
     sp = Spots(rim)
@@ -619,7 +623,7 @@ def build(name):
     for z, flip in ((182.0, False), (-182.0, True)):
         sp.rects.append((-19, z - 4, 19, z + 4))
         area_sign(m, {"Meadow": "GREEN MEADOW", "Farm": "HARVEST FARM", "Snow": "SNOWY PEAKS",
-                      "Desert": "DESERT CRASH"}[name], th, z, flip, k)
+                      "Desert": "DESERT CRASH", "October": october.DISPLAY}[name], th, z, flip, k)
 
     def place(tag, x, z, r, fn, ry=0.0, collide=False):
         h = g.at(x, z)
@@ -674,6 +678,8 @@ def build(name):
                   (lambda m_, s: rock_cluster(m_, s, ("#E6EEF9", "#9AA9C4", "#7C8BA8")), 3.0, 18, "Rock"),
                   (lambda m_, s: m_.box((0, 0.7, 0), (3.4, 1.4, 2.6), "#FFFFFF", ry=s % 90), 2.0, 40, "SnowPile")]
         scatter(m, g, sp, k, seed, trees, 95, extras)
+    elif name == "October":
+        october.scenery(m, g, sp, k, place, scatter, seed)
     elif name == "Desert":
         place("CrashedUFO", -106, 72, 16, ufo, ry=-70)
         rng = random.Random(seed)
@@ -692,7 +698,8 @@ def build(name):
                   (lambda m_, s: P.crate_cluster(m_, s), 4.0, 6, "Crates")]
         scatter(m, g, sp, k, seed, trees, 60, extras)
 
-    {"Farm": hay_obstacles, "Snow": snow_obstacles, "Desert": desert_obstacles}.get(name, lambda m_, k_: None)(m, k)
+    {"Farm": hay_obstacles, "Snow": snow_obstacles, "Desert": desert_obstacles,
+     "October": lambda m_, k_: october.pumpkin_obstacles(m_, k_, obstacle)}.get(name, lambda m_, k_: None)(m, k)
 
     for p in m.parts:
         p["light"] = None

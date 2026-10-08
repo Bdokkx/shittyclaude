@@ -15,6 +15,16 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(
 from core import IDENT  # noqa: E402
 
 LINE = {"Snow": "#2F80ED"}
+PRESETS = {"default": dict(ClockTime=14, WaterColor="#2E9BE6", AtmosphereColor="#C7DFFF"),
+           "October": dict(ClockTime=17.4, WaterColor="#24386E", AtmosphereColor="#9A6AB8")}   # dusk, previews only
+NEW_MAPS = {"October": dict(template="Meadow", attrs=dict(MapId="October", DisplayName="PUMPKIN HOLLOW"))}
+L = 120.0
+EXTRA_CAMS = {"October": {
+    "house": ((-60, L + 14, 40), (-110, L + 14, 72), 26),
+    "graveyard": ((70, L + 16, -20), (108, L + 2, -62), 26),
+    "pumpkin": ((60, L + 8, 60), (104, L + 6, 78), 28),
+    "hero": ((40, L + 30, -170), (-20, L + 6, 40), 26),
+}}
 
 
 def field_preview(name, colors, trim):
@@ -42,7 +52,7 @@ def part_json(p, lift=0.0):
 
 
 if __name__ == "__main__":
-    names = sys.argv[1:] or ["Meadow", "Farm", "Snow", "Desert"]
+    names = sys.argv[1:] or ["Meadow", "Farm", "Snow", "Desert", "October"]
     out = {}
     for n in names:
         t = time.time()
@@ -50,12 +60,14 @@ if __name__ == "__main__":
         bad = check(m)
         assert not bad, (n, bad[:5])
         out[n] = dict(parts=[part_json(p) for p in m.parts], texts=m.texts, field=colors, trim=trim)
+        if n in NEW_MAPS:                     # not in the uploaded file: cloned from a template map on export
+            out[n].update(NEW_MAPS[n])
         prev = dict(name="Arena" + n, origin=[0, LIFT, 0], water=[-600, 0, -600, 600, 0, 600],
-                    preset=dict(ClockTime=14, WaterColor="#2E9BE6", AtmosphereColor="#C7DFFF"), cameras=cams(LIFT),
+                    preset=PRESETS.get(n, PRESETS["default"]), cameras=dict(cams(LIFT), **EXTRA_CAMS.get(n, {})),
                     parts=[part_json(p, LIFT) for p in m.parts] + field_preview(n, colors, trim), texts=m.texts)
         json.dump(prev, open(os.path.join(ROOT, "build", "Arena%s.json" % n), "w"))
         print("%-7s %5d parts  (%.1fs)" % (n, len(m.parts), time.time() - t))
     path = os.path.join(ROOT, "build", "maps_export.json")
-    old = json.load(open(path)) if os.path.exists(path) and len(names) < 4 else {}
+    old = json.load(open(path)) if os.path.exists(path) and len(names) < 5 else {}
     old.update(out)
     json.dump(old, open(path, "w"))

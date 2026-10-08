@@ -4,6 +4,7 @@
 
 Kept exactly as uploaded: each map Model and its attributes, Markers (lines, safe zones + SAFE labels, catcher
 spawn), Barriers, and the Field tiles/trim (only their colour changes).
+A map missing from the upload (the October event map) is first cloned from its template map.
 Replaced: Underside, Scenery, and Obstacles (each obstacle is still one collider Part with the same name, with its
 detail parts parented under it). The Desert UFO's ParticleEmitter is moved onto the new saucer.
 ]]
@@ -29,6 +30,15 @@ local function count(inst)
 end
 
 local data = serde.decode("json", fs.readFile(jsonPath))
+-- event maps that are not in the uploaded file: copy a template map (markers, barriers, field), then rebuild it
+for name, d in data do
+	if not maps:FindFirstChild(name) and d.template then
+		local m = assert(maps:FindFirstChild(d.template), "no template map " .. d.template):Clone()
+		m.Name = name
+		for k, v in d.attrs do m:SetAttribute(k, v) end
+		m.Parent = maps
+	end
+end
 local before = {}
 for name, _ in data do
 	local m = assert(maps:FindFirstChild(name), "no map " .. name)
