@@ -5,6 +5,7 @@ wherever the map is parented in Workspace (the server never runs it and nothing 
 
   Ghosts  float up and down, sway, slowly turn and drift in small circles; their arms wave.
   Bats    circle the haunted house's tower at different speeds and heights, flapping their wings.
+  Cauldron  green bubbles rise out of the brew, swell, pop and come back somewhere else; the brew churns.
 
 Everything is measured relative to the map's pivot, so the map can be moved/pivoted by the game
 before or after it is parented. Animation pauses when the map is far from the camera.
@@ -48,6 +49,38 @@ for _, m in scenery:GetChildren() do
 		end
 	end
 end
+-- cauldrons: bubbles + brew surface, all relative to the cauldron's pivot
+local cauldrons = {}
+for _, m in scenery:GetChildren() do
+	if m:IsA("Model") and m.Name == "Cauldron" then
+		local pivot = m:GetPivot()
+		local c = { base = mapPivot0:ToObjectSpace(pivot), bubbles = {}, brew = {} }
+		local sum, n, top = Vector3.zero, 0, -math.huge
+		for _, p in m:GetDescendants() do
+			if p:IsA("BasePart") and p.Name == "Brew" then
+				local rel = pivot:ToObjectSpace(p.CFrame)
+				table.insert(c.brew, { part = p, rel = rel })
+				sum += rel.Position
+				n += 1
+				top = math.max(top, rel.Position.Y + p.Size.Y / 2)
+			end
+		end
+		for _, p in m:GetDescendants() do
+			if p:IsA("BasePart") and p.Name == "Bubble" then
+				table.insert(c.bubbles, { part = p, period = 1.1 + (#c.bubbles % 4) * 0.23, phase = #c.bubbles * 0.37 })
+			end
+		end
+		if n > 0 then
+			c.centre = Vector3.new(sum.X / n, top, sum.Z / n)
+			table.insert(cauldrons, c)
+		end
+	end
+end
+local function hash(x) -- 0..1, deterministic
+	local v = math.sin(x * 12.9898) * 43758.5453
+	return v - math.floor(v)
+end
+
 if nBats > 0 then
 	batCentre /= nBats
 end
@@ -98,6 +131,35 @@ RunService.Heartbeat:Connect(function(dt)
 				return pivot * (shoulder * CFrame.Angles(0, 0, side * wave) * shoulder:Inverse() * e.rel)
 			end
 		end)
+	end
+
+	for _, c in cauldrons do
+		local pivot = mapPivot * c.base
+		local churn = math.sin(t * 3.1) * 0.05
+		for i, e in c.brew do
+			e.part.CFrame = pivot * CFrame.new(0, churn, 0) * e.rel * CFrame.Angles(0, math.sin(t * 0.8 + i) * 0.04, 0)
+		end
+		for i, b in c.bubbles do
+			local x = (t + b.phase) / b.period
+			local cycle = math.floor(x)
+			local u = x - cycle -- 0 = just appeared at the surface, 1 = gone
+			local a = hash(cycle * 7.13 + i) * math.pi * 2
+			local r = math.sqrt(hash(cycle * 3.71 + i * 1.3)) * 1.6
+			local size, transparency
+			if u < 0.75 then
+				size = 0.2 + 0.55 * (u / 0.75)
+				transparency = 0
+			else -- pop: swell quickly, then vanish
+				local k = (u - 0.75) / 0.25
+				size = 0.75 + 0.45 * k
+				transparency = math.min(1, k * 1.6)
+			end
+			local wobble = math.sin(t * 9 + i) * 0.08
+			b.part.Size = Vector3.new(size, size, size)
+			b.part.Transparency = transparency
+			b.part.CFrame = pivot * CFrame.new(c.centre.X + math.cos(a) * r + wobble, c.centre.Y + 0.1 + u * 1.6,
+				c.centre.Z + math.sin(a) * r) * CFrame.Angles(0, u * 2 + i, 0)
+		end
 	end
 
 	local centre = mapPivot * batCentre

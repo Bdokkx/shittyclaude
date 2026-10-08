@@ -85,3 +85,21 @@ end
 print(string.format("%d / %d ghost+bat parts moved after 3 s (max %.1f studs)", moved, n, maxd))
 assert(moved > n * 0.9, "animation did not move the parts")
 assert(maxd < 80, "something flew off")
+
+-- cauldron bubbles: rise above the brew, change size, and some are popping (fading)
+local caul = map.Scenery:FindFirstChild("Cauldron")
+local brewTop, sizes, fading, above = -math.huge, {}, 0, 0
+for _, p in caul:GetDescendants() do
+	if p.Name == "Brew" then brewTop = math.max(brewTop, p.CFrame.Position.Y + p.Size.Y / 2 - 0.1) end
+end
+for _, p in caul:GetDescendants() do
+	if p.Name == "Bubble" then
+		sizes[string.format("%.2f", p.Size.X)] = true
+		if p.Transparency > 0 then fading += 1 end
+		if p.CFrame.Position.Y > brewTop then above += 1 end
+	end
+end
+local nsizes = 0
+for _ in sizes do nsizes += 1 end
+print(string.format("cauldron: %d bubbles above the brew, %d distinct sizes, %d popping", above, nsizes, fading))
+assert(above == 8 and nsizes >= 4, "bubbles are not animating")

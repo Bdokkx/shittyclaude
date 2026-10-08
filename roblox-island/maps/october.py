@@ -153,10 +153,12 @@ def giant_pumpkin(m, s=5.0):
 def cauldron(m):
     m.octagon(1.6, 2.6, 3.0, "#1E1A22")
     m.octagon(3.2, 2.9, 0.5, "#2B2233")
-    m.octagon(3.25, 2.3, 0.3, GREEN_GLOW, mat="Neon")
+    m.octagon(3.42, 2.4, 0.3, GREEN_GLOW, mat="Neon", name="Brew")          # surface: top at 3.57, above the rim
     with m.ctx(collide=False, shadow=False):
-        for i, (x, z, s) in enumerate(((0.5, 0.3, 0.7), (-0.8, -0.4, 0.5), (0.2, -0.9, 0.4))):
-            m.box((x, 3.6 + 0.4 * i, z), (s, s, s), GREEN_GLOW, mat="Neon", ry=30 * i)
+        # bubbles: AnimateScenery makes them rise from the brew, grow and pop (these are their resting spots)
+        for i, (x, z, s) in enumerate(((0.5, 0.3, 0.7), (-0.8, -0.4, 0.5), (0.2, -0.9, 0.4), (-0.3, 0.9, 0.5),
+                                       (1.1, -0.5, 0.4), (-1.2, 0.4, 0.6), (0.7, 1.2, 0.35), (-0.6, -1.3, 0.45))):
+            m.box((x, 3.8 + 0.3 * (i % 3), z), (s, s, s), "#D4FF9A", mat="Neon", ry=30 * i, name="Bubble")
         for a in (0, 120, 240):                                              # fire under it
             m.box((math.cos(math.radians(a)) * 1.4, 0.3, math.sin(math.radians(a)) * 1.4), (3.0, 0.6, 0.6), "#5A3A22",
                   ry=-a)

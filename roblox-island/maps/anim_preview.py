@@ -1,7 +1,7 @@
 """Preview of AnimateScenery: applies the same ghost/bat motion (Python port of AnimateScenery.client.lua) to
 build/ArenaOctober.json and writes one JSON per frame for tools/render_spear.py.
 
-    python3 maps/anim_preview.py <frames> <fps>      -> build/ArenaOctober_f00.json ...
+    python3 maps/anim_preview.py <frames> <fps> [house|cauldron]   -> build/ArenaOctober_f00.json ...
 """
 import json
 import math
@@ -54,21 +54,25 @@ def look_at(pos, target):
 
 def main():
     frames, fps = int(sys.argv[1]), float(sys.argv[2])
+    view = sys.argv[3] if len(sys.argv) > 3 else "house"
     data = json.load(open(os.path.join(ROOT, "build", "ArenaOctober.json")))
     groups = {}
     for i, p in enumerate(data["parts"]):
         tag = p.get("tag") or ""
-        if tag.startswith(("Ghost:", "Bat:")):
+        if tag.startswith(("Ghost:", "Bat:", "Cauldron:")):
             groups.setdefault(tag, []).append(i)
     rng = random.Random(4)
-    ghosts, bats = [], []
+    ghosts, bats, cauldrons = [], [], []
     for tag, idx in groups.items():
         body = data["parts"][idx[0]]
         pivot = CF(body["pos"], body["R"])
         item = dict(base=pivot, parts=[(i, pivot.inv() * CF(data["parts"][i]["pos"], data["parts"][i]["R"]),
                                         data["parts"][i].get("name")) for i in idx],
                     phase=rng.random() * 10, speed=0.8 + rng.random() * 0.5)
-        (ghosts if tag.startswith("Ghost") else bats).append(item)
+        if tag.startswith("Cauldron"):
+            cauldrons.append(item)
+        else:
+            (ghosts if tag.startswith("Ghost") else bats).append(item)
     centre = [sum(b["base"].p[i] for b in bats) / len(bats) for i in range(3)]
     for b in bats:
         off = [b["base"].p[i] - centre[i] for i in range(3)]
@@ -77,6 +81,16 @@ def main():
         b["height"] = off[1]
         b["dir"] = 1 if rng.random() < 0.75 else -1
         b["angular"] = (0.5 + rng.random() * 0.5) * b["dir"]
+    for c in cauldrons:
+        brew = [(i, rel) for i, rel, name in c["parts"] if name == "Brew"]
+        c["brew"] = brew
+        c["bubbles"] = [i for i, rel, name in c["parts"] if name == "Bubble"]
+        top = max(rel.p[1] + data["parts"][i]["size"][1] / 2 for i, rel in brew)
+        c["centre"] = (sum(rel.p[0] for _, rel in brew) / len(brew), top, sum(rel.p[2] for _, rel in brew) / len(brew))
+
+    def h(x):
+        v = math.sin(x * 12.9898) * 43758.5453
+        return v - math.floor(v)
     hl, hr = T(-0.35, 0.15, 0), T(0.35, 0.15, 0)
     for f in range(frames):
         t = f / fps
@@ -109,9 +123,35 @@ def main():
                 else:
                     cf = pose * rel
                 out["parts"][i]["pos"], out["parts"][i]["R"] = list(cf.p), [list(r) for r in cf.R]
+        for c in cauldrons:
+            piv = c["base"]
+            churn = math.sin(t * 3.1) * 0.05
+            for j, (i, rel) in enumerate(c["brew"]):
+                cf = piv * T(0, churn, 0) * rel * ang(0, math.sin(t * 0.8 + j + 1) * 0.04, 0)
+                out["parts"][i]["pos"], out["parts"][i]["R"] = list(cf.p), [list(r) for r in cf.R]
+            for j, i in enumerate(c["bubbles"], 1):
+                period, phase = 1.1 + ((j - 1) % 4) * 0.23, (j - 1) * 0.37
+                x = (t + phase) / period
+                cyc = math.floor(x)
+                u = x - cyc
+                a = h(cyc * 7.13 + j) * math.pi * 2
+                r = math.sqrt(h(cyc * 3.71 + j * 1.3)) * 1.6
+                if u < 0.75:
+                    size, tr_ = 0.2 + 0.55 * (u / 0.75), 0.0
+                else:
+                    k_ = (u - 0.75) / 0.25
+                    size, tr_ = 0.75 + 0.45 * k_, min(1.0, k_ * 1.6)
+                cx, cy, cz = c["centre"]
+                cf = piv * T(cx + math.cos(a) * r + math.sin(t * 9 + j) * 0.08, cy + 0.1 + u * 1.6, cz + math.sin(a) * r) \
+                    * ang(0, u * 2 + j, 0)
+                out["parts"][i].update(pos=list(cf.p), R=[list(rr) for rr in cf.R], size=[size] * 3, transparency=tr_)
         out["name"] = "ArenaOctober_f%02d" % f
         L = data["origin"][1]
-        out["cameras"] = {"anim": ((-48, L + 30, 14), (-108, L + 30, 74), 30)}
+        if view == "cauldron":
+            c = cauldrons[0]["base"].p
+            out["cameras"] = {"anim": ((c[0] + 12, c[1] + 6.0, c[2] + 7), (c[0], c[1] + 3.0, c[2]), 32)}
+        else:
+            out["cameras"] = {"anim": ((-48, L + 30, 14), (-108, L + 30, 74), 30)}
         json.dump(out, open(os.path.join(ROOT, "build", out["name"] + ".json"), "w"))
     print("frames", frames, "ghosts", len(ghosts), "bats", len(bats))
 
