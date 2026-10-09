@@ -961,3 +961,163 @@ def witch_broom(w):
         bow.add(slab(tail, 0.06, 0.02, seg=1), T(0, 3.0, 0.27) @ S(sx, 1, 1))
     bow.add(sphere(0.07, 10, 7, scale=(1.0, 1.0, 0.7)), T(0, 3.02, 0.29))
     w.fx = (0, 4.5, 0)
+
+
+
+# ================================================================ DAGGERS: commons and uncommons
+
+@weapon("ButterKnife", "Common", "Dagger")
+def butter_knife(w):
+    """Giant butter knife: round-tipped steel blade with a little serrated edge,
+    a fat pat of butter on it, cream handle with a steel bolster."""
+    steel = w.part("Blade", (214, 220, 232), "Metal", smooth=25)
+    handle = w.part("Handle", (246, 232, 204), "SmoothPlastic", smooth=50)
+    butter = w.part("Butter", (255, 222, 96), "SmoothPlastic", smooth=35)
+    edge = [(0.25, 0.60), (0.27, 1.6)]
+    for k in range(6):                  # little serrations along the upper edge
+        y = 1.75 + k * 0.13
+        edge += [(0.29, y), (0.265, y + 0.07)]
+    edge += catmull([(0.27, 2.55), (0.22, 2.85), (0.0, 3.0), (-0.20, 2.88), (-0.24, 2.55)], samples=3)
+    edge += [(-0.22, 1.2), (-0.22, 0.60)]
+    steel.add(slab(edge, 0.10, 0.03, seg=1))
+    steel.add(lathe([(0, 0.40), (0.15, 0.40), (0.17, 0.46), (0.16, 0.62), (0, 0.62)], segs=16, sz=0.7))
+    handle.add(lathe([(0, -0.80), (0.14, -0.80), (0.18, -0.70), (0.19, -0.40), (0.16, 0.05), (0.15, 0.40), (0, 0.40)],
+                     segs=18, sz=0.72))
+    butter.add(box(0.30, 0.26, 0.16, 0.06, 2), T(0.0, 2.45, 0.11) @ R("Z", 8))
+
+
+@weapon("IronDagger", "Common", "Dagger")
+def iron_dagger(w):
+    """Plain iron dagger: leaf-shaped ridged blade, dark iron guard and pommel,
+    brown leather grip."""
+    blade_p = w.part("Blade", (200, 206, 218), "Metal", smooth=14)
+    hilt = w.part("Hilt", (84, 90, 110), "Metal")
+    grip = w.part("Grip", (112, 66, 38), "Fabric", smooth=70)
+    st = [(0.50, 0.24, 0.10, 0.0), (1.30, 0.30, 0.095, 0.0), (2.20, 0.24, 0.085, 0.0)]
+    blade_p.add(profile_blade(st, 3.02, n_point=6, point_curve=0.35))
+    hilt.add(bar_x([(-0.52, 0.15, 0.19), (-0.42, 0.20, 0.24), (0.42, 0.20, 0.24), (0.52, 0.15, 0.19)], chamfer=0.05, y=0.44))
+    grip.add(wrapped_grip(-0.58, 0.36, 0.125, 0.14, pitch=0.2, amp=0.02, sz=0.9))
+    hilt.add(knob_pommel(-0.76, r=0.18, h=0.30, segs=8))
+
+
+@weapon("Stiletto", "Common", "Dagger")
+def stiletto(w):
+    """Slim stiletto: long square needle blade, gold crossguard with ball ends,
+    black ribbed grip, gold ball pommel."""
+    blade_p = w.part("Blade", (226, 232, 242), "Metal", smooth=20)
+    gold = w.part("Guard", (242, 188, 56), "Metal")
+    grip = w.part("Grip", (32, 34, 46), "SmoothPlastic", smooth=40)
+    blade_p.add(lathe([(0, 0.40), (0.15, 0.42), (0.13, 1.6), (0.07, 2.7), (0, 3.20)], segs=4, phase=math.pi / 4))
+    gold.add(bar_x([(-0.46, 0.13, 0.15), (0.46, 0.13, 0.15)], chamfer=0.035, y=0.40))
+    for sx in (1, -1):
+        gold.add(sphere(0.10, 12, 8), T(sx * 0.50, 0.40, 0))
+    prof = [(0, -0.66)]
+    for k in range(7):
+        y = -0.66 + k * 0.145
+        prof += [(0.13, y + 0.01), (0.15, y + 0.07)]
+    prof += [(0.13, 0.33), (0, 0.33)]
+    grip.add(lathe(prof, segs=16))
+    gold.add(sphere(0.15, 14, 9), T(0, -0.82, 0))
+
+
+@weapon("Screwdriver", "Common", "Dagger")
+def screwdriver(w):
+    """Giant flathead screwdriver: steel shank with a flat tip, chunky red fluted
+    handle with black rubber bands."""
+    steel = w.part("Shank", (214, 220, 232), "Metal", smooth=30)
+    red = w.part("Grip", (226, 46, 44), "SmoothPlastic", smooth=35)
+    black = w.part("Stripes", (30, 30, 36), "SmoothPlastic", smooth=40)
+    steel.add(lathe([(0, 0.40), (0.10, 0.40), (0.10, 2.80), (0, 2.80)], segs=12))
+    steel.add(loft([[Vector((x, y, z)) for x, z in ((0.10, 0.0), (0.0, 0.10), (-0.10, 0.0), (0.0, -0.10))]
+                    for y in ()] or [[Vector((0.10 * c, 2.78, 0.10 * s_)) for c, s_ in ((1, 0), (0, 1), (-1, 0), (0, -1))],
+                                    [Vector((0.15 * c, 3.12, 0.025 * s_)) for c, s_ in ((1, 0), (0, 1), (-1, 0), (0, -1))]],
+                   cap_start=True, cap_end=True))
+    flutes = lambda a: 1 - 0.07 * (0.5 + 0.5 * math.cos(8 * a)) ** 2
+    red.add(lathe([(0, -0.78), (0.20, -0.78), (0.26, -0.70), (0.27, -0.2), (0.25, 0.25), (0.20, 0.42), (0.10, 0.48),
+                   (0, 0.48)], segs=32, rmod=flutes))
+    for y in (-0.42, -0.06):
+        black.add(lathe([(0.255, y), (0.285, y + 0.025), (0.285, y + 0.115), (0.255, y + 0.14)], segs=32, close=False))
+    black.add(lathe([(0, -0.80), (0.21, -0.80), (0.23, -0.76), (0.21, -0.72), (0, -0.72)], segs=24))
+
+
+@weapon("Fork", "Common", "Dagger")
+def giant_fork(w):
+    """Giant dinner fork: four rounded tines on a curved head, a slim neck and a
+    flat handle that widens to a rounded end."""
+    steel = w.part("Fork", (214, 220, 232), "Metal", smooth=35)
+    head = catmull([(-0.06, 1.05), (-0.20, 1.35), (-0.30, 1.75), (-0.32, 2.25), (0.32, 2.25), (0.30, 1.75), (0.20, 1.35),
+                    (0.06, 1.05)], samples=3, closed=False)
+    steel.add(slab(head + [(0.06, 0.95), (-0.06, 0.95)], 0.12, 0.04, seg=1))
+    for x in (-0.24, -0.08, 0.08, 0.24):
+        tine = rounded_rect_pts(0.11, 1.30, 0.055, n=3)
+        steel.add(slab(tine, 0.11, 0.035, seg=1), T(x, 2.85, 0))
+    handle = catmull([(-0.07, 1.0), (-0.09, 0.4), (-0.17, -0.3), (-0.20, -0.65), (0.0, -0.84), (0.20, -0.65),
+                      (0.17, -0.3), (0.09, 0.4), (0.07, 1.0)], samples=3, closed=True)
+    steel.add(slab(handle, 0.12, 0.045, seg=1))
+
+
+@weapon("Kunai", "Uncommon", "Dagger")
+def kunai(w):
+    """Ninja kunai: dark steel leaf blade, white cloth wrap, ring pommel with a red
+    ribbon tied through it."""
+    steel = w.part("Blade", (62, 68, 84), "Metal", smooth=14)
+    wrap = w.part("Wrap", (244, 244, 248), "Fabric", smooth=70)
+    ribbon = w.part("Ribbon", (224, 44, 46), "Fabric", smooth=40)
+    st = [(0.42, 0.14, 0.09, 0.0), (0.95, 0.36, 0.11, 0.0), (1.9, 0.30, 0.10, 0.0)]
+    steel.add(profile_blade(st, 3.02, n_point=6, point_curve=0.5))
+    wrap.add(wrapped_grip(-0.92, 0.42, 0.115, 0.125, pitch=0.16, amp=0.02, sz=0.95))
+    steel.add(cylinder(0.08, 0.12, segs=10), T(0, -0.96, 0))
+    steel.add(torus(0.21, 0.06, segs=22, rsegs=8, axis="Z"), T(0, -1.24, 0))
+    # ribbon knotted through the ring with two fluttering tails
+    ribbon.add(sphere(0.08, 10, 7, scale=(1.2, 1.0, 0.8)), T(0, -1.47, 0))
+    for sx, L in ((1, 0.62), (-1, 0.50)):
+        tail = [Vector((sx * 0.03, -1.50, 0)), Vector((sx * 0.14, -1.70, 0.05)), Vector((sx * 0.10, -1.90, -0.04)),
+                Vector((sx * 0.20, -1.50 - L, 0.02))]
+        ribbon.add(sweep(tail, [0.13, 0.13, 0.12, 0.10], [0.03, 0.03, 0.03, 0.03], sides=4, point_end=False))
+
+
+@weapon("Sai", "Uncommon", "Dagger")
+def sai(w):
+    """Sai: octagonal steel center prong, two curved side prongs, red grip wrap
+    with gold collar and pommel."""
+    steel = w.part("Prongs", (196, 204, 220), "Metal", smooth=30)
+    wrap = w.part("Wrap", (214, 40, 42), "Fabric", smooth=70)
+    gold = w.part("Trim", (242, 188, 56), "Metal")
+    steel.add(lathe([(0, 0.38), (0.11, 0.40), (0.10, 2.6), (0.06, 3.1), (0, 3.32)], segs=8, phase=math.pi / 8))
+    for sx in (1, -1):
+        path = [Vector((sx * x, y, 0)) for x, y in ((0.08, 0.46), (0.30, 0.50), (0.46, 0.66), (0.52, 0.95), (0.50, 1.30))]
+        steel.add(sweep(path, [0.14, 0.13, 0.12, 0.10, 0.0], [0.14, 0.13, 0.12, 0.10, 0.0], sides=8))
+    gold.add(lathe([(0, 0.30), (0.16, 0.30), (0.18, 0.34), (0.18, 0.46), (0.16, 0.50), (0, 0.50)], segs=16))
+    wrap.add(wrapped_grip(-0.70, 0.32, 0.125, 0.135, pitch=0.18, amp=0.02, sz=1.0))
+    gold.add(lathe([(0, -0.92), (0.10, -0.92), (0.17, -0.84), (0.18, -0.76), (0.15, -0.70), (0, -0.68)], segs=16))
+
+
+@weapon("Carrot", "Uncommon", "Dagger")
+def carrot(w):
+    """A giant crunchy carrot held at its top: bumpy orange root with darker
+    growth rings, and a bushy green leaf top sprouting out the bottom."""
+    orange = w.part("Carrot", (255, 138, 30), "SmoothPlastic", smooth=45)
+    rings = w.part("Rings", (226, 102, 16), "SmoothPlastic", smooth=45)
+    leaves = w.part("Leaves", (72, 182, 62), "SmoothPlastic", smooth=40)
+    prof = [(0, -0.62), (0.22, -0.60), (0.30, -0.48)]
+    for k in range(12):
+        t = k / 11
+        y = lerp(-0.40, 3.10, t)
+        r = lerp(0.33, 0.06, t ** 1.15) * (1.0 + 0.04 * math.sin(k * 2.1))
+        prof.append((r, y))
+    prof += [(0.03, 3.30), (0, 3.36)]
+    orange.add(lathe(prof, segs=16))
+    for y, r in ((0.45, 0.31), (1.05, 0.27), (1.65, 0.22), (2.25, 0.165), (2.75, 0.115)):
+        rings.add(lathe([(r - 0.02, y - 0.03), (r + 0.012, y - 0.015), (r + 0.012, y + 0.015), (r - 0.02, y + 0.03)],
+                        segs=16, close=False))
+    # leafy top: stems fanning downward with leaflets
+    for ang, L in ((-25, 0.62), (0, 0.70), (25, 0.60), (180 - 15, 0.5), (180 + 15, 0.55)):
+        a = math.radians(ang)
+        d = Vector((math.sin(a) * 0.5, -1.0, math.cos(a) * 0.35)).normalized()
+        base = Vector((0, -0.60, 0))
+        stem = [base, base + d * L * 0.5, base + d * L]
+        leaves.add(sweep(stem, [0.07, 0.06, 0.0], [0.07, 0.06, 0.0], sides=6))
+        for t in (0.55, 0.85):
+            p = base + d * L * t
+            leaves.add(slab(leaf_pts(0.26, 0.14, n=5), 0.04, 0.012, seg=1),
+                       T(p.x, p.y, p.z) @ R("Y", ang) @ R("Z", 180 + (35 if t < 0.7 else -35)))
