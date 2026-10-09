@@ -983,7 +983,7 @@ def butter_knife(w):
     steel.add(lathe([(0, 0.40), (0.15, 0.40), (0.17, 0.46), (0.16, 0.62), (0, 0.62)], segs=16, sz=0.7))
     handle.add(lathe([(0, -0.80), (0.14, -0.80), (0.18, -0.70), (0.19, -0.40), (0.16, 0.05), (0.15, 0.40), (0, 0.40)],
                      segs=18, sz=0.72))
-    butter.add(box(0.30, 0.26, 0.16, 0.06, 2), T(0.0, 2.45, 0.11) @ R("Z", 8))
+    butter.add(box(0.36, 0.30, 0.18, 0.07, 2), T(0.0, 2.42, 0.12) @ R("Z", 8))
 
 
 @weapon("IronDagger", "Common", "Dagger")
@@ -1008,9 +1008,10 @@ def stiletto(w):
     gold = w.part("Guard", (242, 188, 56), "Metal")
     grip = w.part("Grip", (32, 34, 46), "SmoothPlastic", smooth=40)
     blade_p.add(lathe([(0, 0.40), (0.15, 0.42), (0.13, 1.6), (0.07, 2.7), (0, 3.20)], segs=4, phase=math.pi / 4))
-    gold.add(bar_x([(-0.46, 0.13, 0.15), (0.46, 0.13, 0.15)], chamfer=0.035, y=0.40))
+    gold.add(bar_x([(-0.50, 0.18, 0.20), (0.50, 0.18, 0.20)], chamfer=0.05, y=0.40))
+    gold.add(bar_y([(0.30, 0.30, 0.24, 0.05), (0.50, 0.32, 0.25, 0.05)]))
     for sx in (1, -1):
-        gold.add(sphere(0.10, 12, 8), T(sx * 0.50, 0.40, 0))
+        gold.add(sphere(0.13, 12, 8), T(sx * 0.56, 0.40, 0))
     prof = [(0, -0.66)]
     for k in range(7):
         y = -0.66 + k * 0.145
@@ -1065,14 +1066,14 @@ def kunai(w):
     ribbon = w.part("Ribbon", (224, 44, 46), "Fabric", smooth=40)
     st = [(0.42, 0.14, 0.09, 0.0), (0.95, 0.36, 0.11, 0.0), (1.9, 0.30, 0.10, 0.0)]
     steel.add(profile_blade(st, 3.02, n_point=6, point_curve=0.5))
-    wrap.add(wrapped_grip(-0.92, 0.42, 0.115, 0.125, pitch=0.16, amp=0.02, sz=0.95))
-    steel.add(cylinder(0.08, 0.12, segs=10), T(0, -0.96, 0))
-    steel.add(torus(0.21, 0.06, segs=22, rsegs=8, axis="Z"), T(0, -1.24, 0))
+    wrap.add(wrapped_grip(-0.80, 0.42, 0.115, 0.125, pitch=0.16, amp=0.02, sz=0.95))
+    steel.add(cylinder(0.08, 0.12, segs=10), T(0, -0.84, 0))
+    steel.add(torus(0.21, 0.06, segs=22, rsegs=8, axis="Z"), T(0, -1.12, 0))
     # ribbon knotted through the ring with two fluttering tails
-    ribbon.add(sphere(0.08, 10, 7, scale=(1.2, 1.0, 0.8)), T(0, -1.47, 0))
-    for sx, L in ((1, 0.62), (-1, 0.50)):
-        tail = [Vector((sx * 0.03, -1.50, 0)), Vector((sx * 0.14, -1.70, 0.05)), Vector((sx * 0.10, -1.90, -0.04)),
-                Vector((sx * 0.20, -1.50 - L, 0.02))]
+    ribbon.add(sphere(0.08, 10, 7, scale=(1.2, 1.0, 0.8)), T(0, -1.35, 0))
+    for sx, L in ((1, 0.46), (-1, 0.38)):
+        tail = [Vector((sx * 0.03, -1.38, 0)), Vector((sx * 0.14, -1.52, 0.05)), Vector((sx * 0.10, -1.66, -0.04)),
+                Vector((sx * 0.20, -1.38 - L, 0.02))]
         ribbon.add(sweep(tail, [0.13, 0.13, 0.12, 0.10], [0.03, 0.03, 0.03, 0.03], sides=4, point_end=False))
 
 
@@ -1085,8 +1086,8 @@ def sai(w):
     gold = w.part("Trim", (242, 188, 56), "Metal")
     steel.add(lathe([(0, 0.38), (0.11, 0.40), (0.10, 2.6), (0.06, 3.1), (0, 3.32)], segs=8, phase=math.pi / 8))
     for sx in (1, -1):
-        path = [Vector((sx * x, y, 0)) for x, y in ((0.08, 0.46), (0.30, 0.50), (0.46, 0.66), (0.52, 0.95), (0.50, 1.30))]
-        steel.add(sweep(path, [0.14, 0.13, 0.12, 0.10, 0.0], [0.14, 0.13, 0.12, 0.10, 0.0], sides=8))
+        path = [Vector((sx * x, y, 0)) for x, y in ((0.08, 0.46), (0.36, 0.50), (0.56, 0.68), (0.64, 1.0), (0.62, 1.42))]
+        steel.add(sweep(path, [0.16, 0.15, 0.14, 0.12, 0.0], [0.16, 0.15, 0.14, 0.12, 0.0], sides=8))
     gold.add(lathe([(0, 0.30), (0.16, 0.30), (0.18, 0.34), (0.18, 0.46), (0.16, 0.50), (0, 0.50)], segs=16))
     wrap.add(wrapped_grip(-0.70, 0.32, 0.125, 0.135, pitch=0.18, amp=0.02, sz=1.0))
     gold.add(lathe([(0, -0.92), (0.10, -0.92), (0.17, -0.84), (0.18, -0.76), (0.15, -0.70), (0, -0.68)], segs=16))
@@ -1111,13 +1112,306 @@ def carrot(w):
         rings.add(lathe([(r - 0.02, y - 0.03), (r + 0.012, y - 0.015), (r + 0.012, y + 0.015), (r - 0.02, y + 0.03)],
                         segs=16, close=False))
     # leafy top: stems fanning downward with leaflets
-    for ang, L in ((-25, 0.62), (0, 0.70), (25, 0.60), (180 - 15, 0.5), (180 + 15, 0.55)):
+    for ang, L, spread in ((-30, 0.62, 0.55), (0, 0.72, 0.25), (30, 0.62, 0.55), (180 - 25, 0.58, 0.55),
+                           (180 + 25, 0.60, 0.55), (90, 0.50, 0.7), (-90, 0.50, 0.7)):
         a = math.radians(ang)
-        d = Vector((math.sin(a) * 0.5, -1.0, math.cos(a) * 0.35)).normalized()
+        d = Vector((math.sin(a) * spread, -1.0, math.cos(a) * spread * 0.7)).normalized()
         base = Vector((0, -0.60, 0))
         stem = [base, base + d * L * 0.5, base + d * L]
-        leaves.add(sweep(stem, [0.07, 0.06, 0.0], [0.07, 0.06, 0.0], sides=6))
-        for t in (0.55, 0.85):
+        leaves.add(sweep(stem, [0.08, 0.065, 0.0], [0.08, 0.065, 0.0], sides=6))
+        for t, side in ((0.45, 1), (0.65, -1), (0.88, 1)):
             p = base + d * L * t
-            leaves.add(slab(leaf_pts(0.26, 0.14, n=5), 0.04, 0.012, seg=1),
-                       T(p.x, p.y, p.z) @ R("Y", ang) @ R("Z", 180 + (35 if t < 0.7 else -35)))
+            leaves.add(slab(leaf_pts(0.34, 0.20, n=5), 0.045, 0.0),
+                       T(p.x, p.y, p.z) @ R("Y", ang) @ R("Z", 180 + side * 38))
+
+
+
+# ================================================================ DAGGERS: rares, epics, legendary
+
+def twisted_icicle(y0, y1, r0, lobes=6, twist=1.2, segs=24, rings=10, wobble=0.05, sz=1.0):
+    """A ridged icicle cone from y0 (radius r0) to a point at y1, its ridges
+    twisting `twist` turns along the length."""
+    rs_ = []
+    for i in range(rings + 1):
+        t = i / rings
+        y = lerp(y0, y1, t)
+        r = r0 * (1 - t) ** 0.85 * (1 + wobble * math.sin(9 * t))
+        if i == rings:
+            rs_.append([Vector((0, y1, 0))])
+            break
+        ring = []
+        for j in range(segs):
+            a = math.tau * j / segs
+            k = 1 + 0.12 * math.cos(lobes * (a + twist * math.tau * t / lobes))
+            ring.append(Vector((r * k * math.cos(a), y, r * k * sz * math.sin(a))))
+        rs_.append(ring)
+    return loft(rs_, cap_start=True, cap_end=False)
+
+
+def fang_sweep(y0, y1, w0, curve, t_ratio=0.6, n=14, sides=10, bulge=0.1, x0=0.0):
+    """A curved, swelling fang cone from y0 (width w0) to a point at y1, bending
+    toward -X by `curve`. Returns (bmesh, path, widths, thicks)."""
+    path, widths = [], []
+    for i in range(n + 1):
+        t = i / n
+        path.append(Vector((x0 - curve * t ** 2, lerp(y0, y1, t), 0)))
+        widths.append(w0 * (1 - t) ** 1.15 * (1 + bulge * math.sin(math.pi * min(t * 2.2, 1))))
+    widths[-1] = 0.0
+    thicks = [v * t_ratio for v in widths]
+    return sweep(path, widths, thicks, sides=sides), path, widths, thicks
+
+
+@weapon("StraightRazor", "Rare", "Dagger")
+def straight_razor(w):
+    """Barber's straight razor flipped open: broad steel blade with a darker
+    spine, cream scales riveted with gold pins."""
+    steel = w.part("Blade", (220, 226, 238), "Metal", smooth=20)
+    spine = w.part("Spine", (150, 160, 182), "Metal", smooth=30)
+    scales = w.part("Scales", (246, 240, 226), "SmoothPlastic", smooth=45)
+    pins = w.part("Pins", (244, 190, 56), "Metal")
+    outline = catmull([(-0.20, 0.50), (0.46, 0.56), (0.48, 1.6), (0.46, 2.62), (0.34, 2.90), (0.08, 2.93),
+                       (-0.22, 2.80), (-0.24, 1.2)], samples=3, closed=True)
+    steel.add(slab(outline, 0.11, 0.035, seg=1))
+    back = [Vector((-0.22, y, 0)) for y in (0.36, 0.9, 1.6, 2.3, 2.78)]
+    spine.add(sweep(back, [0.12] * 5, [0.17] * 5, sides=8, point_end=False))
+    tang = [Vector((x, y, 0)) for x, y in ((-0.16, 0.56), (-0.10, 0.36), (0.0, 0.26))]
+    spine.add(sweep(tang, [0.16, 0.15, 0.14], [0.12, 0.12, 0.12], sides=8, point_end=False))
+    sc = catmull([(-0.20, 0.42), (0.16, 0.46), (0.21, 0.1), (0.20, -0.6), (0.12, -1.0), (-0.12, -1.0), (-0.20, -0.6),
+                  (-0.21, 0.1)], samples=3, closed=True)
+    scales.add(slab(sc, 0.26, 0.08, seg=2))
+    for y in (0.30, -0.86):
+        for side in (1, -1):
+            pins.add(lathe([(0, 0.0), (0.07, 0.0), (0.075, 0.02), (0.05, 0.04), (0, 0.045)], segs=12),
+                     T(0, y, side * 0.13) @ R("X", side * 90))
+
+
+@weapon("Karambit", "Rare", "Dagger")
+def karambit(w):
+    """Karambit: a dark steel claw blade hooking forward with the edge on its
+    inside curve, red grip with silver bolts, and the finger ring at the end."""
+    steel = w.part("Blade", (62, 68, 84), "Metal", smooth=16)
+    grip = w.part("Grip", (220, 46, 44), "SmoothPlastic", smooth=40)
+    bolts = w.part("Bolts", (214, 220, 232), "Metal")
+    steel.add(saber_blade(0.30, 2.90, w0=0.44, w1=0.48, h0=0.10, h1=0.08, curve=-1.05, xb0=-0.24,
+                          clip=0.85, tip_bias=0.85, n=20))
+    g = catmull([(-0.24, 0.36), (0.22, 0.36), (0.22, -0.2), (0.16, -0.62), (-0.10, -0.68), (-0.26, -0.40), (-0.26, 0.0)],
+                samples=3, closed=True)
+    grip.add(slab(g, 0.26, 0.08, seg=2))
+    steel.add(torus(0.25, 0.075, segs=24, rsegs=8, axis="Z"), T(-0.02, -0.98, 0))
+    steel.add(slab([(-0.12, -0.60), (0.12, -0.60), (0.10, -0.78), (-0.10, -0.78)], 0.14, 0.03), T(0, 0, 0))
+    for y in (0.12, -0.36):
+        for side in (1, -1):
+            bolts.add(lathe([(0, 0.0), (0.06, 0.0), (0.065, 0.02), (0.045, 0.035), (0, 0.04)], segs=10),
+                      T(0, y, side * 0.13) @ R("X", side * 90))
+
+
+@weapon("Icicle", "Rare", "Dagger")
+def icicle(w):
+    """A long twisted icicle blade, frosty blue steel guard of little icicles,
+    white grip and an ice crystal pommel."""
+    ice = w.part("Ice", (186, 232, 255), "Glass", transparency=0.15, smooth=25)
+    blue = w.part("Guard", (60, 140, 232), "Metal")
+    grip = w.part("Grip", (244, 248, 252), "Fabric", smooth=70)
+    ice.add(twisted_icicle(0.44, 3.44, 0.45, lobes=6, twist=1.1, segs=24, rings=12, sz=0.78))
+    blue.add(lathe([(0, 0.28), (0.36, 0.28), (0.50, 0.35), (0.52, 0.44), (0.44, 0.52), (0, 0.52)], segs=6,
+                   sz=0.66, phase=math.pi / 6))
+    for sx in (1, -1):
+        for dx, L in ((0.30, 0.34), (0.48, 0.26)):
+            blue.add(lathe([(0, 0.0), (0.06, -0.01), (0, -L)], segs=6), T(sx * dx, 0.32, 0))
+    grip.add(wrapped_grip(-0.66, 0.32, 0.125, 0.135, pitch=0.18, amp=0.02, sz=0.95))
+    blue.add(lathe([(0, -0.76), (0.15, -0.76), (0.17, -0.70), (0.15, -0.64), (0, -0.64)], segs=12))
+    ice.add(lathe([(0, -1.0), (0.13, -0.86), (0.12, -0.76), (0, -0.72)], segs=6))
+
+
+@weapon("FrostFang", "Epic", "Dagger")
+def frost_fang(w):
+    """A curved fang of clear ice with a glowing frost core, blue steel guard
+    crowned with ice spikes, white grip with blue wraps, ice crystal pommel."""
+    ice = w.part("Ice", (186, 232, 255), "Glass", transparency=0.2, smooth=20)
+    core = w.part("Core", (226, 250, 255), "Neon")
+    blue = w.part("Guard", (56, 132, 232), "Metal")
+    grip = w.part("Grip", (244, 248, 252), "Fabric", smooth=70)
+    bm, path, widths, thicks = fang_sweep(0.46, 3.20, 0.98, curve=0.62, t_ratio=0.5, n=14, sides=8, bulge=0.2)
+    ice.add(bm)
+    core.add(sweep(path[:-2], [v * 0.42 for v in widths[:-2]], [v * 0.42 for v in thicks[:-2]], sides=6))
+    blue.add(bar_x([(-0.62, 0.20, 0.26), (-0.48, 0.28, 0.34), (0.48, 0.28, 0.34), (0.62, 0.20, 0.26)], chamfer=0.07, y=0.40))
+    for sx in (1, -1):
+        for dx, L, ang in ((0.20, 0.36, 12), (0.42, 0.44, 26), (0.60, 0.32, 42)):
+            blue.add(lathe([(0, 0.0), (0.06, 0.02), (0, L)], segs=6), T(sx * dx, 0.48, 0) @ R("Z", -sx * ang))
+    grip.add(wrapped_grip(-0.64, 0.30, 0.125, 0.135, pitch=0.18, amp=0.02, sz=0.95))
+    for y in (-0.42, 0.08):
+        blue.add(lathe([(0.13, y), (0.15, y + 0.02), (0.15, y + 0.08), (0.13, y + 0.10)], segs=14, close=False))
+    ice.add(lathe([(0, -0.98), (0.14, -0.84), (0.13, -0.72), (0, -0.66)], segs=6))
+    core.add(ico(0.06, 1), T(0, -0.82, 0))
+    w.fx = (-0.50, 3.0, 0)
+
+
+@weapon("ToxicFang", "Epic", "Dagger")
+def toxic_fang(w):
+    """Snake-fang dagger: dark curved blade with a glowing toxic-green venom groove
+    and drips at the tip, green snake-jaw guard, black grip, bubbling venom pommel."""
+    dark = w.part("Blade", (54, 58, 66), "Metal", smooth=18)
+    venom = w.part("Venom", (120, 255, 64), "Neon")
+    green = w.part("Guard", (46, 112, 50), "Metal")
+    grip = w.part("Grip", (28, 28, 34), "Fabric", smooth=70)
+    bm, path, widths, thicks = fang_sweep(0.44, 3.12, 0.92, curve=0.58, t_ratio=0.5, n=14, sides=10, bulge=0.2)
+    dark.add(bm)
+    a, b = 1, 12
+    for p0, p1 in ((60, 120), (-120, -60)):
+        venom.add(sweep_band(path[a:b], widths[a:b], thicks[a:b], p0, p1, lift=0.004, rise=0.012))
+    tip = path[-3]
+    venom.add(teardrop(0.05, 0.16, segs=10), T(tip.x + 0.02, tip.y - 0.05, 0))
+    # snake-jaw guard: two curved fangs pointing up on each side of a rounded block
+    green.add(bar_x([(-0.40, 0.20, 0.24), (-0.30, 0.30, 0.30), (0.30, 0.30, 0.30), (0.40, 0.20, 0.24)], chamfer=0.07, y=0.38))
+    for sx in (1, -1):
+        jaw = [Vector((sx * x, y, 0)) for x, y in ((0.30, 0.42), (0.56, 0.60), (0.60, 0.90), (0.50, 1.12))]
+        green.add(sweep(jaw, [0.20, 0.16, 0.10, 0.0], [0.20, 0.16, 0.10, 0.0], sides=8))
+    grip.add(wrapped_grip(-0.66, 0.30, 0.125, 0.135, pitch=0.18, amp=0.02, sz=0.95))
+    for y in (-0.44, 0.06):
+        venom.add(lathe([(0.13, y), (0.15, y + 0.02), (0.15, y + 0.06), (0.13, y + 0.08)], segs=14, close=False))
+    green.add(lathe([(0, -0.74), (0.15, -0.74), (0.17, -0.70), (0.15, -0.64), (0, -0.64)], segs=12))
+    venom.add(sphere(0.14, 14, 9), T(0, -0.86, 0))
+    for x, y, z, r in ((0.10, -0.98, 0.06, 0.045), (-0.08, -1.0, -0.05, 0.035)):
+        venom.add(sphere(r, 8, 6), T(x, y, z))
+    for x, y, r in ((0.52, 1.7, 0.07), (0.62, 2.0, 0.05), (0.50, 2.25, 0.035)):     # toxic bubbles rising
+        venom.add(sphere(r, 10, 7), T(x, y, 0.05))
+    w.fx = (tip.x, tip.y, 0)
+
+
+@weapon("EmberKnife", "Epic", "Dagger")
+def ember_knife(w):
+    """A charcoal leaf blade split by a glowing ember core, dark iron guard with
+    flame-shaped quillons, smouldering grip and an ember pommel."""
+    char = w.part("Blade", (50, 36, 34), "SmoothPlastic", smooth=14)
+    ember = w.part("Ember", (255, 120, 26), "Neon")
+    iron = w.part("Guard", (64, 56, 58), "Metal")
+    grip = w.part("Grip", (40, 28, 26), "Fabric", smooth=70)
+    st = [(0.46, 0.27, 0.11, 0.06), (1.25, 0.34, 0.105, 0.065), (2.2, 0.27, 0.095, 0.06)]
+    b = profile_blade(st, 3.08, n_point=6, point_curve=0.4)
+    parts = split_by_tag(b, {0: "body", -1: "body", 1: "edge"})
+    char.add(parts["body"])
+    ember.add(parts["edge"])
+    for side in (1, -1):
+        ember.add(surface_vein([(0, 0.55), (0.0, 1.0), (0.0, 2.05), (0, 2.6)], 0.20, st, side=side, lift=0.004,
+                               thick=0.02, taper=True))
+        for br in ([(0.0, 1.0), (0.12, 1.18), (0.20, 1.24)], [(0.0, 1.55), (-0.12, 1.75), (-0.20, 1.82)]):
+            ember.add(surface_vein(br, 0.05, st, side=side, lift=0.004))
+    for sx in (1, -1):
+        flame = catmull([(0.0, 0.0), (0.20, 0.06), (0.42, 0.24), (0.50, 0.52), (0.40, 0.40), (0.34, 0.62), (0.22, 0.32),
+                         (0.10, 0.20)], samples=2, closed=True)
+        iron.add(slab(flame, 0.18, 0.05, seg=1), S(sx, 1, 1) @ T(0.10, 0.30, 0) @ S(1.3))
+    iron.add(bar_y([(0.28, 0.34, 0.26, 0.06), (0.48, 0.38, 0.28, 0.06)]))
+    grip.add(wrapped_grip(-0.64, 0.30, 0.125, 0.135, pitch=0.18, amp=0.02, sz=0.95))
+    iron.add(lathe([(0, -0.74), (0.15, -0.74), (0.17, -0.70), (0.15, -0.64), (0, -0.64)], segs=12))
+    ember.add(ico(0.13, 1, scale=(1.0, 1.2, 1.0)), T(0, -0.86, 0))
+    w.fx = (0, 2.95, 0)
+
+
+@weapon("StarShard", "Legendary", "Dagger")
+def star_shard(w):
+    """A long faceted gold shard of a fallen star with a glowing four-point star
+    set at its base and a light streak up its core, navy grip with gold trim,
+    star pommel and little stars orbiting the blade."""
+    gold = w.part("Shard", (255, 204, 56), "Metal", smooth=8)
+    light = w.part("Light", (255, 252, 230), "Neon")
+    stars = w.part("Stars", (255, 236, 120), "Neon")
+    grip = w.part("Grip", (28, 40, 106), "Fabric", smooth=70)
+    gold.add(lathe([(0, 0.50), (0.42, 0.62), (0.46, 1.2), (0.31, 2.6), (0, 3.78)], segs=4, sz=0.45))
+    for side in (1, -1):
+        light.add(lathe([(0, 1.0), (0.05, 1.08), (0.04, 2.6), (0, 3.2)], segs=4, sz=0.5), T(0, 0, side * 0.115))
+    big = slab(star_pts(4, 0.48, 0.12, rot=90), 0.10, 0.0)
+    light.add(big, T(0, 0.86, 0.20))
+    light.add(big, T(0, 0.86, -0.20))
+    gold.add(bar_x([(-0.34, 0.16, 0.26), (0.34, 0.16, 0.26)], chamfer=0.06, y=0.42))
+    grip.add(wrapped_grip(-0.64, 0.34, 0.125, 0.135, pitch=0.18, amp=0.02, sz=0.95))
+    gold.add(lathe([(0, -0.74), (0.15, -0.74), (0.17, -0.70), (0.15, -0.64), (0, -0.64)], segs=12))
+    stars.add(slab(star_pts(5, 0.22, 0.09), 0.10, 0.0), T(0, -0.92, 0))
+    sm = slab(star_pts(5, 0.13, 0.055), 0.06, 0.0)
+    for x, y, z, r in ((0.62, 1.55, 0.1, 15), (-0.66, 2.25, -0.1, -20), (0.50, 3.10, 0.0, 30), (-0.40, 0.95, 0.12, 5)):
+        stars.add(sm, T(x, y, z) @ R("Z", r))
+    w.fx = (0, 0.86, 0)
+
+
+# ================================================================ DAGGERS: limited (Halloween)
+
+@weapon("CandyCornDagger", "Limited", "Dagger")
+def candy_corn_dagger(w):
+    """A giant glossy candy corn on a candy stick: yellow, orange and white bands,
+    a purple ribbon bow and purple swirl stripes down the white stick."""
+    yellow = w.part("Base", (255, 208, 52), "SmoothPlastic", smooth=40)
+    orange = w.part("Mid", (255, 134, 30), "SmoothPlastic", smooth=40)
+    white = w.part("Tip", (250, 248, 240), "SmoothPlastic", smooth=40)
+    purple = w.part("Ribbon", (140, 62, 206), "SmoothPlastic", smooth=45)
+
+    def band(y0, y1, w0, w1):
+        pts = catmull([(-w0, y0), (w0, y0), (lerp(w0, w1, 0.5) + 0.02, (y0 + y1) / 2), (w1, y1), (-w1, y1),
+                       (-lerp(w0, w1, 0.5) - 0.02, (y0 + y1) / 2)], samples=2, closed=True)
+        return slab(pts, 0.40, 0.14, seg=3)
+    yellow.add(band(0.46, 1.42, 0.56, 0.44))
+    orange.add(band(1.42, 2.46, 0.44, 0.26))
+    tip = catmull([(-0.26, 2.46), (0.26, 2.46), (0.17, 2.86), (0.06, 3.18), (0.0, 3.24), (-0.06, 3.18), (-0.17, 2.86)],
+                  samples=2, closed=True)
+    white.add(slab(tip, 0.36, 0.13, seg=3))
+    white.add(lathe([(0, -0.92), (0.10, -0.92), (0.13, -0.88), (0.13, 0.50), (0, 0.50)], segs=16))
+    purple.add(helix_ribbon(-0.86, 0.40, 0.13, 0.13, 3.5, 0.07, 0.012, samples_per_turn=12))
+    for sx in (1, -1):
+        loop = catmull([(0, 0), (0.30, 0.15), (0.34, -0.04), (0.24, -0.14)], samples=3, closed=True)
+        purple.add(slab(loop, 0.09, 0.03, seg=1), T(0, 0.46, 0.21) @ S(sx, 1, 1))
+        tail = catmull([(0.02, -0.02), (0.13, -0.30), (0.05, -0.32), (-0.02, -0.06)], samples=2, closed=True)
+        purple.add(slab(tail, 0.07, 0.02, seg=1), T(0, 0.44, 0.21) @ S(sx, 1, 1))
+    purple.add(sphere(0.075, 10, 7, scale=(1.0, 1.0, 0.7)), T(0, 0.46, 0.23))
+    w.fx = (0, 3.1, 0)
+
+
+@weapon("VampireFang", "Limited", "Dagger")
+def vampire_fang(w):
+    """A big glossy vampire fang, cute scalloped bat wings spreading from a glowing
+    purple gem, purple grip and a little bat-ear pommel."""
+    fang = w.part("Fang", (250, 246, 236), "SmoothPlastic", smooth=45)
+    wings = w.part("Wings", (44, 30, 60), "SmoothPlastic", smooth=35)
+    gem = w.part("Gem", (196, 92, 255), "Neon")
+    grip = w.part("Grip", (88, 40, 132), "Fabric", smooth=70)
+    bm, path, widths, thicks = fang_sweep(0.42, 3.02, 0.70, curve=0.48, t_ratio=0.55, n=14, sides=12)
+    fang.add(bm)
+    for sx in (1, -1):
+        wing = slab(bat_wing_pts(1.06, 0.74, scallops=3), 0.09, 0.025, seg=1)
+        wings.add(wing, S(sx, 1, 1) @ T(0.12, 0.34, 0) @ R("Z", 18))
+        wings.add(lathe([(0, 0.0), (0.05, 0.03), (0, 0.16)], segs=6), T(sx * 0.13, 0.62, 0) @ R("Z", -sx * 15))
+    wings.add(sphere(0.20, 14, 9, scale=(1.1, 0.9, 0.9)), T(0, 0.42, 0))
+    gem.add(lathe([(0, 0.0), (0.13, 0.04), (0.14, 0.07), (0.08, 0.12), (0, 0.12)], segs=8), T(0, 0.42, 0.15) @ R("X", 90))
+    gem.add(lathe([(0, 0.0), (0.13, 0.04), (0.14, 0.07), (0.08, 0.12), (0, 0.12)], segs=8), T(0, 0.42, -0.15) @ R("X", -90))
+    grip.add(wrapped_grip(-0.62, 0.26, 0.125, 0.135, pitch=0.18, amp=0.02, sz=0.95))
+    wings.add(lathe([(0, -0.80), (0.15, -0.78), (0.17, -0.70), (0.15, -0.62), (0, -0.62)], segs=12))
+    for sx in (1, -1):
+        wings.add(lathe([(0, 0.0), (0.06, 0.02), (0, -0.15)], segs=6), T(sx * 0.09, -0.78, 0) @ R("Z", sx * 20))
+    w.fx = (path[-2].x, path[-2].y, 0)
+
+
+@weapon("SpiderStinger", "Limited", "Dagger")
+def spider_stinger(w):
+    """A black stinger needle with a glowing purple venom stripe, a cute round
+    spider with big googly eyes hugging the guard, purple grip, egg-sac pommel."""
+    needle = w.part("Needle", (40, 40, 48), "Metal", smooth=20)
+    venom = w.part("Venom", (190, 90, 255), "Neon")
+    spider = w.part("Spider", (36, 34, 44), "SmoothPlastic", smooth=45)
+    eyes = w.part("Eyes", (250, 250, 250), "SmoothPlastic", smooth=50)
+    grip = w.part("Grip", (128, 56, 196), "Fabric", smooth=70)
+    needle.add(lathe([(0, 0.48), (0.20, 0.52), (0.18, 1.2), (0.10, 2.4), (0, 3.20)], segs=6, sz=0.6, phase=math.pi / 6))
+    for side in (1, -1):
+        venom.add(lathe([(0, 0.70), (0.05, 0.76), (0.04, 2.2), (0, 2.75)], segs=4, sz=0.5), T(0, 0, side * 0.105))
+    # the spider: round body and head with eight bent legs
+    spider.add(sphere(0.34, 16, 10, scale=(1.0, 0.85, 0.85)), T(0, 0.36, 0))
+    spider.add(sphere(0.21, 14, 9), T(0, 0.68, 0.10))
+    for sx in (1, -1):
+        for k, (ang, L) in enumerate(((-40, 0.62), (-12, 0.66), (14, 0.64), (40, 0.58))):
+            a = math.radians(ang)
+            base = Vector((sx * 0.26, 0.44 - 0.08 * k, 0.0))
+            knee = base + Vector((sx * 0.38, 0.26, 0.06 * math.sin(a)))
+            foot = knee + Vector((sx * 0.20, -0.46 - 0.06 * k, 0.15 * math.sin(a)))
+            leg = [base, knee, foot]
+            spider.add(sweep(leg, [0.09, 0.08, 0.04], [0.09, 0.08, 0.04], sides=6, point_end=False))
+        eyes.add(sphere(0.105, 12, 8), T(sx * 0.09, 0.75, 0.27))
+        spider.add(sphere(0.05, 8, 6), T(sx * 0.088, 0.76, 0.37))
+    grip.add(wrapped_grip(-0.66, 0.18, 0.125, 0.135, pitch=0.18, amp=0.02, sz=0.95))
+    venom.add(sphere(0.14, 14, 9, scale=(1.0, 1.25, 1.0)), T(0, -0.80, 0))
+    w.fx = (0, 3.05, 0)
