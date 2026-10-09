@@ -178,7 +178,31 @@ def glass_mat():
     return m
 
 
-MATS = {"Plastic": plastic_mat(), "Neon": neon_mat(), "Glass": glass_mat(), "Beam": beam_mat()}
+def haze_mat():
+    """See-through Plastic (Transparency > 0.3, e.g. mist and ghosts): lit vertex colour mixed with transparency."""
+    m = bpy.data.materials.new("Haze")
+    m.use_nodes = True
+    nt = m.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    bsdf = nt.nodes.new("ShaderNodeBsdfPrincipled")
+    vc = nt.nodes.new("ShaderNodeVertexColor")
+    vc.layer_name = "Col"
+    nt.links.new(vc.outputs["Color"], bsdf.inputs["Base Color"])
+    nt.links.new(vc.outputs["Color"], bsdf.inputs["Emission Color"])
+    bsdf.inputs["Emission Strength"].default_value = 0.25
+    bsdf.inputs["Roughness"].default_value = 0.9
+    tr = nt.nodes.new("ShaderNodeBsdfTransparent")
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    mix.inputs["Fac"].default_value = 0.35            # 0 = fully transparent, 1 = solid
+    nt.links.new(tr.outputs[0], mix.inputs[1])
+    nt.links.new(bsdf.outputs[0], mix.inputs[2])
+    nt.links.new(mix.outputs[0], out.inputs["Surface"])
+    m.blend_method = "BLEND"
+    return m
+
+
+MATS = {"Plastic": plastic_mat(), "Neon": neon_mat(), "Glass": glass_mat(), "Beam": beam_mat(), "Haze": haze_mat()}
 
 # box faces: (corner indices, u axis, v axis) in part-local corner space
 CORNERS = [(-1, -1, -1), (1, -1, -1), (1, 1, -1), (-1, 1, -1), (-1, -1, 1), (1, -1, 1), (1, 1, 1), (-1, 1, 1)]
@@ -189,7 +213,8 @@ FACES = [((4, 5, 6, 7), 0, 1), ((1, 0, 3, 2), 0, 1), ((0, 4, 7, 3), 2, 1), ((5, 
 def build_meshes(parts):
     groups = {}
     for p in parts:
-        key = "Beam" if p.get("transparency", 0) > 0.3 and p["mat"] == "Neon" else p["mat"]
+        tr_ = p.get("transparency", 0)
+        key = "Beam" if tr_ > 0.3 and p["mat"] == "Neon" else "Haze" if tr_ > 0.3 and p["mat"] == "Plastic" else p["mat"]
         groups.setdefault(key if key in MATS else "Plastic", []).append(p)
     objs = []
     for matname, plist in groups.items():
