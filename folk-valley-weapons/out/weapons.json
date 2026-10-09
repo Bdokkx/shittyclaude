@@ -1,0 +1,816 @@
+[
+ {
+  "Id": "Wooden",
+  "Rarity": "Common",
+  "Kind": "Sword",
+  "Parts": [
+   {
+    "Name": "Blade",
+    "Mesh": "Wooden__Blade",
+    "Color": [
+     226,
+     204,
+     160
+    ],
+    "Material": "Wood",
+    "Transparency": 0.0,
+    "Size": [
+     0.57,
+     3.56,
+     0.25
+    ],
+    "Center": [
+     0.0,
+     2.38,
+     0.0
+    ],
+    "Tris": 94
+   },
+   {
+    "Name": "Fittings",
+    "Mesh": "Wooden__Fittings",
+    "Color": [
+     104,
+     62,
+     36
+    ],
+    "Material": "Wood",
+    "Transparency": 0.0,
+    "Size": [
+     1.6,
+     1.785,
+     0.31
+    ],
+    "Center": [
+     0.0,
+     -0.1575,
+     0.0
+    ],
+    "Tris": 760
+   },
+   {
+    "Name": "Grip",
+    "Mesh": "Wooden__Grip",
+    "Color": [
+     118,
+     64,
+     34
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Size": [
+     0.3276,
+     1.025,
+     0.2874
+    ],
+    "Center": [
+     -0.0001,
+     -0.0125,
+     0.0002
+    ],
+    "Tris": 610
+   }
+  ],
+  "Top": 4.16,
+  "Bottom": -1.05,
+  "Tris": 1464,
+  "Fx": null,
+  "Extents": {
+   "lo": [
+    -0.8,
+    -1.05,
+    -0.155
+   ],
+   "hi": [
+    0.8,
+    4.16,
+    0.155
+   ]
+  }
+ },
+ {
+  "Id": "Katana",
+  "Rarity": "Uncommon",
+  "Kind": "Sword",
+  "Parts": [
+   {
+    "Name": "Blade",
+    "Mesh": "Katana__Blade",
+    "Color": [
+     190,
+     198,
+     216
+    ],
+    "Material": "Metal",
+    "Transparency": 0.0,
+    "Size": [
+     0.8,
+     4.24,
+     0.17
+    ],
+    "Center": [
+     -0.12,
+     2.62,
+     0.0
+    ],
+    "Tris": 336
+   },
+   {
+    "Name": "Hamon",
+    "Mesh": "Katana__Hamon",
+    "Color": [
+     246,
+     249,
+     255
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Size": [
+     0.8,
+     4.24,
+     0.085
+    ],
+    "Center": [
+     -0.12,
+     2.62,
+     0.0
+    ],
+    "Tris": 110
+   },
+   {
+    "Name": "Fittings",
+    "Mesh": "Katana__Fittings",
+    "Color": [
+     238,
+     184,
+     54
+    ],
+    "Material": "Metal",
+    "Transparency": 0.0,
+    "Size": [
+     0.9783,
+     1.8,
+     0.8804
+    ],
+    "Center": [
+     0.0,
+     -0.1,
+     0.0
+    ],
+    "Tris": 1276
+   },
+   {
+    "Name": "Wrap",
+    "Mesh": "Katana__Wrap",
+    "Color": [
+     204,
+     36,
+     44
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Size": [
+     0.34,
+     1.13,
+     0.244
+    ],
+    "Center": [
+     0.0,
+     -0.315,
+     0.0
+    ],
+    "Tris": 120
+   },
+   {
+    "Name": "Grip",
+    "Mesh": "Katana__Grip",
+    "Color": [
+     238,
+     230,
+     210
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Size": [
+     0.236,
+     1.07,
+     0.292
+    ],
+    "Center": [
+     0.0,
+     -0.27,
+     0.0
+    ],
+    "Tris": 544
+   }
+  ],
+  "Top": 4.74,
+  "Bottom": -1.0,
+  "Tris": 2386,
+  "Fx": null,
+  "Extents": {
+   "lo": [
+    -0.52,
+    -1.0,
+    -0.44
+   ],
+   "hi": [
+    0.489,
+    4.74,
+    0.44
+   ]
+  }
+ },
+ {
+  "Id": "LavaBlade",
+  "Rarity": "Epic",
+  "Kind": "Sword",
+  "Parts": [
+   {
+    "Name": "Obsidian",
+    "Mesh": "LavaBlade__Obsidian",
+    "Color": [
+     46,
+     32,
+     40
+    ],
+    "Material": "Metal",
+    "Transparency": 0.0,
+    "Size": [
+     1.6153,
+     5.61,
+     0.4543
+    ],
+    "Center": [
+     0.0,
+     1.855,
+     0.0054
+    ],
+    "Tris": 384
+   },
+   {
+    "Name": "Lava",
+    "Mesh": "LavaBlade__Lava",
+    "Color": [
+     255,
+     98,
+     18
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Size": [
+     0.7181,
+     4.04,
+     0.2727
+    ],
+    "Center": [
+     0.0,
+     2.64,
+     0.0
+    ],
+    "Tris": 550
+   },
+   {
+    "Name": "Core",
+    "Mesh": "LavaBlade__Core",
+    "Color": [
+     255,
+     216,
+     92
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Size": [
+     0.3022,
+     4.0562,
+     0.525
+    ],
+    "Center": [
+     0.0,
+     1.0931,
+     0.0
+    ],
+    "Tris": 368
+   },
+   {
+    "Name": "Grip",
+    "Mesh": "LavaBlade__Grip",
+    "Color": [
+     56,
+     36,
+     30
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Size": [
+     0.3336,
+     0.96,
+     0.2924
+    ],
+    "Center": [
+     0.0,
+     -0.06,
+     0.0003
+    ],
+    "Tris": 536
+   }
+  ],
+  "Top": 4.66,
+  "Bottom": -0.95,
+  "Tris": 1838,
+  "Fx": [
+   0,
+   4.5,
+   0
+  ],
+  "Extents": {
+   "lo": [
+    -0.808,
+    -0.95,
+    -0.262
+   ],
+   "hi": [
+    0.808,
+    4.66,
+    0.262
+   ]
+  }
+ },
+ {
+  "Id": "RainbowEdge",
+  "Rarity": "Legendary",
+  "Kind": "Sword",
+  "Parts": [
+   {
+    "Name": "BladeRed",
+    "Mesh": "RainbowEdge__BladeRed",
+    "Color": [
+     236,
+     50,
+     62
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Size": [
+     0.66,
+     0.9675,
+     0.26
+    ],
+    "Center": [
+     0.0,
+     1.0362,
+     0.0
+    ],
+    "Tris": 24
+   },
+   {
+    "Name": "BladeOrange",
+    "Mesh": "RainbowEdge__BladeOrange",
+    "Color": [
+     255,
+     138,
+     34
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Size": [
+     0.6793,
+     0.9209,
+     0.2423
+    ],
+    "Center": [
+     0.0,
+     1.7995,
+     0.0
+    ],
+    "Tris": 24
+   },
+   {
+    "Name": "BladeYellow",
+    "Mesh": "RainbowEdge__BladeYellow",
+    "Color": [
+     255,
+     212,
+     46
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Size": [
+     0.6867,
+     4.0984,
+     0.225
+    ],
+    "Center": [
+     0.0,
+     0.9508,
+     0.0
+    ],
+    "Tris": 180
+   },
+   {
+    "Name": "BladeGreen",
+    "Mesh": "RainbowEdge__BladeGreen",
+    "Color": [
+     64,
+     200,
+     92
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Size": [
+     0.6472,
+     0.9427,
+     0.2077
+    ],
+    "Center": [
+     0.0,
+     3.2687,
+     0.0
+    ],
+    "Tris": 32
+   },
+   {
+    "Name": "BladeBlue",
+    "Mesh": "RainbowEdge__BladeBlue",
+    "Color": [
+     58,
+     138,
+     244
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Size": [
+     0.5584,
+     0.8294,
+     0.1905
+    ],
+    "Center": [
+     0.0,
+     3.9853,
+     0.0
+    ],
+    "Tris": 48
+   },
+   {
+    "Name": "Glow",
+    "Mesh": "RainbowEdge__Glow",
+    "Color": [
+     255,
+     255,
+     255
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Size": [
+     1.8337,
+     4.6275,
+     0.29
+    ],
+    "Center": [
+     -0.0106,
+     2.8663,
+     -0.01
+    ],
+    "Tris": 674
+   },
+   {
+    "Name": "Cloud",
+    "Mesh": "RainbowEdge__Cloud",
+    "Color": [
+     250,
+     251,
+     255
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Size": [
+     1.636,
+     1.709,
+     0.3828
+    ],
+    "Center": [
+     0.0,
+     0.1585,
+     -0.0
+    ],
+    "Tris": 1901
+   }
+  ],
+  "Top": 5.18,
+  "Bottom": -1.098,
+  "Tris": 2883,
+  "Fx": [
+   0,
+   5.0,
+   0
+  ],
+  "Extents": {
+   "lo": [
+    -0.927,
+    -1.098,
+    -0.191
+   ],
+   "hi": [
+    0.906,
+    5.18,
+    0.191
+   ]
+  }
+ },
+ {
+  "Id": "FolkFang",
+  "Rarity": "Legendary",
+  "Kind": "Dagger",
+  "Parts": [
+   {
+    "Name": "Fang",
+    "Mesh": "FolkFang__Fang",
+    "Color": [
+     255,
+     196,
+     52
+    ],
+    "Material": "Metal",
+    "Transparency": 0.0,
+    "Size": [
+     1.1719,
+     4.68,
+     0.4431
+    ],
+    "Center": [
+     0.0,
+     1.54,
+     0.0
+    ],
+    "Tris": 670
+   },
+   {
+    "Name": "Shine",
+    "Mesh": "FolkFang__Shine",
+    "Color": [
+     255,
+     240,
+     160
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Size": [
+     1.6228,
+     2.2118,
+     0.3956
+    ],
+    "Center": [
+     -0.0113,
+     2.298,
+     0.0
+    ],
+    "Tris": 392
+   },
+   {
+    "Name": "Paw",
+    "Mesh": "FolkFang__Paw",
+    "Color": [
+     36,
+     50,
+     120
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Size": [
+     1.0048,
+     0.7813,
+     0.44
+    ],
+    "Center": [
+     0.0,
+     0.6806,
+     0.0
+    ],
+    "Tris": 940
+   },
+   {
+    "Name": "Beans",
+    "Mesh": "FolkFang__Beans",
+    "Color": [
+     255,
+     150,
+     184
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Size": [
+     0.8545,
+     0.3091,
+     0.5028
+    ],
+    "Center": [
+     0.0,
+     0.848,
+     0.0
+    ],
+    "Tris": 512
+   },
+   {
+    "Name": "Gem",
+    "Mesh": "FolkFang__Gem",
+    "Color": [
+     255,
+     40,
+     72
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Size": [
+     0.408,
+     1.7,
+     0.5
+    ],
+    "Center": [
+     0.0,
+     -0.13,
+     0.0
+    ],
+    "Tris": 96
+   },
+   {
+    "Name": "Grip",
+    "Mesh": "FolkFang__Grip",
+    "Color": [
+     32,
+     42,
+     104
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Size": [
+     0.3232,
+     0.88,
+     0.2912
+    ],
+    "Center": [
+     0.0004,
+     -0.14,
+     -0.0001
+    ],
+    "Tris": 402
+   }
+  ],
+  "Top": 3.88,
+  "Bottom": -0.98,
+  "Tris": 3012,
+  "Fx": [
+   -0.4,
+   3.74,
+   0
+  ],
+  "Extents": {
+   "lo": [
+    -0.823,
+    -0.98,
+    -0.251
+   ],
+   "hi": [
+    0.8,
+    3.88,
+    0.251
+   ]
+  }
+ },
+ {
+  "Id": "ThunderHammer",
+  "Rarity": "Legendary",
+  "Kind": "Hammer",
+  "Parts": [
+   {
+    "Name": "Head",
+    "Mesh": "ThunderHammer__Head",
+    "Color": [
+     255,
+     200,
+     56
+    ],
+    "Material": "Metal",
+    "Transparency": 0.0,
+    "Size": [
+     2.2,
+     5.97,
+     1.12
+    ],
+    "Center": [
+     0.0,
+     1.965,
+     0.0
+    ],
+    "Tris": 732
+   },
+   {
+    "Name": "Trim",
+    "Mesh": "ThunderHammer__Trim",
+    "Color": [
+     46,
+     92,
+     210
+    ],
+    "Material": "Metal",
+    "Transparency": 0.0,
+    "Size": [
+     2.62,
+     5.51,
+     1.0
+    ],
+    "Center": [
+     0.0,
+     2.135,
+     0.0
+    ],
+    "Tris": 192
+   },
+   {
+    "Name": "Bolt",
+    "Mesh": "ThunderHammer__Bolt",
+    "Color": [
+     70,
+     224,
+     255
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Size": [
+     4.0602,
+     7.1495,
+     1.23
+    ],
+    "Center": [
+     0.0,
+     2.3523,
+     0.0
+    ],
+    "Tris": 308
+   },
+   {
+    "Name": "Wings",
+    "Mesh": "ThunderHammer__Wings",
+    "Color": [
+     248,
+     250,
+     255
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Size": [
+     3.0538,
+     1.6649,
+     0.19
+    ],
+    "Center": [
+     0.0,
+     5.5836,
+     0.0
+    ],
+    "Tris": 1208
+   },
+   {
+    "Name": "Grip",
+    "Mesh": "ThunderHammer__Grip",
+    "Color": [
+     246,
+     246,
+     250
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Size": [
+     0.3938,
+     1.28,
+     0.3938
+    ],
+    "Center": [
+     0.0001,
+     0.0,
+     -0.0001
+    ],
+    "Tris": 580
+   }
+  ],
+  "Top": 6.416,
+  "Bottom": -1.222,
+  "Tris": 3020,
+  "Fx": [
+   0,
+   4.36,
+   0
+  ],
+  "Extents": {
+   "lo": [
+    -2.03,
+    -1.222,
+    -0.615
+   ],
+   "hi": [
+    2.03,
+    6.416,
+    0.615
+   ]
+  }
+ }
+]
