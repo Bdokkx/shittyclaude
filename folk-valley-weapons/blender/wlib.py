@@ -884,3 +884,288 @@ def bolt_pts(s=1.0):
 
 def puff(r, scale=(1, 1, 1), segs=12, rings=8):
     return sphere(r, segs=segs, rings=rings, scale=scale)
+
+
+# ---------------------------------------------------------------- more shapes for the full set
+
+def fuller_ring(y, w, h, fw, fd, ef=0.02, eb=0.0, hb=None):
+    """Blade cross-section with a fuller (a shallow groove down the middle of each
+    face). Tags: 1 edges / bevels, 0 flats, 3 the fuller channel."""
+    hb = h * 0.6 if hb is None else hb
+    pts, tags = [], []
+
+    def add(x, z, tag):
+        pts.append(Vector((x, y, z)))
+        tags.append(tag)
+    fw = min(fw, w * 0.7)
+    add(w, -ef, 1)
+    add(w, ef, 1 if eb else 0)
+    if eb:
+        add(w - eb, hb, 0)
+    add(fw, h, 3)
+    add(fw * 0.45, h - fd, 3)
+    add(-fw * 0.45, h - fd, 3)
+    add(-fw, h, 0)
+    if eb:
+        add(-w + eb, hb, 1)
+    add(-w, ef, 1)
+    add(-w, -ef, 1 if eb else 0)
+    if eb:
+        add(-w + eb, -hb, 0)
+    add(-fw, -h, 3)
+    add(-fw * 0.45, -h + fd, 3)
+    add(fw * 0.45, -h + fd, 3)
+    add(fw, -h, 0)
+    if eb:
+        add(w - eb, -hb, 1)
+    return pts, tags
+
+
+def fuller_blade(stations, y_tip, n_point=6, point_curve=0.3, ef=0.02, x_fn=None):
+    """Double-edged blade with a fuller: stations (y, half_w, half_t, bevel, fuller_half_w,
+    fuller_depth); the fuller fades out over the point. Tags as fuller_ring."""
+    sts = list(stations)
+    y1, w1, h1, e1, f1, d1 = sts[-1]
+    for i in range(1, n_point):
+        t = i / n_point
+        k = max(1 - t ** (1 + point_curve * 2), 0.0)
+        sts.append((lerp(y1, y_tip, t), w1 * k, max(h1 * (1 - t * 0.7), 0.012), e1 * max(k, 0.3),
+                    f1 * max(1 - t * 1.6, 0.0) + 1e-4, d1 * max(1 - t * 1.6, 0.0)))
+    rings, tags = [], None
+    for y, w, h, e, f, d in sts:
+        pts, tags = fuller_ring(y, w, h, f, d, ef=min(ef, h * 0.6), eb=min(e, w * 0.4))
+        if x_fn:
+            dx = x_fn(y)
+            pts = [p + Vector((dx, 0, 0)) for p in pts]
+        rings.append(pts)
+    rings.append([Vector(((x_fn(y_tip) if x_fn else 0.0), y_tip, 0.0))])
+    return loft(rings, tags=tags, cap_start=True, cap_end=False)
+
+
+def slab_holes(outer, holes, thickness, bevel=0.0, seg=1):
+    """Like slab() but with cut-out holes (each a list of (x, y) points)."""
+    cu = bpy.data.curves.new("slabh", "CURVE")
+    cu.dimensions = "2D"
+    cu.fill_mode = "BOTH"
+    for pts in [outer] + list(holes):
+        sp = cu.splines.new("POLY")
+        sp.points.add(len(pts) - 1)
+        for p, (x, y) in zip(sp.points, pts):
+            p.co = (x, y, 0, 1)
+        sp.use_cyclic_u = True
+    bevel = min(bevel, thickness / 2 - 1e-4) if bevel > 0 else 0.0
+    cu.extrude = max(thickness / 2 - bevel, 1e-4)
+    cu.bevel_depth = bevel
+    cu.bevel_resolution = seg if bevel > 0 else 0
+    cu.offset = -bevel
+    ob = bpy.data.objects.new("slabh_tmp", cu)
+    bpy.context.scene.collection.objects.link(ob)
+    dg = bpy.context.evaluated_depsgraph_get()
+    me = bpy.data.meshes.new_from_object(ob.evaluated_get(dg))
+    bpy.data.objects.remove(ob)
+    bpy.data.curves.remove(cu)
+    bm = _bm_from_mesh(me)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-5)
+    fix_normals(bm)
+    return bm
+
+
+def text_slab(text, size, thickness, bevel=0.0, seg=1, spacing=1.0, bold=True):
+    """3D letters (Blender's built-in font), centred on the origin in the XY plane."""
+    cu = bpy.data.curves.new("txt", "FONT")
+    cu.body = text
+    cu.size = size
+    cu.space_character = spacing
+    cu.align_x = "CENTER"
+    cu.align_y = "CENTER"
+    bevel = min(bevel, thickness / 2 - 1e-4) if bevel > 0 else 0.0
+    cu.extrude = max(thickness / 2 - bevel, 1e-4)
+    cu.bevel_depth = bevel
+    cu.bevel_resolution = seg if bevel > 0 else 0
+    cu.offset = -bevel
+    cu.resolution_u = 4
+    ob = bpy.data.objects.new("txt_tmp", cu)
+    bpy.context.scene.collection.objects.link(ob)
+    dg = bpy.context.evaluated_depsgraph_get()
+    me = bpy.data.meshes.new_from_object(ob.evaluated_get(dg))
+    bpy.data.objects.remove(ob)
+    bpy.data.curves.remove(cu)
+    bm = _bm_from_mesh(me)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-5)
+    # centre exactly
+    vs = [v.co for v in bm.verts]
+    cx = (min(v.x for v in vs) + max(v.x for v in vs)) / 2
+    cy = (min(v.y for v in vs) + max(v.y for v in vs)) / 2
+    bmesh.ops.translate(bm, vec=(-cx, -cy, 0), verts=bm.verts)
+    fix_normals(bm)
+    return bm
+
+
+def crescent_pts(r_out, r_in, offset, n=28):
+    """Crescent moon outline: a circle of radius r_out with a circle of radius r_in,
+    shifted by `offset` along +X, bitten out of it (so the hollow faces +X)."""
+    # the two circles meet where x = (r_out^2 - r_in^2 + offset^2) / (2 offset)
+    xi = (r_out ** 2 - r_in ** 2 + offset ** 2) / (2 * offset)
+    yi = math.sqrt(max(r_out ** 2 - xi ** 2, 0.0))
+    ao = math.atan2(yi, xi)              # outer arc: ao .. 2pi - ao, passing through pi
+    ai = math.atan2(yi, xi - offset)     # inner arc: back from 2pi - ai to ai, through pi
+    pts = []
+    for i in range(n + 1):
+        a = lerp(ao, TAU - ao, i / n)
+        pts.append((r_out * math.cos(a), r_out * math.sin(a)))
+    for i in range(1, n):
+        a = lerp(TAU - ai, ai, i / n)
+        pts.append((offset + r_in * math.cos(a), r_in * math.sin(a)))
+    return pts
+
+
+def spiral_band_pts(r0, r1, turns, width, n=90):
+    """Outline of a flat spiral band (lollipop swirl) from radius r0 to r1."""
+    outer, inner = [], []
+    for i in range(n + 1):
+        t = i / n
+        a = TAU * turns * t
+        r = lerp(r0, r1, t)
+        outer.append(((r + width / 2) * math.cos(a), (r + width / 2) * math.sin(a)))
+        inner.append(((max(r - width / 2, 0.005)) * math.cos(a), (max(r - width / 2, 0.005)) * math.sin(a)))
+    return outer + list(reversed(inner))
+
+
+def bat_wing_pts(span, height, scallops=3):
+    """One bat wing (pointing +X): straight-ish top edge, scalloped bottom edge."""
+    top = [(0.0, 0.0), (span * 0.35, height * 0.42), (span * 0.72, height * 0.55), (span, height * 0.30)]
+    bottom = []
+    for k in range(scallops):
+        xa = span * (1 - k / scallops)
+        xb = span * (1 - (k + 1) / scallops)
+        for j in range(1, 6):
+            t = j / 6
+            x = lerp(xa, xb, t)
+            y = height * (0.30 - 0.30 * t if k == 0 else 0.0) - height * 0.22 * math.sin(math.pi * t)
+            bottom.append((x, y + height * (0.0 if k else 0.0)))
+    return top + bottom
+
+
+def pyramid(base, height):
+    """Square pyramid pointing +Y from y=0 (meat tenderizer studs)."""
+    bm = bmesh.new()
+    h = base / 2
+    vs = [bm.verts.new(p) for p in ((-h, 0, -h), (h, 0, -h), (h, 0, h), (-h, 0, h))]
+    tip = bm.verts.new((0, height, 0))
+    bm.faces.new(list(reversed(vs)))
+    for i in range(4):
+        bm.faces.new((vs[i], vs[(i + 1) % 4], tip))
+    fix_normals(bm)
+    return bm
+
+
+def octagon_pts(r, rot=22.5):
+    return [(r * math.cos(math.radians(rot + 45 * i)), r * math.sin(math.radians(rot + 45 * i))) for i in range(8)]
+
+
+def rounded_rect_pts(w, h, r, n=4):
+    """Rounded rectangle outline centred on the origin."""
+    r = min(r, w / 2, h / 2)
+    pts = []
+    for cx, cy, a0 in ((w / 2 - r, h / 2 - r, 0), (-w / 2 + r, h / 2 - r, 90), (-w / 2 + r, -h / 2 + r, 180),
+                       (w / 2 - r, -h / 2 + r, 270)):
+        for i in range(n + 1):
+            a = math.radians(a0 + 90 * i / n)
+            pts.append((cx + r * math.cos(a), cy + r * math.sin(a)))
+    return pts
+
+
+def ring_slab(r_out, r_in, thickness, bevel=0.0, n=24, seg=1):
+    """Flat ring (washer) in the XY plane."""
+    return slab_holes(circle_pts(r_out, n), [list(reversed(circle_pts(r_in, n)))], thickness, bevel, seg)
+
+
+def saber_blade(y0, y_tip, w0, w1, h0, h1, curve=0.2, xb0=-0.2, clip=0.6, tip_bias=0.55, n=18,
+                edge_band=0.0, shoulder=0.28, flare_at=0.75):
+    """Single-edged curved blade (cutlass, scimitar): edge toward +X, flat spine at
+    -X. Width goes w0 -> w1 (w1 > w0 flares toward the tip, peaking at flare_at),
+    the whole blade bends back by `curve` (toward -X) and the last `clip` studs
+    sweep the edge up to a point sitting tip_bias of the way from spine to edge.
+    Faces from the edge to the thick shoulder line get tag 1, the rest tag 0."""
+    L = y_tip - y0
+    tc = 1 - clip / L
+    rings = []
+    tip_x = None
+    for i in range(n + 1):
+        t = i / n
+        y = y0 + L * t
+        bend = -curve * t ** 2
+        if t <= tc:
+            tt = t / tc
+            W = lerp(w0, w1, min(tt / flare_at, 1.0)) if w1 > w0 else lerp(w0, w1, tt)
+            if w1 > w0 and tt > flare_at:
+                W = w1
+            hs = lerp(h0, h1, tt)
+            xb = xb0 + bend
+            xe = xb + W
+        else:
+            u = (t - tc) / (1 - tc)
+            Wc = w1
+            xb_full = xb0 + bend
+            tip_x = xb0 - curve + tip_bias * Wc
+            xb = lerp(xb_full, tip_x, u ** 1.2)
+            xe = lerp(xb_full + Wc, tip_x, u ** 2.2)
+            W = max(xe - xb, 1e-3)
+            hs = max(h1 * (1 - u) ** 0.9, 0.01)
+        if t >= 1:
+            rings.append([Vector((xb0 - curve + tip_bias * w1, y, 0))])
+            break
+        xs = xb + shoulder * W
+        hb = hs * 0.45
+        eb = min(edge_band, W * 0.35) if edge_band else 0.0
+        sec = [(xe, 0)]
+        if eb:
+            sec.append((xe - eb, hb))
+        sec += [(xs, hs), (xb, hs * 0.8), (xb, -hs * 0.8), (xs, -hs)]
+        if eb:
+            sec.append((xe - eb, -hb))
+        rings.append([Vector((x, y, z)) for x, z in sec])
+    if edge_band:
+        tags = [1, 0, 0, 0, 0, 0, 1]
+    else:
+        tags = [1, 0, 0, 0, 1]
+    return loft(rings, tags=tags, cap_start=True, cap_end=False)
+
+
+def hex_rmod(round_k=0.06):
+    """rmod for lathe(): a hexagonal cross-section (flat-to-flat = 2r) with softened corners."""
+    def f(a):
+        phi = ((a + math.pi / 6) % (math.pi / 3)) - math.pi / 6
+        r = 1.0 / math.cos(phi)
+        return min(r, 1.0 / math.cos(math.pi / 6) - round_k)
+    return f
+
+
+def snowflake(r, thickness, arm_w=0.07, bevel=0.015, branches=2):
+    """Six-armed snowflake slab in the XY plane (centred), each arm with V branches."""
+    bm = bmesh.new()
+    for k in range(6):
+        a = math.radians(90 + 60 * k)
+        arm = slab(rounded_rect_pts(arm_w, r, arm_w * 0.45, n=2), thickness, bevel, seg=1)
+        merge_into(bm, arm, R("Z", math.degrees(a) - 90) @ T(0, r / 2, 0))
+        for b in range(branches):
+            d = r * (0.45 + 0.25 * b)
+            L = r * (0.38 - 0.1 * b)
+            for side in (1, -1):
+                br = slab(rounded_rect_pts(arm_w * 0.8, L, arm_w * 0.35, n=2), thickness * 0.9, bevel, seg=1)
+                merge_into(bm, br, R("Z", math.degrees(a) - 90) @ T(0, d, 0) @ R("Z", side * 50) @ T(0, L / 2, 0))
+    merge_into(bm, slab(circle_pts(arm_w * 1.6, 12), thickness * 1.1, bevel, seg=1))
+    return bm
+
+
+def capsule(r, y0, y1, segs=16, rings=4):
+    """Rounded rod along Y from y0 to y1 (hemispherical ends)."""
+    prof = [(0, y0)]
+    for i in range(1, rings + 1):
+        a = math.radians(-90 + 90 * i / rings)
+        prof.append((r * math.cos(a), y0 + r + r * math.sin(a)))
+    for i in range(0, rings):
+        a = math.radians(90 * i / rings)
+        prof.append((r * math.cos(a), y1 - r + r * math.sin(a)))
+    prof.append((0, y1))
+    return lathe(prof, segs=segs)
