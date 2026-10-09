@@ -13,4 +13,5 @@ blender -b -P tools/blender_meshes.py -- .      # -> exports/meshes/ rock meshes
 "$LUNE" run tools/test_meshswap.luau terrain
 blender -b -P tools/qa_island.py -- .           # no floating props on any island
 blender -b -P tools/blender_build.py -- . "$@"  # -> previews/ renders + tiles (--no-render to skip)
+blender -b -P tools/cube_monster.py -- .     # -> monster/ Cube Monster (Lua, blend, fbx, glb, preview)
 python3 tools/compose_previews.py               # -> previews/*_poster.png, *_assets.png, AllIslands.png

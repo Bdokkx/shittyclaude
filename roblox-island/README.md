@@ -74,6 +74,20 @@ Then do the steps above again.
 - `roblox/AssetLibrary.lua` holds all 129 asset shapes for your own code:
   `Builder.spawnAsset("PalmTree", CFrame.new(x, y, z), scale, tint, parent)`.
 
+## Cube Monster (`monster/`)
+
+A blocky monster with a big square head: yellow square eyes, angry brows, a toothy mouth, stepped horns,
+stubby arms and legs. It's built from 67 boxes, like the other assets. `CubeMonster_preview.png` shows it.
+
+- **Roblox (Parts):** paste all of `monster/CubeMonster.lua` into the Command Bar and press Enter. It builds
+  the monster on the ground in front of the camera, facing you. `SCALE` at the top sets the size:
+  1 is about 21 studs tall, 0.4 is about player height.
+- **Roblox (one mesh):** **File → Import 3D** → `monster/CubeMonster.fbx`. The colours come from
+  `CubeMonster_palette.png`, which is embedded in the file.
+- **Blender:** open `monster/CubeMonster.blend`, or import `CubeMonster.glb`.
+- Change it in `tools/cube_monster.py` (the box list is at the top), then run
+  `blender -b -P tools/cube_monster.py -- .`
+
 ## How it's made
 - **`gen/`** (Python) is the single source of truth:
   - `assets.py` + `theme_assets.py`: asset shapes as box lists.
