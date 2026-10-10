@@ -12,7 +12,7 @@ from wlib import (R, S, T, arc_pts, bar_x, bar_y, blade, box, catmull, circle_pt
                   katana_blade, lathe, leaf_pts, lerp, octagon_pts, profile_blade, puff, pyramid, ring_slab, rock,
                   rounded_rect_pts, saber_blade, slab, slab_holes, sphere, spiral_band_pts, split_by_tag, star_pts,
                   surface_vein, sweep, sweep_band, sword_blade, teardrop, text_slab, torus, wheel_pommel, wrapped_grip,
-                  capsule, loft, merge_into, snowflake, boolean, projected_slab, star3d, drop_facing)
+                  capsule, loft, merge_into, snowflake, boolean, projected_slab, star3d, drop_facing, xform)
 
 WEAPONS = {}
 
@@ -35,6 +35,8 @@ NAMES = {
     "GoldMallet": "Gold Mallet", "MagmaMaul": "Magma Maul", "IceMallet": "Ice Mallet", "CrystalMaul": "Crystal Maul",
     "ThunderHammer": "Thunder Hammer", "StarHammer": "Star Hammer", "PumpkinSmasher": "Pumpkin Smasher",
     "CauldronMaul": "Cauldron Maul", "TombstoneHammer": "Tombstone Hammer",
+    "PhoenixBlade": "Phoenix Blade", "StarfallBlade": "Starfall Blade", "UnicornHorn": "Unicorn Horn",
+    "Moonfang": "Moonfang", "MeteorSmash": "Meteor Smash", "KrakenAnchor": "Kraken Anchor",
 }
 
 
@@ -103,7 +105,7 @@ def katana(w):
     steel.add(parts["body"])
     hamon.add(parts["hamon"])
     # habaki: tapered gold collar around the blade base
-    fit.add(bar_y([(0.50, 0.56, 0.23, 0.05), (0.66, 0.54, 0.21, 0.05), (0.80, 0.51, 0.18, 0.045)], x=0.03))
+    fit.add(bar_y([(0.49, 0.56, 0.23, 0.05), (0.66, 0.54, 0.21, 0.05), (0.80, 0.51, 0.18, 0.045)], x=0.03))
     # tsuba: lobed (mokko) guard with a raised rim, plus thin seppa spacers
     lobes = lambda a: 1 + 0.075 * math.cos(4 * a)
     fit.add(lathe([(0, 0.395), (0.33, 0.395), (0.36, 0.375), (0.42, 0.375), (0.455, 0.40), (0.455, 0.47),
@@ -971,7 +973,7 @@ def butter_knife(w):
     """Giant butter knife: round-tipped steel blade with a little serrated edge,
     a fat pat of butter on it, cream handle with a steel bolster."""
     steel = w.part("Blade", (214, 220, 232), "Metal", smooth=25)
-    handle = w.part("Handle", (246, 232, 204), "SmoothPlastic", smooth=50)
+    handle = w.part("Grip", (246, 232, 204), "SmoothPlastic", smooth=50)
     butter = w.part("Butter", (255, 222, 96), "SmoothPlastic", smooth=35)
     edge = [(0.25, 0.60), (0.27, 1.6)]
     for k in range(6):                  # little serrations along the upper edge
@@ -1233,7 +1235,7 @@ def frost_fang(w):
     grip = w.part("Grip", (244, 248, 252), "Fabric", smooth=70)
     bm, path, widths, thicks = fang_sweep(0.46, 3.20, 0.98, curve=0.62, t_ratio=0.5, n=14, sides=8, bulge=0.2)
     ice.add(bm)
-    core.add(sweep(path[:-2], [v * 0.42 for v in widths[:-2]], [v * 0.42 for v in thicks[:-2]], sides=6))
+    core.add(sweep(path[1:-2], [v * 0.42 for v in widths[1:-2]], [v * 0.42 for v in thicks[1:-2]], sides=6))
     blue.add(bar_x([(-0.62, 0.20, 0.26), (-0.48, 0.28, 0.34), (0.48, 0.28, 0.34), (0.62, 0.20, 0.26)], chamfer=0.07, y=0.40))
     for sx in (1, -1):
         for dx, L, ang in ((0.20, 0.36, 12), (0.42, 0.44, 26), (0.60, 0.32, 42)):
@@ -1566,7 +1568,8 @@ def sledgehammer(w):
     # dark steel band round the middle of the head, with a wedge collar under it
     collar.add(bar_x([(-0.26, 1.15, 1.11, 0.05), (0.26, 1.15, 1.11, 0.05)], y=hy))
     collar.add(bar_y([(hy - 0.86, 0.40, 0.38, 0.06), (hy - 0.50, 0.48, 0.46, 0.06)]))
-    wood.add(lathe([(0, -0.40), (0.15, -0.40), (0.16, 0.6), (0.14, 2.0), (0.15, hy - 0.5), (0, hy - 0.5)], segs=16, sz=0.85))
+    wood.add(lathe([(0, -0.40), (0.15, -0.40), (0.16, 0.6), (0.14, 2.0), (0.15, hy - 0.46), (0, hy - 0.46)], segs=16,
+                   sz=0.85))
     prof = [(0, -1.16), (0.17, -1.16), (0.20, -1.10)]
     for k in range(7):
         y = -1.04 + k * 0.17
@@ -2201,3 +2204,521 @@ def tombstone_hammer(w):
 def Matrix_I():
     from mathutils import Matrix
     return Matrix.Identity(4)
+
+
+# ================================================================ MYTHICS (new: two per class)
+
+def bend_x(bm, fn):
+    """Shift every vertex along X by fn(y): bends a straight blade (and anything
+    laid on its faces) the same way."""
+    for v in bm.verts:
+        v.co.x += fn(v.co.y)
+    return bm
+
+
+def clip_halfplane(points, nx, ny, d):
+    """The part of a closed outline where nx * x + ny * y >= d."""
+    out = []
+    n = len(points)
+    for i in range(n):
+        (ax, ay), (bx, by) = points[i], points[(i + 1) % n]
+        fa, fb = nx * ax + ny * ay - d, nx * bx + ny * by - d
+        if fa >= 0:
+            out.append((ax, ay))
+        if (fa >= 0) != (fb >= 0):
+            t = fa / (fa - fb)
+            out.append((ax + (bx - ax) * t, ay + (by - ay) * t))
+    return out
+
+
+def offset_outline(points, d):
+    """Grow a closed outline outward by d (mitred corners, capped so spikes stay sane)."""
+    n = len(points)
+    area = sum(points[i][0] * points[(i + 1) % n][1] - points[(i + 1) % n][0] * points[i][1] for i in range(n))
+    sgn = 1.0 if area > 0 else -1.0
+    out = []
+    for i in range(n):
+        (ax, ay), (bx, by), (cx, cy) = points[i - 1], points[i], points[(i + 1) % n]
+        n1 = Vector((by - ay, -(bx - ax))) * sgn
+        n2 = Vector((cy - by, -(cx - bx))) * sgn
+        n1 = n1.normalized() if n1.length > 1e-9 else n2.normalized()
+        n2 = n2.normalized() if n2.length > 1e-9 else n1
+        m = (n1 + n2)
+        m = m.normalized() if m.length > 1e-9 else n1
+        k = d / max(m.dot(n1), 0.35)
+        out.append((bx + m.x * k, by + m.y * k))
+    return out
+
+
+def flame_pts(s=1.0):
+    """A cartoon flame / ember outline pointing +Y, about 0.7 x 1.1 at s=1."""
+    pts = [(0.0, -0.45), (0.30, -0.32), (0.37, -0.02), (0.22, 0.30), (0.04, 0.66), (-0.10, 0.34), (-0.30, 0.06),
+           (-0.34, -0.26)]
+    return [(x * s, y * s) for x, y in catmull(pts, samples=2, closed=True)]
+
+
+def heart_pts(s=1.0, n=14):
+    """Heart outline (point down), about s wide, centred on the origin."""
+    pts = []
+    for i in range(n * 2):
+        t = math.tau * i / (n * 2)
+        x = 16 * math.sin(t) ** 3
+        y = 13 * math.cos(t) - 5 * math.cos(2 * t) - 2 * math.cos(3 * t) - math.cos(4 * t)
+        pts.append((x / 32 * s, (y + 2.5) / 32 * s))
+    return pts
+
+
+def station_at(stations, y):
+    """Interpolated (half_width, half_thick, bevel) of profile_blade stations at y."""
+    if y <= stations[0][0]:
+        return stations[0][1:]
+    for a, b in zip(stations, stations[1:]):
+        if y <= b[0]:
+            t = (y - a[0]) / (b[0] - a[0])
+            return tuple(lerp(a[i], b[i], t) for i in range(1, 4))
+    return stations[-1][1:]
+
+
+def surface_hits(target, center, dirs, lift=0.0):
+    """Cast rays from far outside toward `center` along each direction; return the
+    points where they hit `target` (a bmesh), lifted off the surface by `lift`."""
+    from mathutils.bvhtree import BVHTree
+    tree = BVHTree.FromBMesh(target)
+    out = []
+    for d in dirs:
+        d = Vector(d).normalized()
+        loc, nrm, _i, _dist = tree.ray_cast(center + d * 10.0, -d)
+        out.append((loc + nrm * lift, nrm) if loc is not None else (center + d, d))
+    return out
+
+
+def sph(az, el):
+    """Unit direction from an azimuth (degrees, in XZ from +X toward +Z) and an elevation."""
+    a, e = math.radians(az), math.radians(el)
+    return Vector((math.cos(e) * math.cos(a), math.sin(e), math.cos(e) * math.sin(a)))
+
+
+@weapon("PhoenixBlade", "Mythic", "Sword")
+def phoenix_blade(w):
+    """Mythic. A blade shaped like a giant phoenix feather: a crimson vane with
+    blazing edges, a glowing white-gold quill and gold barbs, huge phoenix wings with
+    flaming tips as the guard around a glowing sun gem, a crimson grip, a tail of
+    flame feathers at the pommel, and embers and loose feathers drifting around it."""
+    red = w.part("Blade", (204, 32, 44), "Metal", smooth=14)
+    flame = w.part("Flame", (255, 112, 20), "Neon")
+    core = w.part("Core", (255, 226, 110), "Neon")
+    gold = w.part("Gold", (255, 194, 60), "Metal", smooth=30)
+    grip = w.part("Grip", (112, 24, 34), "Fabric", smooth=70)
+    tip_y = 5.24
+    st = [(0.80, 0.25, 0.125, 0.075), (1.30, 0.36, 0.12, 0.085), (1.86, 0.44, 0.118, 0.09), (1.98, 0.36, 0.118, 0.085),
+          (2.10, 0.45, 0.115, 0.09), (2.80, 0.49, 0.112, 0.095), (3.28, 0.47, 0.108, 0.09), (3.40, 0.39, 0.106, 0.085),
+          (3.52, 0.46, 0.104, 0.09), (4.10, 0.40, 0.10, 0.085), (4.46, 0.31, 0.09, 0.075)]
+
+    def curve(y):
+        return -0.14 * smooth01((y - 2.6) / (tip_y - 2.6)) ** 1.6
+    b = profile_blade(st, tip_y, n_point=7, point_curve=0.35)
+    parts = split_by_tag(b, {0: "body", -1: "body", 1: "edge"})
+    red.add(bend_x(parts["body"], curve))
+    flame.add(bend_x(parts["edge"], curve))
+    for side in (1, -1):
+        core.add(bend_x(surface_vein([(0, 0.86), (0, 4.50)], 0.085, st, side=side, lift=0.006, thick=0.02, taper=True),
+                        curve))
+        for y0 in (1.12, 1.52, 2.30, 2.68, 3.70, 4.02):
+            wy = station_at(st, y0)[0]
+            for sx in (1, -1):
+                barb = [(sx * 0.04, y0), (sx * wy * 0.45, y0 + 0.14), (sx * wy * 0.74, y0 + 0.30)]
+                gold.add(bend_x(surface_vein(barb, 0.036, st, side=side, lift=0.004, thick=0.014), curve))
+
+    def feather(L, W_, thick, m, tip_frac=0.56):
+        out = leaf_pts(L, W_, n=7, tip_sharp=1.4)
+        red.add(slab(out, thick, min(0.03, thick * 0.3), seg=0), m)
+        tip = clip_halfplane(clip_halfplane(out, -0.9, 1.0, L * tip_frac), 0.9, 1.0, L * tip_frac)
+        # grown a hair past the feather's own edge so the two walls never coincide (no flicker)
+        flame.add(slab(offset_outline(tip, 0.006), thick + 0.024, 0.0), m)
+    # phoenix wings
+    for sx in (1, -1):
+        for L, W_, ang, dz in ((1.46, 0.42, -30, 0.05), (1.30, 0.40, -46, -0.045), (1.12, 0.38, -62, 0.04),
+                               (0.92, 0.34, -78, -0.035), (0.70, 0.30, -94, 0.0)):
+            feather(L, W_, 0.10, S(sx, 1, 1) @ T(0.28, 0.66, dz) @ R("Z", ang))
+    # gold guard with a glowing sun gem on both faces
+    gold.add(bar_y([(0.50, 0.60, 0.32, 0.08), (0.86, 0.64, 0.34, 0.08)]))
+    for side in (1, -1):
+        gold.add(slab(star_pts(12, 0.34, 0.24, rot=90), 0.08, 0.02, seg=1), T(0, 0.70, side * 0.17))
+        core.add(lathe([(0, 0.0), (0.17, 0.0), (0.17, 0.04), (0.11, 0.10), (0, 0.12)], segs=10),
+                 T(0, 0.70, side * 0.20) @ R("X", side * 90))
+    grip.add(wrapped_grip(-0.70, 0.50, 0.13, 0.145, pitch=0.21, amp=0.022, around=12, sz=0.9))
+    gold.add(band(0.13, 0.46, 0.56, 0.16))
+    gold.add(lathe([(0, -0.86), (0.12, -0.86), (0.17, -0.80), (0.17, -0.72), (0.14, -0.68), (0, -0.68)], segs=12))
+    # a tail of flame feathers at the pommel
+    for ang, L, W_ in ((180, 0.30, 0.20), (148, 0.30, 0.18), (212, 0.30, 0.18)):
+        feather(L, W_, 0.07, T(0, -0.82, 0) @ R("Z", ang), tip_frac=0.45)
+    # embers and loose feathers drifting around the blade
+    for x, y, z, sc, rot, part in ((0.84, 1.55, 0.10, 0.20, -12, flame), (-0.90, 2.30, -0.08, 0.17, 10, core),
+                                   (0.80, 3.20, -0.12, 0.15, -18, core), (-0.74, 3.95, 0.10, 0.14, 14, flame),
+                                   (0.56, 4.62, 0.06, 0.11, -8, flame), (-0.98, 1.25, 0.05, 0.12, 8, flame)):
+        part.add(slab(flame_pts(sc), 0.05, 0.0), T(x, y, z) @ R("Z", rot))
+    for x, y, z, ang, L in ((1.12, 2.55, 0.15, -28, 0.52), (-1.18, 3.45, -0.12, 32, 0.46)):
+        feather(L, L * 0.30, 0.05, T(x, y, z) @ R("Z", ang), tip_frac=0.5)
+    w.fx = (round(curve(5.0), 3), 5.0, 0)
+
+
+@weapon("StarfallBlade", "Mythic", "Sword")
+def starfall_blade(w):
+    """Mythic. A blade cut from the night sky: deep-space navy steel scattered with
+    glowing stars, a shimmering cyan edge, a faceted gold north star at the guard
+    with comet streaks for quillons, a navy grip bound in gold wire, a star pommel
+    trailing a comet tail, and a tiny ringed planet and sparkles orbiting the blade."""
+    navy = w.part("Blade", (30, 26, 84), "Metal", smooth=14)
+    edge = w.part("Edge", (86, 224, 255), "Neon")
+    stars = w.part("Stars", (255, 246, 196), "Neon")
+    gold = w.part("Gold", (255, 200, 64), "Metal", smooth=20)
+    grip = w.part("Grip", (26, 30, 86), "Fabric", smooth=70)
+    planet = w.part("Planet", (168, 104, 255), "SmoothPlastic", smooth=40)
+    st = [(0.84, 0.43, 0.14, 0.10), (2.6, 0.47, 0.135, 0.11), (4.18, 0.41, 0.12, 0.10)]
+    b = profile_blade(st, 5.26, n_point=7, point_curve=0.3)
+    parts = split_by_tag(b, {0: "body", -1: "body", 1: "edge"})
+    navy.add(parts["body"])
+    edge.add(parts["edge"])
+    # stars scattered over both faces, hugging the ridged faces
+    import random
+    rng = random.Random(11)
+    for side in (1, -1):
+        placed = []
+        tries = 0
+        while len(placed) < 15 and tries < 400:
+            tries += 1
+            y = rng.uniform(1.0, 4.35)
+            hw, _h, e = station_at(st, y)
+            lim = hw - e - 0.07
+            r = rng.choice((0.05, 0.06, 0.07, 0.08, 0.10, 0.12))
+            x = rng.uniform(-lim + r, lim - r)
+            if any((x - px) ** 2 + (y - py) ** 2 < ((r + pr) * 1.6) ** 2 for px, py, pr in placed):
+                continue
+            placed.append((x, y, r))
+            pts = star_pts(4, r, r * 0.34) if rng.random() < 0.6 else star_pts(5, r, r * 0.45)
+            pts = [(x + px, y + py) for px, py in pts]
+            star = projected_slab(pts, lambda u, v: blade_face_z(u, v, st) + 0.012,
+                                  lambda u, v: blade_face_z(u, v, st) - 0.02, spacing=1.0)
+            stars.add(drop_facing(star, (0, 0, -1), 0.5), S(1, 1, side))
+    # guard: a faceted gold north star with comet-streak quillons
+    gold.add(bar_y([(0.50, 0.40, 0.30, 0.07), (0.86, 0.46, 0.32, 0.07)]))
+    gold.add(star3d(0.50, 0.17, 0.09, 0.26, n=4, rot=90), T(0, 0.70, 0))
+    stars.add(star3d(0.26, 0.09, 0.20, 0.31, n=4, rot=90), T(0, 0.70, 0))
+    for sx in (1, -1):
+        path = [Vector((sx * x, y, 0)) for x, y in ((0.30, 0.70), (0.62, 0.74), (0.92, 0.82), (1.12, 0.92))]
+        gold.add(sweep(path, [0.20, 0.16, 0.12, 0.08], [0.20, 0.16, 0.12, 0.08], sides=8, point_end=False))
+        gold.add(star3d(0.20, 0.08, 0.05, 0.11), T(sx * 1.18, 0.95, 0) @ R("Z", -sx * 12))
+        for dy, L, wd in ((0.13, 0.80, 0.07), (-0.11, 0.66, 0.06)):
+            streak = [Vector((sx * x, y + dy, 0)) for x, y in ((0.36, 0.70), (0.62, 0.73), (0.90, 0.80),
+                                                               (0.36 + L, 0.84))]
+            edge.add(sweep(streak, [wd, wd * 0.9, wd * 0.6, 0.0], [wd, wd * 0.9, wd * 0.6, 0.0], sides=6))
+    grip.add(lathe([(0, -0.68), (0.135, -0.68), (0.15, -0.10), (0.135, 0.52), (0, 0.52)], segs=16, sz=0.9))
+    gold.add(helix_ribbon(-0.66, 0.50, 0.15, 0.135, 4.0, 0.035, 0.02, samples_per_turn=12))
+    gold.add(band(0.13, 0.48, 0.58, 0.16))
+    # star pommel with a comet tail
+    gold.add(star3d(0.27, 0.11, 0.07, 0.14), T(0, -0.84, 0))
+    tail = [Vector(p) for p in ((0.0, -0.86, 0), (-0.10, -0.98, 0), (-0.24, -1.05, 0), (-0.42, -1.06, 0))]
+    edge.add(sweep(tail, [0.16, 0.12, 0.08, 0.0], [0.08, 0.07, 0.05, 0.0], sides=6))
+    # a little ringed planet and sparkles orbiting the blade
+    planet.add(sphere(0.20, 16, 10), T(0.88, 3.70, 0.12))
+    gold.add(torus(0.34, 0.03, segs=28, rsegs=5), T(0.88, 3.70, 0.12) @ R("Z", 22) @ R("X", 16))
+    sparkle = slab(star_pts(4, 1.0, 0.30, rot=90), 0.05, 0.0)
+    for x, y, z, sc in ((-0.86, 2.10, -0.08, 0.16), (0.78, 1.60, 0.10, 0.13), (-0.72, 4.30, 0.06, 0.14),
+                        (0.44, 4.95, -0.05, 0.11), (-0.94, 3.20, 0.0, 0.09)):
+        stars.add(sparkle, T(x, y, z) @ S(sc, sc, 1))
+    w.fx = (0, 5.0, 0)
+
+
+@weapon("UnicornHorn", "Mythic", "Dagger")
+def unicorn_horn(w):
+    """Mythic. A spiralled pearl unicorn horn wound with a glowing pink stripe and
+    tipped with a glowing cyan point, rising from a little gold crown with heart gems
+    between white feathered wings; a lavender grip, a gold heart pommel and pastel
+    sparkles floating around it."""
+    pearl = w.part("Horn", (250, 242, 255), "SmoothPlastic", smooth=35)
+    pink = w.part("Glow", (255, 118, 206), "Neon")
+    cyan = w.part("Sparkle", (120, 236, 255), "Neon")
+    gold = w.part("Gold", (255, 204, 70), "Metal", smooth=30)
+    wings = w.part("Wings", (255, 255, 255), "SmoothPlastic", smooth=40)
+    grip = w.part("Grip", (184, 148, 255), "Fabric", smooth=70)
+    y0, y1, r0, turns = 0.56, 3.84, 0.36, 3.2
+    N, segs = 26, 20
+    rings = []
+    for i in range(N + 1):
+        t = i / N
+        y = lerp(y0, y1, t)
+        if i == N:
+            rings.append([Vector((0, y1, 0))])
+            break
+        r = r0 * (1 - t) ** 0.9
+        phi = math.tau * turns * t
+        rings.append([Vector((r * (1 + 0.10 * math.cos(2 * (a - phi))) * math.cos(a), y,
+                              r * (1 + 0.10 * math.cos(2 * (a - phi))) * math.sin(a)))
+                      for a in (math.tau * j / segs for j in range(segs))])
+    pearl.add(loft(rings, cap_start=True, cap_end=False))
+    # glowing pink stripe wound down one groove
+    path, widths = [], []
+    for i in range(31):
+        t = lerp(0.02, 0.84, i / 30)
+        r = r0 * (1 - t) ** 0.9
+        a = math.tau * turns * t + math.pi / 2
+        rr = r * 0.90 + 0.012
+        path.append(Vector((rr * math.cos(a), lerp(y0, y1, t), rr * math.sin(a))))
+        widths.append(lerp(0.085, 0.03, t / 0.84))
+    pink.add(sweep(path, widths, widths, sides=6, point_end=False))
+    cyan.add(lathe([(0, 3.34), (0.085, 3.38), (0, 3.88)], segs=10))
+    # gold crown (a solid ring) with heart gems
+    gold.add(lathe([(0.26, 0.44), (0.38, 0.44), (0.395, 0.48), (0.385, 0.62), (0.35, 0.65), (0.26, 0.65)], segs=20))
+    for k in range(8):
+        a = math.tau * (k + 0.5) / 8
+        gold.add(lathe([(0, 0.0), (0.06, 0.0), (0, 0.18)], segs=4), T(0.36 * math.cos(a), 0.63, 0.36 * math.sin(a)))
+        gold.add(sphere(0.04, 6, 4), T(0.36 * math.cos(a), 0.82, 0.36 * math.sin(a)))
+    for side in (1, -1):
+        pink.add(slab(heart_pts(0.22, n=10), 0.05, 0.0), T(0, 0.54, side * 0.385))
+    # white feathered wings
+    for sx in (1, -1):
+        # feather depths chosen so no feather face lies in the covert's face planes (z = +/-0.075)
+        for L, W_, ang, dz in ((1.10, 0.34, -40, 0.05), (0.96, 0.32, -60, -0.02), (0.80, 0.29, -80, 0.01),
+                               (0.60, 0.25, -100, -0.05)):
+            wings.add(slab(leaf_pts(L, W_, n=6, tip_sharp=1.4), 0.08, 0.03, seg=0),
+                      S(sx, 1, 1) @ T(0.28, 0.56, dz) @ R("Z", ang))
+        wings.add(slab(leaf_pts(0.60, 0.46, n=6, tip_sharp=1.2), 0.15, 0.04, seg=1),
+                  S(sx, 1, 1) @ T(0.24, 0.52, 0) @ R("Z", -62))
+    grip.add(wrapped_grip(-0.66, 0.42, 0.13, 0.14, pitch=0.20, amp=0.02, around=12, sz=0.95))
+    gold.add(band(0.13, 0.40, 0.48, 0.16))
+    gold.add(band(0.13, -0.70, -0.62, 0.16))
+    # gold heart pommel with a glowing heart
+    gold.add(slab(heart_pts(0.38, n=10), 0.14, 0.04, seg=1), T(0, -0.82, 0))
+    for side in (1, -1):
+        pink.add(slab(heart_pts(0.20, n=10), 0.05, 0.0), T(0, -0.81, side * 0.07))
+    sparkle = slab(star_pts(4, 1.0, 0.30, rot=90), 0.05, 0.0)
+    for x, y, z, sc, part in ((0.76, 1.55, 0.08, 0.14, cyan), (-0.74, 2.15, -0.06, 0.13, pink),
+                              (0.56, 2.90, -0.08, 0.11, pink), (-0.48, 3.45, 0.06, 0.10, cyan)):
+        part.add(sparkle, T(x, y, z) @ S(sc, sc, 1))
+    for x, y, z, sc in ((-0.72, 1.30, 0.10, 0.16), (0.52, 3.50, 0.0, 0.13)):
+        pink.add(slab(heart_pts(sc, n=10), 0.05, 0.0), T(x, y, z) @ R("Z", 12 if x > 0 else -12))
+    w.fx = (0, 3.75, 0)
+
+
+@weapon("Moonfang", "Mythic", "Dagger")
+def moonfang(w):
+    """Mythic. A curved fang of pale moon-silver with a soft glowing moonlight edge
+    and a violet glow down its spine, rising out of a crescent moon (with craters)
+    that holds a glowing violet star; a midnight-blue grip bound in silver, a little
+    crescent pommel, and tiny stars orbiting the blade."""
+    silver = w.part("Blade", (214, 222, 242), "Metal", smooth=16)
+    moonlight = w.part("Moonlight", (124, 200, 255), "Neon")
+    violet = w.part("Gem", (178, 110, 255), "Neon")
+    moon = w.part("Moon", (232, 236, 246), "SmoothPlastic", smooth=35)
+    crater = w.part("Craters", (172, 180, 204), "SmoothPlastic", smooth=35)
+    grip = w.part("Grip", (30, 36, 104), "Fabric", smooth=70)
+    st = [(0.70, 0.34, 0.125, 0.085), (1.40, 0.37, 0.12, 0.09), (2.30, 0.31, 0.105, 0.085), (2.90, 0.23, 0.09, 0.075)]
+
+    def curve(y):
+        return -0.42 * smooth01((y - 0.7) / 3.16) ** 1.5
+    b = profile_blade(st, 3.86, n_point=6, point_curve=0.35)
+    parts = split_by_tag(b, {0: "body", -1: "body", 1: "edge"})
+    silver.add(bend_x(parts["body"], curve))
+    moonlight.add(bend_x(parts["edge"], curve))
+    for side in (1, -1):
+        violet.add(bend_x(surface_vein([(0, 0.80), (0, 2.95)], 0.07, st, side=side, lift=0.006, thick=0.018,
+                                       taper=True), curve))
+    # the crescent moon guard, horns up, with craters on both faces
+    cy, k = 1.06, 1.14
+    cres = [(-y * k, x * k) for x, y in crescent_pts(0.70, 0.58, 0.26, n=36)]
+    moon.add(slab(cres, 0.32, 0.03, seg=2), T(0, cy, 0))
+    for x, y, r in ((-0.44, 0.62, 0.065), (0.42, 0.62, 0.06), (-0.58, 0.88, 0.04), (0.595, 0.95, 0.035),
+                    (0.30, 0.48, 0.04), (-0.30, 0.47, 0.04)):
+        for side in (1, -1):
+            crater.add(slab(circle_pts(r * k, n=12), 0.03, 0.0), T(x * k, cy + (y - 1.0) * k, side * 0.162))
+    for side in (1, -1):
+        violet.add(star3d(0.18, 0.07, 0.04, 0.09, n=4), T(0, cy + (0.50 - 1.0) * k, side * 0.16))
+    silver.add(bar_y([(0.28, 0.36, 0.26, 0.05), (0.42, 0.40, 0.28, 0.05)]))
+    grip.add(wrapped_grip(-0.66, 0.36, 0.13, 0.14, pitch=0.20, amp=0.02, around=12, sz=0.95))
+    silver.add(band(0.13, -0.70, -0.62, 0.16))
+    # little crescent pommel, horns down, with a violet star
+    pom = [(y, -x) for x, y in crescent_pts(0.22, 0.17, 0.09, n=20)]
+    silver.add(slab(pom, 0.12, 0.012, seg=1), T(0, -0.80, 0))
+    for side in (1, -1):
+        violet.add(slab(star_pts(4, 0.08, 0.03, rot=90), 0.03, 0.0), T(0, -0.80, side * 0.065))
+    sparkle = slab(star_pts(4, 1.0, 0.30, rot=90), 0.05, 0.0)
+    for x, y, z, sc, part in ((0.62, 1.75, 0.08, 0.13, violet), (-0.88, 2.40, -0.06, 0.12, moonlight),
+                              (0.40, 2.95, -0.08, 0.10, violet), (-0.80, 3.55, 0.06, 0.11, violet),
+                              (0.84, 1.30, 0.05, 0.09, moonlight)):
+        part.add(sparkle, T(x, y, z) @ S(sc, sc, 1))
+    w.fx = (round(curve(3.75), 3), 3.75, 0)
+
+
+@weapon("MeteorSmash", "Mythic", "Hammer")
+def meteor_smash(w):
+    """Mythic. A blazing blue comet for a head: a cratered space rock split by
+    glowing cracks, trailing a huge layered tail of blue-white star fire, gripped by
+    gold claws on a dark steel shaft with glowing bands; a deep blue grip, a gold
+    pommel cradling a glowing shard, and little meteorites orbiting the head."""
+    rock_p = w.part("Rock", (46, 40, 74), "Metal", smooth=22)
+    fire = w.part("Fire", (70, 206, 255), "Neon")
+    core = w.part("Core", (226, 248, 255), "Neon")
+    gold = w.part("Gold", (255, 196, 60), "Metal", smooth=30)
+    steel = w.part("Shaft", (62, 66, 90), "Metal", smooth=35)
+    grip = w.part("Grip", (36, 46, 116), "Fabric", smooth=70)
+    hc = Vector((0.0, 5.30, 0))
+    R0 = 0.92
+    rk = rock(R0, seed=4, jitter=0.07, subdiv=2, scale=(1.0, 0.96, 0.92))
+    xform(rk, T(*hc))
+    # craters
+    for az, el, rr in ((70, 20, 0.17), (110, 48, 0.12), (30, -28, 0.14), (250, 22, 0.16), (290, -30, 0.12),
+                       (5, 30, 0.11)):
+        (p, nrm), = surface_hits(rk, hc, [sph(az, el)])
+        rock_p.add(torus(rr, rr * 0.28, segs=12, rsegs=4), T(*(p - nrm * 0.02)) @ aim(nrm, up=(0, 1, 0.01)))
+    rock_p.add(rk)
+
+    def crack(pts, wd):
+        dirs = []
+        for (a1, e1), (a2, e2) in zip(pts, pts[1:]):
+            for k in range(3):
+                t = k / 3
+                dirs.append(sph(lerp(a1, a2, t), lerp(e1, e2, t)))
+        dirs.append(sph(*pts[-1]))
+        hits = surface_hits(rk, hc, dirs, lift=0.0)
+        path = [p for p, _n in hits]
+        n = len(path)
+        ws = [wd * (1 - 0.6 * i / (n - 1)) for i in range(n)]
+        return sweep(path, ws, ws, sides=4, point_end=False)
+    for pts, wd in (([(40, 30), (60, 18), (78, 26), (95, 10), (112, 18), (130, 4), (150, 12)], 0.09),
+                    ([(78, 26), (84, 45), (76, 62)], 0.07), ([(112, 18), (120, -8), (110, -30), (122, -48)], 0.07),
+                    ([(220, 20), (245, 5), (262, 22), (285, 8), (305, 25), (325, 12)], 0.09),
+                    ([(262, 22), (268, -10), (258, -35)], 0.07),
+                    ([(-20, -30), (-5, -10), (8, -22), (15, 5), (5, 25), (-12, 40)], 0.08)):
+        fire.add(crack(pts, wd))
+    # the comet tail: flat layers of flame licks streaming back toward -X (a white-hot core inside the
+    # blue fire), plus two layers fanned out in Z so it has volume from every side
+    def comet(L, H, rise, waves, amp, x0=0.30, n=40):
+        top, bot = [], []
+        for i in range(n + 1):
+            t = i / n
+            x = lerp(x0, -L, t)
+            h = H * (1 - t ** 1.25)
+            yc = rise * t * t
+            top.append((x, yc + h * (1 + amp * ((t * waves) % 1.0) ** 3)))
+            bot.append((x, yc - h * (1 + amp * 0.7 * ((t * waves + 0.5) % 1.0) ** 3)))
+        return top + list(reversed(bot[1:-1]))
+    fire.add(slab(comet(2.35, 0.86, 0.55, 3.5, 0.55, n=32), 0.30, 0.0), T(*hc))
+    core.add(slab(comet(1.75, 0.44, 0.42, 3.0, 0.45, n=28), 0.38, 0.0), T(*hc))
+    for tilt in (32, -32):
+        fire.add(slab(comet(1.95, 0.62, 0.45, 3.0, 0.50, n=28), 0.14, 0.0), T(*hc) @ R("X", tilt))
+    # gold cup and claws
+    cup_y = hc.y - R0 * 0.96
+    gold.add(lathe([(0, cup_y - 0.26), (0.20, cup_y - 0.26), (0.30, cup_y - 0.12), (0.42, cup_y + 0.06),
+                    (0.38, cup_y + 0.10), (0.26, cup_y), (0, cup_y - 0.02)], segs=12))
+    for k in range(4):
+        th = 45 + 90 * k
+        hits = surface_hits(rk, hc, [sph(th, e) for e in (-72, -52, -32, -14, 0)], lift=0.03)
+        path = [p for p, _n in hits]
+        gold.add(sweep(path, [0.17, 0.15, 0.12, 0.08, 0.0], [0.13, 0.12, 0.10, 0.07, 0.0], sides=6))
+    # shaft
+    steel.add(lathe([(0, 0.38), (0.17, 0.38), (0.175, 1.8), (0.17, cup_y - 0.2), (0, cup_y - 0.2)], segs=14))
+    for y0 in (cup_y - 0.55, cup_y - 0.80):
+        fire.add(band(0.17, y0 - 0.05, y0 + 0.05, 0.195, segs=14))
+    gold.add(band(0.17, 2.20, 2.34, 0.195, segs=14))
+    gold.add(band(0.17, 0.34, 0.48, 0.20, segs=14))
+    grip.add(wrapped_grip(-1.0, 0.38, 0.17, 0.18, pitch=0.22, amp=0.022, around=12))
+    # pommel: gold claws cradling a glowing shard
+    gold.add(lathe([(0, -1.08), (0.16, -1.08), (0.20, -1.03), (0.18, -0.98), (0, -0.98)], segs=10))
+    core.add(ico(0.13, subdiv=1, scale=(1.0, 1.3, 1.0)), T(0, -1.18, 0))
+    for k in range(3):
+        a = math.radians(90 + 120 * k)
+        ca, sa = math.cos(a), math.sin(a)
+        path = [Vector((r * ca, y, r * sa)) for r, y in ((0.10, -1.05), (0.17, -1.13), (0.15, -1.24), (0.06, -1.31))]
+        gold.add(sweep(path, [0.08, 0.07, 0.05, 0.0], [0.07, 0.06, 0.04, 0.0], sides=5))
+    # little meteorites orbiting the head, each with a tiny fire trail
+    for x, y, z, r, seed in ((1.28, 6.12, 0.22, 0.19, 7), (1.25, 4.48, -0.24, 0.16, 9), (-0.62, 6.28, -0.26, 0.15, 3)):
+        rock_p.add(rock(r, seed=seed, jitter=0.08, subdiv=1), T(x, y, z))
+        fire.add(slab(comet(r * 4.2, r * 0.95, r * 0.6, 2.0, 0.5, x0=0.0, n=16), r * 1.2, 0.0), T(x, y, z))
+        core.add(slab(comet(r * 2.6, r * 0.5, r * 0.4, 2.0, 0.4, x0=0.0, n=12), r * 1.45, 0.0), T(x, y, z))
+    w.fx = tuple(round(v, 3) for v in hc)
+
+
+@weapon("KrakenAnchor", "Mythic", "Hammer")
+def kraken_anchor(w):
+    """Mythic. A great gold ship's anchor swung by its shank: curved arms ending in
+    big spade flukes carved with glowing tridents, a glowing sea-eye on the crown,
+    barnacles crusted on, and a purple kraken tentacle with glowing pink suckers
+    coiling up the shank and over the crown; a rope-wrapped grip, the anchor stock
+    and its ring for a pommel."""
+    gold = w.part("Anchor", (232, 180, 64), "Metal", smooth=30)
+    runes = w.part("Runes", (64, 255, 196), "Neon")
+    tent = w.part("Tentacle", (126, 58, 186), "SmoothPlastic", smooth=50)
+    suck = w.part("Suckers", (255, 116, 206), "Neon")
+    shell = w.part("Barnacles", (240, 232, 214), "SmoothPlastic", smooth=35)
+    rope = w.part("Grip", (196, 160, 108), "Fabric", smooth=70)
+    yc = 6.05
+    # shank and crown
+    gold.add(lathe([(0, -0.86), (0.21, -0.86), (0.21, -0.70), (0.19, -0.62), (0.19, 0.5), (0.24, yc - 0.3),
+                    (0.26, yc)], segs=8, phase=math.pi / 8))
+    gold.add(lathe([(0, yc - 0.14), (0.36, yc - 0.02), (0.36, yc + 0.08), (0.24, yc + 0.22), (0, yc + 0.32)], segs=8,
+                   phase=math.pi / 8))
+    # arms curving down from the crown, and the flukes
+    Ra = 1.55
+    fluke = catmull([(0, 0.66), (0.26, 0.30), (0.38, 0.04), (0.20, -0.06), (0, 0.02), (-0.20, -0.06), (-0.38, 0.04),
+                     (-0.26, 0.30)], samples=2, closed=True)
+    for sx in (1, -1):
+        angs = list(range(0, 71, 10))
+        path = [Vector((sx * Ra * math.sin(math.radians(a)), yc - Ra * (1 - math.cos(math.radians(a))), 0))
+                for a in angs]
+        n = len(path)
+        gold.add(sweep(path, [lerp(0.46, 0.32, i / (n - 1)) for i in range(n)],
+                       [lerp(0.38, 0.27, i / (n - 1)) for i in range(n)], sides=8, point_end=False))
+        a = math.radians(70)
+        d = (sx * math.cos(a), -math.sin(a), 0)
+        m = T(*path[-1]) @ aim(d, up=(0, 0, 1)) @ S(1.22, 1.22, 1.0)
+        gold.add(slab(fluke, 0.24, 0.05, seg=1), m)
+        for side in (1, -1):
+            mm = m @ T(0, 0.26, side * 0.125)
+            runes.add(slab(rounded_rect_pts(0.045, 0.30, 0.02, n=1), 0.03, 0.0), mm @ T(0, -0.02, 0))
+            runes.add(slab(rounded_rect_pts(0.24, 0.045, 0.02, n=1), 0.03, 0.0), mm @ T(0, 0.08, 0))
+            for px in (-0.10, 0.0, 0.10):
+                runes.add(slab([(-0.025, 0.0), (0.025, 0.0), (0.0, 0.12)], 0.03, 0.0), mm @ T(px, 0.10, 0))
+    # glowing sea-eye on both faces of the crown
+    for side in (1, -1):
+        runes.add(ring_slab(0.20, 0.12, 0.04, 0.0, n=16), T(0, yc + 0.05, side * 0.335))
+        runes.add(sphere(0.06, 8, 5, scale=(1, 1, 0.5)), T(0, yc + 0.05, side * 0.335))
+    # barnacles
+    bar = lathe([(0.0, 0.0), (0.075, 0.0), (0.06, 0.06), (0.032, 0.07), (0.022, 0.035), (0, 0.035)], segs=6)
+    for sx, ang, side, sc in ((-1, 28, 1, 1.2), (-1, 40, 1, 0.9), (-1, 34, -1, 1.0), (1, 52, 1, 1.1), (1, 60, -1, 0.9),
+                              (1, 46, -1, 1.25)):
+        a = math.radians(ang)
+        p = Vector((sx * Ra * math.sin(a), yc - Ra * (1 - math.cos(a)), side * 0.15))
+        shell.add(bar, T(*p) @ R("X", side * 90) @ S(sc * 1.5))
+    shell.add(bar, T(-0.20, yc + 0.20, 0.20) @ R("X", 60) @ S(1.4))
+    # the kraken tentacle: coils up the shank, over the crown and curls in the air
+    key = []
+    for i in range(13):
+        t = i / 12
+        ang = math.radians(-330 + 720 * t)
+        rad = 0.22 + lerp(0.17, 0.11, t)
+        key.append((rad * math.cos(ang), lerp(1.20, 5.10, t), rad * math.sin(ang)))
+    key += [(0.30, 5.55, 0.26), (0.58, 5.98, 0.30), (0.90, 6.20, 0.16), (1.12, 6.22, 0.0), (1.22, 6.04, -0.02),
+            (1.10, 5.92, 0.0), (0.99, 6.02, 0.02)]
+    path = [Vector(p) for p in catmull(key, samples=3)]
+    n = len(path)
+    radii = [lerp(0.19, 0.04, (i / (n - 1)) ** 1.2) for i in range(n)]
+    tent.add(sweep(path, [r * 2 for r in radii], [r * 2 for r in radii], sides=7, point_end=False))
+    tent.add(sphere(0.035, 6, 4), T(*path[-1]))
+    for i in range(2, n - 3, 4):
+        p = path[i]
+        tan = (path[i + 1] - path[i - 1]).normalized()
+        out = Vector((p.x, 0, p.z))
+        out = out.normalized() if out.length > 1e-3 else Vector((0, 0, 1))
+        if p.y > 5.3:
+            out = Vector((0, 0, 1)) if i % 2 else Vector((0, 0, -1))
+        out = (out - tan * out.dot(tan)).normalized()
+        rs_ = radii[i] * 0.5
+        suck.add(sphere(rs_, 6, 3, scale=(1.0, 0.35, 1.0)), T(*(p + out * radii[i] * 0.9)) @ aim(out, up=tuple(tan)))
+    # rope grip, the stock and the ring
+    rope.add(wrapped_grip(-0.70, 0.42, 0.215, 0.225, pitch=0.17, amp=0.03, around=12))
+    gold.add(lathe_z([(0, -0.56), (0.07, -0.56), (0.085, -0.50), (0.075, -0.44), (0.065, 0.0), (0.075, 0.44),
+                      (0.085, 0.50), (0.07, 0.56), (0, 0.56)], segs=10), T(0, -0.80, 0))
+    for side in (1, -1):
+        gold.add(sphere(0.09, 10, 6), T(0, -0.80, side * 0.60))
+    gold.add(torus(0.24, 0.065, segs=24, rsegs=6, axis="Z"), T(0, -1.06, 0))
+    w.fx = (0, yc, 0)
