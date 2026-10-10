@@ -8,6 +8,7 @@ Geometry is built as bmesh pieces, merged into one mesh per colour ("part"), and
 only turned into Blender objects (Z up) at the very end.
 """
 import math
+import os
 
 import bpy  # noqa: I001  (bpy must load before bmesh / mathutils)
 import bmesh
@@ -970,11 +971,14 @@ def slab_holes(outer, holes, thickness, bevel=0.0, seg=1):
     return bm
 
 
-def text_slab(text, size, thickness, bevel=0.0, seg=1, spacing=1.0, bold=True):
+def text_slab(text, size, thickness, bevel=0.0, seg=1, spacing=1.0, bold=True, res=4):
     """3D letters (Blender's built-in font), centred on the origin in the XY plane."""
     cu = bpy.data.curves.new("txt", "FONT")
     cu.body = text
     cu.size = size
+    bold_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+    if bold and os.path.exists(bold_path):
+        cu.font = bpy.data.fonts.load(bold_path, check_existing=True)
     cu.space_character = spacing
     cu.align_x = "CENTER"
     cu.align_y = "CENTER"
@@ -983,7 +987,7 @@ def text_slab(text, size, thickness, bevel=0.0, seg=1, spacing=1.0, bold=True):
     cu.bevel_depth = bevel
     cu.bevel_resolution = seg if bevel > 0 else 0
     cu.offset = -bevel
-    cu.resolution_u = 4
+    cu.resolution_u = res
     ob = bpy.data.objects.new("txt_tmp", cu)
     bpy.context.scene.collection.objects.link(ob)
     dg = bpy.context.evaluated_depsgraph_get()
@@ -1169,3 +1173,113 @@ def capsule(r, y0, y1, segs=16, rings=4):
         prof.append((r * math.cos(a), y1 - r + r * math.sin(a)))
     prof.append((0, y1))
     return lathe(prof, segs=segs)
+
+
+# ---------------------------------------------------------------- carving
+
+def boolean(a, b, op="DIFFERENCE"):
+    """a minus (or union / intersect) b, both closed bmeshes; returns a new bmesh."""
+    sc = bpy.context.scene.collection
+    objs = []
+    for name, bm in (("bool_a", a), ("bool_b", b)):
+        me = bpy.data.meshes.new(name)
+        bm.to_mesh(me)
+        ob = bpy.data.objects.new(name, me)
+        sc.objects.link(ob)
+        objs.append(ob)
+    mod = objs[0].modifiers.new("bool", "BOOLEAN")
+    mod.operation = op
+    mod.solver = "EXACT"
+    mod.object = objs[1]
+    dg = bpy.context.evaluated_depsgraph_get()
+    me = bpy.data.meshes.new_from_object(objs[0].evaluated_get(dg))
+    for ob in objs:
+        m = ob.data
+        bpy.data.objects.remove(ob)
+        bpy.data.meshes.remove(m)
+    out = _bm_from_mesh(me)
+    bmesh.ops.remove_doubles(out, verts=out.verts, dist=1e-6)
+    return out
+
+
+def _inside(x, y, poly):
+    c = False
+    n = len(poly)
+    for i in range(n):
+        x1, y1 = poly[i]
+        x2, y2 = poly[(i + 1) % n]
+        if (y1 > y) != (y2 > y) and x < x1 + (y - y1) * (x2 - x1) / (y2 - y1):
+            c = not c
+    return c
+
+
+def projected_slab(points, ztop, zbot, spacing=0.07):
+    """A prism over a 2D outline (x, y) whose top and bottom follow height functions
+    ztop(x, y) / zbot(x, y). The caps get interior points every `spacing` studs so
+    they can bend over a curved surface (carved faces on a pumpkin, inlays)."""
+    from mathutils.geometry import delaunay_2d_cdt
+    pts = [Vector((x, y)) for x, y in points]
+    n = len(pts)
+    xs, ys = [p.x for p in pts], [p.y for p in pts]
+    inner = []
+    gy = min(ys) + spacing / 2
+    row = 0
+    while gy < max(ys):
+        gx = min(xs) + spacing * (0.5 if row % 2 else 0.25)
+        while gx < max(xs):
+            if _inside(gx, gy, points) and min((Vector((gx, gy)) - p).length for p in pts) > spacing * 0.45:
+                inner.append(Vector((gx, gy)))
+            gx += spacing
+        gy += spacing * 0.866
+        row += 1
+    res = delaunay_2d_cdt(pts + inner, [], [list(range(n))], 1, 1e-7)
+    verts, _edges, faces, orig_verts = res[0], res[1], res[2], res[3]
+    bm = bmesh.new()
+    top = [bm.verts.new((v.x, v.y, ztop(v.x, v.y))) for v in verts]
+    bot = [bm.verts.new((v.x, v.y, zbot(v.x, v.y))) for v in verts]
+    for f in faces:
+        bm.faces.new([top[i] for i in f])
+        bm.faces.new([bot[i] for i in reversed(f)])
+    idx = {}
+    for oi, origs in enumerate(orig_verts):
+        for o in origs:
+            if o < n:
+                idx[o] = oi
+    for i in range(n):
+        a, b = idx[i], idx[(i + 1) % n]
+        if a != b:
+            try:
+                bm.faces.new((bot[a], bot[b], top[b], top[a]))
+            except ValueError:
+                pass
+    fix_normals(bm)
+    return bm
+
+
+def star3d(ro, ri, edge, peak, n=5, rot=90.0):
+    """Chunky faceted cartoon star in the XY plane: a thin rim band (half-thickness
+    `edge`) and each face rising in ridged facets to the centre (half-height `peak`)."""
+    bm = bmesh.new()
+    pts = star_pts(n, ro, ri, rot)
+    top = [bm.verts.new((x, y, edge)) for x, y in pts]
+    bot = [bm.verts.new((x, y, -edge)) for x, y in pts]
+    ct = bm.verts.new((0, 0, peak))
+    cb = bm.verts.new((0, 0, -peak))
+    m = len(pts)
+    for i in range(m):
+        j = (i + 1) % m
+        bm.faces.new((top[i], top[j], ct))
+        bm.faces.new((bot[j], bot[i], cb))
+        bm.faces.new((bot[i], bot[j], top[j], top[i]))
+    fix_normals(bm)
+    return bm
+
+
+def drop_facing(bm, d, cos_min=0.9):
+    """Delete the faces whose normal points along d: caps sunk into another part
+    that can never be seen (saves triangles; the mesh may then be open)."""
+    d = Vector(d).normalized()
+    bm.normal_update()
+    dead = [f for f in bm.faces if f.normal.dot(d) > cos_min]
+    bmesh.ops.delete(bm, geom=dead, context="FACES")
+    return bm
