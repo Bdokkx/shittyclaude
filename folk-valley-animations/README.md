@@ -41,6 +41,10 @@ To hook them up:
 
 ## Previews
 
+- `previews/animations.mp4`, a 55-second video:
+  - before and after for 12 of the everyday animations
+  - the new equips flowing into their holds
+  - every animation in grid pages
 - `previews/gifs/<Name>.gif`: every animation, played with a weapon in hand where it uses one.
 - `previews/strips_*.jpg`: eight frames of each animation on one sheet.
 
@@ -64,4 +68,4 @@ rbxtool build out.json out/FolkValley_Animations.rbxm
 
 - `tools/anim.py` reads and writes KeyframeSequences and does the smooth resampling.
 - `tools/improve.py` is the pipeline: smoothing, polish and the new animations.
-- `tools/render.py` is the preview renderer.
+- `tools/render.py` is the preview renderer, and `tools/video.py` makes the video: `python tools/video.py in.json out.json previews/animations.mp4`.
