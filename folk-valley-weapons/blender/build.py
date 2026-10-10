@@ -19,7 +19,7 @@ import defs  # noqa: E402
 args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else sys.argv[1:]
 OUT = os.path.abspath(args[0])
 OPTS = dict(a[2:].split("=", 1) if "=" in a else (a[2:], "1") for a in args[1:] if a.startswith("--"))
-IDS = OPTS["ids"].split(",") if "ids" in OPTS else list(defs.WEAPONS)
+IDS = OPTS["ids"].split(",") if "ids" in OPTS else list(defs.ORDER)
 SAMPLES = int(OPTS.get("samples", 64))
 RENDER = "no-render" not in OPTS
 os.makedirs(OUT, exist_ok=True)

@@ -22,9 +22,27 @@ local MARKER_STEP = 4
 
 local WEAPONS = {
 	{Id = "Wooden", Rarity = "Common", Top = 4.16, Bottom = -1.05, Fx = nil, Parts = {
-		{Name = "Blade", Mesh = "Wooden__Blade", Color = {226, 204, 160}, Material = "Wood", Transparency = 0, Center = {0, 2.38, 0}, Size = {0.57, 3.56, 0.25}},
+		{Name = "Blade", Mesh = "Wooden__Blade", Color = {226, 204, 160}, Material = "Wood", Transparency = 0, Center = {0, 2.38, 0}, Size = {0.62, 3.56, 0.26}},
 		{Name = "Fittings", Mesh = "Wooden__Fittings", Color = {104, 62, 36}, Material = "Wood", Transparency = 0, Center = {0, -0.1575, 0}, Size = {1.6, 1.785, 0.31}},
 		{Name = "Grip", Mesh = "Wooden__Grip", Color = {118, 64, 34}, Material = "Fabric", Transparency = 0, Center = {-0.0001, -0.0125, 0.0002}, Size = {0.3276, 1.025, 0.2874}},
+	}},
+	{Id = "Steel", Rarity = "Common", Top = 4.4, Bottom = -0.97, Fx = nil, Parts = {
+		{Name = "Blade", Mesh = "Steel__Blade", Color = {216, 222, 234}, Material = "Metal", Transparency = 0, Center = {0, 2.51, 0}, Size = {0.67, 3.78, 0.23}},
+		{Name = "Fuller", Mesh = "Steel__Fuller", Color = {150, 160, 182}, Material = "Metal", Transparency = 0, Center = {0, 2.51, 0}, Size = {0.21, 3.78, 0.23}},
+		{Name = "Hilt", Mesh = "Steel__Hilt", Color = {84, 90, 110}, Material = "Metal", Transparency = 0, Center = {0, -0.13, 0}, Size = {2.048, 1.68, 0.44}},
+		{Name = "Grip", Mesh = "Steel__Grip", Color = {112, 66, 38}, Material = "Fabric", Transparency = 0, Center = {-0.0001, -0.045, 0.0003}, Size = {0.3436, 1.03, 0.309}},
+	}},
+	{Id = "Baguette", Rarity = "Common", Top = 4.31, Bottom = -0.64, Fx = nil, Parts = {
+		{Name = "Bread", Mesh = "Baguette__Bread", Color = {212, 146, 66}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 1.93, 0}, Size = {0.72, 4.76, 0.62}},
+		{Name = "Scores", Mesh = "Baguette__Scores", Color = {246, 214, 150}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 2.3, 0}, Size = {0.3571, 3.157, 0.6958}},
+		{Name = "Wrap", Mesh = "Baguette__Wrap", Color = {244, 240, 228}, Material = "Fabric", Transparency = 0, Center = {0, -0.01, 0}, Size = {0.81, 1.26, 0.7623}},
+	}},
+	{Id = "PencilSword", Rarity = "Common", Top = 4.64, Bottom = -0.67, Fx = nil, Parts = {
+		{Name = "Barrel", Mesh = "PencilSword__Barrel", Color = {255, 202, 40}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 1.7272, 0}, Size = {0.58, 3.6543, 0.6407}},
+		{Name = "Wood", Mesh = "PencilSword__Wood", Color = {238, 204, 156}, Material = "Wood", Transparency = 0, Center = {0, 3.795, 0}, Size = {0.67, 0.79, 0.67}},
+		{Name = "Lead", Mesh = "PencilSword__Lead", Color = {54, 54, 62}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 4.38, 0}, Size = {0.184, 0.52, 0.1794}},
+		{Name = "Ferrule", Mesh = "PencilSword__Ferrule", Color = {192, 198, 210}, Material = "Metal", Transparency = 0, Center = {0, -0.2, 0}, Size = {0.67, 0.32, 0.67}},
+		{Name = "Eraser", Mesh = "PencilSword__Eraser", Color = {255, 140, 178}, Material = "SmoothPlastic", Transparency = 0, Center = {0, -0.505, 0}, Size = {0.58, 0.33, 0.58}},
 	}},
 	{Id = "Katana", Rarity = "Uncommon", Top = 4.74, Bottom = -1, Fx = nil, Parts = {
 		{Name = "Blade", Mesh = "Katana__Blade", Color = {190, 198, 216}, Material = "Metal", Transparency = 0, Center = {-0.12, 2.62, 0}, Size = {0.8, 4.24, 0.17}},
@@ -33,11 +51,70 @@ local WEAPONS = {
 		{Name = "Wrap", Mesh = "Katana__Wrap", Color = {204, 36, 44}, Material = "Fabric", Transparency = 0, Center = {0, -0.315, 0}, Size = {0.34, 1.13, 0.244}},
 		{Name = "Grip", Mesh = "Katana__Grip", Color = {238, 230, 210}, Material = "SmoothPlastic", Transparency = 0, Center = {0, -0.27, 0}, Size = {0.236, 1.07, 0.292}},
 	}},
+	{Id = "Cutlass", Rarity = "Uncommon", Top = 3.92, Bottom = -0.98, Fx = nil, Parts = {
+		{Name = "Blade", Mesh = "Cutlass__Blade", Color = {214, 220, 232}, Material = "Metal", Transparency = 0, Center = {-0.1285, 2.235, 0}, Size = {0.8108, 3.37, 0.18}},
+		{Name = "Guard", Mesh = "Cutlass__Guard", Color = {240, 186, 56}, Material = "Metal", Transparency = 0, Center = {0.0208, -0.135, 0}, Size = {1.2369, 1.69, 1.0021}},
+		{Name = "Grip", Mesh = "Cutlass__Grip", Color = {150, 32, 34}, Material = "Fabric", Transparency = 0, Center = {0.0002, -0.12, -0.0001}, Size = {0.3196, 1.24, 0.2877}},
+	}},
+	{Id = "Rapier", Rarity = "Uncommon", Top = 4.52, Bottom = -1.06, Fx = nil, Parts = {
+		{Name = "Blade", Mesh = "Rapier__Blade", Color = {226, 232, 242}, Material = "Metal", Transparency = 0, Center = {0, 2.56, 0}, Size = {0.24, 3.92, 0.11}},
+		{Name = "Hilt", Mesh = "Rapier__Hilt", Color = {240, 186, 56}, Material = "Metal", Transparency = 0, Center = {0, -0.165, 0}, Size = {1.6376, 1.79, 0.8448}},
+		{Name = "Grip", Mesh = "Rapier__Grip", Color = {34, 40, 66}, Material = "Fabric", Transparency = 0, Center = {0, -0.11, 0}, Size = {0.27, 1.1, 0.2484}},
+	}},
+	{Id = "FishSlapper", Rarity = "Uncommon", Top = 4.18, Bottom = -1, Fx = nil, Parts = {
+		{Name = "Fish", Mesh = "FishSlapper__Fish", Color = {78, 158, 226}, Material = "SmoothPlastic", Transparency = 0, Center = {0.0359, 1.78, 0}, Size = {1.2186, 4.68, 0.585}},
+		{Name = "Belly", Mesh = "FishSlapper__Belly", Color = {220, 240, 255}, Material = "SmoothPlastic", Transparency = 0, Center = {0.4242, 2.4609, 0}, Size = {0.49, 2.7357, 0.4991}},
+		{Name = "Fins", Mesh = "FishSlapper__Fins", Color = {36, 98, 190}, Material = "SmoothPlastic", Transparency = 0, Center = {-0.0652, 1.5917, 0}, Size = {1.6193, 5.1833, 0.5255}},
+		{Name = "Eyes", Mesh = "FishSlapper__Eyes", Color = {250, 250, 250}, Material = "SmoothPlastic", Transparency = 0, Center = {-0.12, 3.48, 0}, Size = {0.46, 0.46, 0.8312}},
+		{Name = "Pupils", Mesh = "FishSlapper__Pupils", Color = {26, 26, 34}, Material = "SmoothPlastic", Transparency = 0, Center = {-0.0025, 3.7825, 0}, Size = {0.305, 0.735, 0.926}},
+	}},
+	{Id = "ScissorBlade", Rarity = "Rare", Top = 4.4, Bottom = -0.97, Fx = nil, Parts = {
+		{Name = "Blade", Mesh = "ScissorBlade__Blade", Color = {214, 220, 234}, Material = "Metal", Transparency = 0, Center = {0, 2.2397, 0}, Size = {0.7088, 4.3207, 0.25}},
+		{Name = "Handles", Mesh = "ScissorBlade__Handles", Color = {222, 48, 44}, Material = "SmoothPlastic", Transparency = 0, Center = {0.04, -0.3001, 0}, Size = {1.48, 1.3472, 0.36}},
+		{Name = "Screw", Mesh = "ScissorBlade__Screw", Color = {244, 190, 56}, Material = "Metal", Transparency = 0, Center = {0, 0.74, 0.01}, Size = {0.32, 0.32, 0.4}},
+	}},
+	{Id = "Claymore", Rarity = "Rare", Top = 5.12, Bottom = -1.27, Fx = nil, Parts = {
+		{Name = "Blade", Mesh = "Claymore__Blade", Color = {214, 220, 234}, Material = "Metal", Transparency = 0, Center = {0, 2.95, 0}, Size = {0.8, 4.34, 0.25}},
+		{Name = "Fuller", Mesh = "Claymore__Fuller", Color = {150, 160, 182}, Material = "Metal", Transparency = 0, Center = {0, 2.95, 0}, Size = {0.22, 4.34, 0.25}},
+		{Name = "Hilt", Mesh = "Claymore__Hilt", Color = {82, 88, 108}, Material = "Metal", Transparency = 0, Center = {0, 0.1445, 0}, Size = {2.5109, 2.8291, 0.3804}},
+		{Name = "Grip", Mesh = "Claymore__Grip", Color = {64, 40, 24}, Material = "Fabric", Transparency = 0, Center = {-0.0001, -0.21, 0.0001}, Size = {0.3578, 1.62, 0.3219}},
+		{Name = "Gem", Mesh = "Claymore__Gem", Color = {40, 110, 255}, Material = "Glass", Transparency = 0.15, Center = {0, 0.73, 0}, Size = {0.32, 0.32, 0.59}},
+	}},
+	{Id = "Scimitar", Rarity = "Rare", Top = 4.3, Bottom = -0.93, Fx = nil, Parts = {
+		{Name = "Blade", Mesh = "Scimitar__Blade", Color = {220, 226, 238}, Material = "Metal", Transparency = 0, Center = {-0.2356, 2.41, 0}, Size = {1.1289, 3.78, 0.18}},
+		{Name = "Guard", Mesh = "Scimitar__Guard", Color = {242, 188, 56}, Material = "Metal", Transparency = 0, Center = {0, -0.0075, 0}, Size = {1.7065, 1.8518, 0.32}},
+		{Name = "Grip", Mesh = "Scimitar__Grip", Color = {30, 46, 112}, Material = "Fabric", Transparency = 0, Center = {-0.0002, -0.11, 0.0002}, Size = {0.3195, 1.02, 0.2876}},
+		{Name = "Gem", Mesh = "Scimitar__Gem", Color = {40, 214, 230}, Material = "Glass", Transparency = 0.12, Center = {0, 0.51, 0}, Size = {0.26, 0.26, 0.51}},
+	}},
+	{Id = "ThornBlade", Rarity = "Rare", Top = 4.32, Bottom = -1.2, Fx = nil, Parts = {
+		{Name = "Blade", Mesh = "ThornBlade__Blade", Color = {78, 186, 74}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 2.51, 0}, Size = {0.94, 3.62, 0.23}},
+		{Name = "Vine", Mesh = "ThornBlade__Vine", Color = {36, 112, 46}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 1.2021, -0.0001}, Size = {1.9119, 4.7958, 0.3304}},
+		{Name = "Rose", Mesh = "ThornBlade__Rose", Color = {238, 66, 118}, Material = "SmoothPlastic", Transparency = 0, Center = {0.0137, 0.66, 0}, Size = {0.599, 0.6011, 0.696}},
+		{Name = "Grip", Mesh = "ThornBlade__Grip", Color = {122, 80, 44}, Material = "Wood", Transparency = 0, Center = {-0.0003, -0.08, 0.0001}, Size = {0.3154, 1.2, 0.2841}},
+	}},
+	{Id = "CrystalSword", Rarity = "Epic", Top = 4.46, Bottom = -1, Fx = {0, 4.3, 0}, Parts = {
+		{Name = "Crystal", Mesh = "CrystalSword__Crystal", Color = {110, 228, 255}, Material = "Glass", Transparency = 0.28, Center = {0, 1.73, 0}, Size = {1.9889, 5.46, 0.3168}},
+		{Name = "Core", Mesh = "CrystalSword__Core", Color = {214, 252, 255}, Material = "Neon", Transparency = 0, Center = {0, 1.6145, 0}, Size = {0.1732, 4.971, 0.124}},
+		{Name = "Guard", Mesh = "CrystalSword__Guard", Color = {230, 236, 248}, Material = "Metal", Transparency = 0, Center = {0, -0.005, 0}, Size = {1.12, 1.39, 0.34}},
+		{Name = "Grip", Mesh = "CrystalSword__Grip", Color = {28, 44, 110}, Material = "Fabric", Transparency = 0, Center = {-0.0002, -0.06, -0.0001}, Size = {0.3196, 1.12, 0.2876}},
+	}},
 	{Id = "LavaBlade", Rarity = "Epic", Top = 4.66, Bottom = -0.95, Fx = {0, 4.5, 0}, Parts = {
-		{Name = "Obsidian", Mesh = "LavaBlade__Obsidian", Color = {46, 32, 40}, Material = "Metal", Transparency = 0, Center = {0, 1.855, 0.0054}, Size = {1.6153, 5.61, 0.4543}},
+		{Name = "Obsidian", Mesh = "LavaBlade__Obsidian", Color = {46, 32, 40}, Material = "Metal", Transparency = 0, Center = {0, 1.855, 0.0054}, Size = {1.86, 5.61, 0.4543}},
 		{Name = "Lava", Mesh = "LavaBlade__Lava", Color = {255, 98, 18}, Material = "Neon", Transparency = 0, Center = {0, 2.64, 0}, Size = {0.7181, 4.04, 0.2727}},
 		{Name = "Core", Mesh = "LavaBlade__Core", Color = {255, 216, 92}, Material = "Neon", Transparency = 0, Center = {0, 1.0931, 0}, Size = {0.3022, 4.0562, 0.525}},
 		{Name = "Grip", Mesh = "LavaBlade__Grip", Color = {56, 36, 30}, Material = "Fabric", Transparency = 0, Center = {0, -0.06, 0.0003}, Size = {0.3336, 0.96, 0.2924}},
+	}},
+	{Id = "IceBrand", Rarity = "Epic", Top = 4.46, Bottom = -1.04, Fx = {0, 4.3, 0}, Parts = {
+		{Name = "Ice", Mesh = "IceBrand__Ice", Color = {186, 232, 255}, Material = "Glass", Transparency = 0.18, Center = {0, 2.56, 0}, Size = {0.924, 3.8, 0.26}},
+		{Name = "Frost", Mesh = "IceBrand__Frost", Color = {224, 248, 255}, Material = "Neon", Transparency = 0, Center = {0, 2.0996, 0}, Size = {0.3414, 2.7011, 0.288}},
+		{Name = "Guard", Mesh = "IceBrand__Guard", Color = {54, 132, 230}, Material = "Metal", Transparency = 0, Center = {0, 0.1816, 0}, Size = {1.88, 2.4432, 0.16}},
+		{Name = "Grip", Mesh = "IceBrand__Grip", Color = {244, 248, 252}, Material = "Fabric", Transparency = 0, Center = {-0.0003, -0.07, 0}, Size = {0.3194, 1.06, 0.2877}},
+	}},
+	{Id = "LaserBlade", Rarity = "Epic", Top = 4.58, Bottom = -0.96, Fx = {0, 4.4, 0}, Parts = {
+		{Name = "Beam", Mesh = "LaserBlade__Beam", Color = {96, 255, 128}, Material = "Neon", Transparency = 0, Center = {0, 2.295, 0.0666}, Size = {0.25, 4.41, 0.3769}},
+		{Name = "Glow", Mesh = "LaserBlade__Glow", Color = {96, 255, 128}, Material = "Glass", Transparency = 0.62, Center = {0, 2.55, 0}, Size = {0.44, 4.06, 0.44}},
+		{Name = "Hilt", Mesh = "LaserBlade__Hilt", Color = {196, 202, 216}, Material = "Metal", Transparency = 0, Center = {0, -0.1712, 0}, Size = {0.504, 1.5825, 0.48}},
+		{Name = "Bands", Mesh = "LaserBlade__Bands", Color = {30, 30, 36}, Material = "SmoothPlastic", Transparency = 0, Center = {0, -0.055, 0.01}, Size = {0.42, 0.79, 0.44}},
 	}},
 	{Id = "RainbowEdge", Rarity = "Legendary", Top = 5.18, Bottom = -1.1, Fx = {0, 5, 0}, Parts = {
 		{Name = "BladeRed", Mesh = "RainbowEdge__BladeRed", Color = {236, 50, 62}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 1.0362, 0}, Size = {0.66, 0.9675, 0.26}},
@@ -46,7 +123,127 @@ local WEAPONS = {
 		{Name = "BladeGreen", Mesh = "RainbowEdge__BladeGreen", Color = {64, 200, 92}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 3.2687, 0}, Size = {0.6472, 0.9427, 0.2077}},
 		{Name = "BladeBlue", Mesh = "RainbowEdge__BladeBlue", Color = {58, 138, 244}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 3.9853, 0}, Size = {0.5584, 0.8294, 0.1905}},
 		{Name = "Glow", Mesh = "RainbowEdge__Glow", Color = {255, 255, 255}, Material = "Neon", Transparency = 0, Center = {-0.0106, 2.8663, -0.01}, Size = {1.8337, 4.6275, 0.29}},
-		{Name = "Cloud", Mesh = "RainbowEdge__Cloud", Color = {250, 251, 255}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 0.1585, 0}, Size = {1.636, 1.709, 0.3828}},
+		{Name = "Cloud", Mesh = "RainbowEdge__Cloud", Color = {250, 251, 255}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 0.1585, 0}, Size = {1.9796, 1.709, 0.3828}},
+	}},
+	{Id = "GoldenSword", Rarity = "Legendary", Top = 5.2, Bottom = -1.19, Fx = {0, 5.05, 0}, Parts = {
+		{Name = "Blade", Mesh = "GoldenSword__Blade", Color = {255, 214, 84}, Material = "Metal", Transparency = 0, Center = {0, 3.01, 0}, Size = {0.88, 4.38, 0.28}},
+		{Name = "Shine", Mesh = "GoldenSword__Shine", Color = {255, 246, 196}, Material = "Neon", Transparency = 0, Center = {-0.0085, 2.775, 0}, Size = {1.8921, 3.65, 0.3125}},
+		{Name = "Guard", Mesh = "GoldenSword__Guard", Color = {232, 160, 34}, Material = "Metal", Transparency = 0, Center = {0, 0.3782, 0}, Size = {2.4838, 2.7965, 0.737}},
+		{Name = "Gem", Mesh = "GoldenSword__Gem", Color = {255, 34, 64}, Material = "Neon", Transparency = 0, Center = {0, -0.1568, 0}, Size = {0.36, 2.0736, 0.7}},
+		{Name = "Grip", Mesh = "GoldenSword__Grip", Color = {246, 246, 250}, Material = "Fabric", Transparency = 0, Center = {0, -0.07, 0}, Size = {0.3, 1.18, 0.27}},
+	}},
+	{Id = "VoidEdge", Rarity = "Legendary", Top = 5.14, Bottom = -1.08, Fx = {0, 4.95, 0}, Parts = {
+		{Name = "Blade", Mesh = "VoidEdge__Blade", Color = {30, 18, 50}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 2.95, 0}, Size = {0.996, 4.38, 0.28}},
+		{Name = "Rift", Mesh = "VoidEdge__Rift", Color = {178, 82, 255}, Material = "Neon", Transparency = 0, Center = {-0.028, 2.95, 0.015}, Size = {2.2466, 4.38, 0.34}},
+		{Name = "Orb", Mesh = "VoidEdge__Orb", Color = {246, 196, 255}, Material = "Neon", Transparency = 0, Center = {0, -0.039, 0}, Size = {0.3705, 1.7781, 0.76}},
+		{Name = "Shards", Mesh = "VoidEdge__Shards", Color = {92, 46, 150}, Material = "Glass", Transparency = 0.15, Center = {0, 1.5609, -0.0067}, Size = {2.4523, 5.2819, 0.5037}},
+		{Name = "Grip", Mesh = "VoidEdge__Grip", Color = {24, 14, 40}, Material = "Fabric", Transparency = 0, Center = {-0.0001, -0.07, -0.0002}, Size = {0.3337, 1.14, 0.3002}},
+	}},
+	{Id = "PumpkinCarver", Rarity = "Limited", Top = 4.42, Bottom = -1.11, Fx = {-0.12, 4.3, 0}, Parts = {
+		{Name = "Blade", Mesh = "PumpkinCarver__Blade", Color = {255, 128, 28}, Material = "Metal", Transparency = 0, Center = {0.0104, 2.4626, 0}, Size = {0.8207, 3.9148, 0.17}},
+		{Name = "Face", Mesh = "PumpkinCarver__Face", Color = {255, 214, 70}, Material = "Neon", Transparency = 0, Center = {0.025, 2.715, 0}, Size = {0.53, 0.85, 0.206}},
+		{Name = "Vine", Mesh = "PumpkinCarver__Vine", Color = {88, 190, 58}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 0.1175, 0}, Size = {1.85, 1.735, 0.3304}},
+		{Name = "Pumpkin", Mesh = "PumpkinCarver__Pumpkin", Color = {255, 136, 30}, Material = "SmoothPlastic", Transparency = 0, Center = {0, -0.92, 0}, Size = {0.52, 0.376, 0.52}},
+		{Name = "Grip", Mesh = "PumpkinCarver__Grip", Color = {96, 60, 32}, Material = "Wood", Transparency = 0, Center = {0, -0.11, 0}, Size = {0.3, 1.18, 0.27}},
+	}},
+	{Id = "BoneSaber", Rarity = "Limited", Top = 4.28, Bottom = -1, Fx = {-0.1, 4.05, 0}, Parts = {
+		{Name = "Bone", Mesh = "BoneSaber__Bone", Color = {244, 238, 218}, Material = "SmoothPlastic", Transparency = 0, Center = {-0.1, 1.64, 0}, Size = {0.86, 5.28, 0.4}},
+		{Name = "Ribs", Mesh = "BoneSaber__Ribs", Color = {214, 204, 174}, Material = "SmoothPlastic", Transparency = 0, Center = {0.0032, 0.8295, 0}, Size = {1.7418, 0.7586, 0.3}},
+		{Name = "Slime", Mesh = "BoneSaber__Slime", Color = {120, 255, 66}, Material = "Neon", Transparency = 0, Center = {0, 0.585, -0.0229}, Size = {0.6892, 0.51, 0.5971}},
+		{Name = "Wrap", Mesh = "BoneSaber__Wrap", Color = {132, 58, 196}, Material = "Fabric", Transparency = 0, Center = {0.0001, -0.11, -0.0002}, Size = {0.3337, 1.14, 0.3002}},
+	}},
+	{Id = "WitchBroom", Rarity = "Limited", Top = 4.75, Bottom = -1.15, Fx = {0, 4.5, 0}, Parts = {
+		{Name = "Stick", Mesh = "WitchBroom__Stick", Color = {118, 74, 40}, Material = "Wood", Transparency = 0, Center = {0, 0.9775, 0}, Size = {0.34, 4.2549, 0.3}},
+		{Name = "Bristles", Mesh = "WitchBroom__Bristles", Color = {236, 188, 88}, Material = "Fabric", Transparency = 0, Center = {0, 3.85, 0.0149}, Size = {1.5411, 1.8, 1.2702}},
+		{Name = "Binding", Mesh = "WitchBroom__Binding", Color = {130, 56, 200}, Material = "Fabric", Transparency = 0, Center = {0, 3.18, 0}, Size = {0.86, 0.52, 0.7224}},
+		{Name = "Bow", Mesh = "WitchBroom__Bow", Color = {255, 128, 28}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 2.8956, 0.2839}, Size = {0.7215, 0.5688, 0.1078}},
+	}},
+	{Id = "PhoenixBlade", Rarity = "Mythic", Top = 5.24, Bottom = -1.13, Fx = {-0.135, 5, 0}, Parts = {
+		{Name = "Blade", Mesh = "PhoenixBlade__Blade", Color = {204, 32, 44}, Material = "Metal", Transparency = 0, Center = {-0.0298, 2.06, 0.015}, Size = {2.7879, 6.36, 0.32}},
+		{Name = "Flame", Mesh = "PhoenixBlade__Flame", Color = {255, 112, 20}, Material = "Neon", Transparency = 0, Center = {-0.0303, 2.0551, 0.015}, Size = {2.805, 6.3698, 0.344}},
+		{Name = "Core", Mesh = "PhoenixBlade__Core", Color = {255, 226, 110}, Material = "Neon", Transparency = 0, Center = {-0.0521, 2.5192, 0}, Size = {1.808, 3.9617, 0.64}},
+		{Name = "Gold", Mesh = "PhoenixBlade__Gold", Color = {255, 194, 60}, Material = "Metal", Transparency = 0, Center = {-0.0144, 1.7308, 0}, Size = {0.7451, 5.1816, 0.42}},
+		{Name = "Grip", Mesh = "PhoenixBlade__Grip", Color = {112, 24, 34}, Material = "Fabric", Transparency = 0, Center = {0.0001, -0.1, -0.0002}, Size = {0.3337, 1.2, 0.3002}},
+	}},
+	{Id = "StarfallBlade", Rarity = "Mythic", Top = 5.26, Bottom = -1.09, Fx = {0, 5, 0}, Parts = {
+		{Name = "Blade", Mesh = "StarfallBlade__Blade", Color = {30, 26, 84}, Material = "Metal", Transparency = 0, Center = {0, 3.05, 0}, Size = {0.86, 4.42, 0.28}},
+		{Name = "Edge", Mesh = "StarfallBlade__Edge", Color = {86, 224, 255}, Material = "Neon", Transparency = 0, Center = {0, 2.0856, 0}, Size = {2.32, 6.3488, 0.154}},
+		{Name = "Stars", Mesh = "StarfallBlade__Stars", Color = {255, 246, 196}, Material = "Neon", Transparency = 0, Center = {-0.06, 2.75, 0}, Size = {1.94, 4.62, 0.62}},
+		{Name = "Gold", Mesh = "StarfallBlade__Gold", Color = {255, 200, 64}, Material = "Metal", Transparency = 0, Center = {0, 1.4125, 0.1078}, Size = {2.7578, 4.9418, 0.7357}},
+		{Name = "Grip", Mesh = "StarfallBlade__Grip", Color = {26, 30, 86}, Material = "Fabric", Transparency = 0, Center = {0, -0.08, 0}, Size = {0.3, 1.2, 0.27}},
+		{Name = "Planet", Mesh = "StarfallBlade__Planet", Color = {168, 104, 255}, Material = "SmoothPlastic", Transparency = 0, Center = {0.88, 3.7, 0.12}, Size = {0.4, 0.4, 0.4}},
+	}},
+	{Id = "ButterKnife", Rarity = "Common", Top = 3, Bottom = -0.8, Fx = nil, Parts = {
+		{Name = "Blade", Mesh = "ButterKnife__Blade", Color = {214, 220, 232}, Material = "Metal", Transparency = 0, Center = {0.025, 1.7, 0}, Size = {0.53, 2.6, 0.238}},
+		{Name = "Grip", Mesh = "ButterKnife__Grip", Color = {246, 232, 204}, Material = "SmoothPlastic", Transparency = 0, Center = {0, -0.2, 0}, Size = {0.38, 1.2, 0.2694}},
+		{Name = "Butter", Mesh = "ButterKnife__Butter", Color = {255, 222, 96}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 2.42, 0.12}, Size = {0.3788, 0.3277, 0.18}},
+	}},
+	{Id = "IronDagger", Rarity = "Common", Top = 3.02, Bottom = -0.91, Fx = nil, Parts = {
+		{Name = "Blade", Mesh = "IronDagger__Blade", Color = {200, 206, 218}, Material = "Metal", Transparency = 0, Center = {0, 1.76, 0}, Size = {0.6, 2.52, 0.2}},
+		{Name = "Hilt", Mesh = "IronDagger__Hilt", Color = {84, 90, 110}, Material = "Metal", Transparency = 0, Center = {0, -0.185, 0}, Size = {1.04, 1.45, 0.36}},
+		{Name = "Grip", Mesh = "IronDagger__Grip", Color = {112, 66, 38}, Material = "Fabric", Transparency = 0, Center = {-0.0001, -0.11, 0.0003}, Size = {0.3196, 0.94, 0.2874}},
+	}},
+	{Id = "Stiletto", Rarity = "Common", Top = 3.2, Bottom = -0.97, Fx = nil, Parts = {
+		{Name = "Blade", Mesh = "Stiletto__Blade", Color = {226, 232, 242}, Material = "Metal", Transparency = 0, Center = {0, 1.8, 0}, Size = {0.2121, 2.8, 0.2121}},
+		{Name = "Guard", Mesh = "Stiletto__Guard", Color = {242, 188, 56}, Material = "Metal", Transparency = 0, Center = {0, -0.22, 0}, Size = {1.38, 1.5, 0.2954}},
+		{Name = "Grip", Mesh = "Stiletto__Grip", Color = {32, 34, 46}, Material = "SmoothPlastic", Transparency = 0, Center = {0, -0.165, 0}, Size = {0.3, 0.99, 0.3}},
+	}},
+	{Id = "Screwdriver", Rarity = "Common", Top = 3.12, Bottom = -0.8, Fx = nil, Parts = {
+		{Name = "Shank", Mesh = "Screwdriver__Shank", Color = {214, 220, 232}, Material = "Metal", Transparency = 0, Center = {0, 1.76, 0}, Size = {0.3, 2.72, 0.2}},
+		{Name = "Grip", Mesh = "Screwdriver__Grip", Color = {226, 46, 44}, Material = "SmoothPlastic", Transparency = 0, Center = {0, -0.15, 0}, Size = {0.636, 1.26, 0.636}},
+		{Name = "Stripes", Mesh = "Screwdriver__Stripes", Color = {30, 30, 36}, Material = "SmoothPlastic", Transparency = 0, Center = {0, -0.36, 0}, Size = {0.69, 0.88, 0.69}},
+	}},
+	{Id = "Fork", Rarity = "Common", Top = 3.5, Bottom = -0.84, Fx = nil, Parts = {
+		{Name = "Fork", Mesh = "Fork__Fork", Color = {214, 220, 232}, Material = "Metal", Transparency = 0, Center = {0, 1.33, 0}, Size = {0.9844, 4.34, 0.12}},
+	}},
+	{Id = "Kunai", Rarity = "Uncommon", Top = 3.02, Bottom = -1.86, Fx = nil, Parts = {
+		{Name = "Blade", Mesh = "Kunai__Blade", Color = {62, 68, 84}, Material = "Metal", Transparency = 0, Center = {0, 0.794, 0}, Size = {0.92, 4.452, 0.23}},
+		{Name = "Wrap", Mesh = "Kunai__Wrap", Color = {244, 244, 248}, Material = "Fabric", Transparency = 0, Center = {0, -0.19, -0.0001}, Size = {0.2899, 1.22, 0.2753}},
+		{Name = "Ribbon", Mesh = "Kunai__Ribbon", Color = {224, 44, 46}, Material = "Fabric", Transparency = 0, Center = {0.0042, -1.5671, 0.0012}, Size = {0.4791, 0.5943, 0.1273}},
+	}},
+	{Id = "Sai", Rarity = "Uncommon", Top = 3.32, Bottom = -0.92, Fx = nil, Parts = {
+		{Name = "Prongs", Mesh = "Sai__Prongs", Color = {196, 204, 220}, Material = "Metal", Transparency = 0, Center = {0, 1.85, 0}, Size = {1.5395, 2.94, 0.2033}},
+		{Name = "Wrap", Mesh = "Sai__Wrap", Color = {214, 40, 42}, Material = "Fabric", Transparency = 0, Center = {0, -0.19, -0.0002}, Size = {0.3098, 1.02, 0.3097}},
+		{Name = "Trim", Mesh = "Sai__Trim", Color = {242, 188, 56}, Material = "Metal", Transparency = 0, Center = {0, -0.21, 0}, Size = {0.36, 1.42, 0.36}},
+	}},
+	{Id = "Carrot", Rarity = "Uncommon", Top = 3.36, Bottom = -1.49, Fx = nil, Parts = {
+		{Name = "Carrot", Mesh = "Carrot__Carrot", Color = {255, 138, 30}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 1.76, 0}, Size = {0.98, 3.2, 0.9651}},
+		{Name = "Rings", Mesh = "Carrot__Rings", Color = {226, 102, 16}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 1.79, 0}, Size = {0.9457, 2.08, 0.9313}},
+		{Name = "Leaves", Mesh = "Carrot__Leaves", Color = {72, 182, 62}, Material = "SmoothPlastic", Transparency = 0, Center = {0.0089, -0.5863, 0.009}, Size = {0.6427, 1.8114, 0.5642}},
+	}},
+	{Id = "StraightRazor", Rarity = "Rare", Top = 2.96, Bottom = -1.04, Fx = nil, Parts = {
+		{Name = "Blade", Mesh = "StraightRazor__Blade", Color = {220, 226, 238}, Material = "Metal", Transparency = 0, Center = {0.167, 1.6928, 0}, Size = {0.8689, 2.5307, 0.11}},
+		{Name = "Spine", Mesh = "StraightRazor__Spine", Color = {150, 160, 182}, Material = "Metal", Transparency = 0, Center = {-0.1153, 1.4953, 0}, Size = {0.3295, 2.5695, 0.17}},
+		{Name = "Scales", Mesh = "StraightRazor__Scales", Color = {246, 240, 226}, Material = "SmoothPlastic", Transparency = 0, Center = {-0.0081, -0.2789, 0}, Size = {0.4437, 1.5311, 0.26}},
+		{Name = "Pins", Mesh = "StraightRazor__Pins", Color = {244, 190, 56}, Material = "Metal", Transparency = 0, Center = {0, -0.28, 0}, Size = {0.15, 1.31, 0.35}},
+	}},
+	{Id = "Karambit", Rarity = "Rare", Top = 2.9, Bottom = -1.3, Fx = nil, Parts = {
+		{Name = "Blade", Mesh = "Karambit__Blade", Color = {62, 68, 84}, Material = "Metal", Transparency = 0, Center = {0.4365, 0.7975, 0}, Size = {1.563, 4.205, 0.2}},
+		{Name = "Grip", Mesh = "Karambit__Grip", Color = {220, 46, 44}, Material = "SmoothPlastic", Transparency = 0, Center = {-0.0119, -0.1419, 0}, Size = {0.5363, 1.1133, 0.26}},
+		{Name = "Bolts", Mesh = "Karambit__Bolts", Color = {214, 220, 232}, Material = "Metal", Transparency = 0, Center = {0, -0.12, 0}, Size = {0.13, 0.6036, 0.34}},
+	}},
+	{Id = "Icicle", Rarity = "Rare", Top = 3.44, Bottom = -1, Fx = nil, Parts = {
+		{Name = "Ice", Mesh = "Icicle__Ice", Color = {186, 232, 255}, Material = "Glass", Transparency = 0.15, Center = {0, 1.22, 0}, Size = {1.008, 4.44, 0.6938}},
+		{Name = "Guard", Mesh = "Icicle__Guard", Color = {60, 140, 232}, Material = "Metal", Transparency = 0, Center = {0, -0.12, 0}, Size = {1.08, 1.28, 0.6864}},
+		{Name = "Grip", Mesh = "Icicle__Grip", Color = {244, 248, 252}, Material = "Fabric", Transparency = 0, Center = {-0.0001, -0.17, -0.0001}, Size = {0.3098, 0.98, 0.2942}},
+	}},
+	{Id = "FrostFang", Rarity = "Epic", Top = 3.2, Bottom = -0.98, Fx = {-0.5, 3, 0}, Parts = {
+		{Name = "Ice", Mesh = "FrostFang__Ice", Color = {186, 232, 255}, Material = "Glass", Transparency = 0.2, Center = {-0.065, 1.11, 0}, Size = {1.1099, 4.18, 0.4926}},
+		{Name = "Core", Mesh = "FrostFang__Core", Color = {226, 250, 255}, Material = "Neon", Transparency = 0, Center = {-0.1363, 0.9726, 0}, Size = {0.6796, 3.6873, 0.1792}},
+		{Name = "Guard", Mesh = "FrostFang__Guard", Color = {56, 132, 232}, Material = "Metal", Transparency = 0, Center = {0, 0.2277, 0}, Size = {1.6282, 1.2955, 0.34}},
+		{Name = "Grip", Mesh = "FrostFang__Grip", Color = {244, 248, 252}, Material = "Fabric", Transparency = 0, Center = {-0.0002, -0.17, -0.0001}, Size = {0.3096, 0.94, 0.2943}},
+	}},
+	{Id = "ToxicFang", Rarity = "Epic", Top = 3.12, Bottom = -1.03, Fx = {-0.426, 2.737, 0}, Parts = {
+		{Name = "Blade", Mesh = "ToxicFang__Blade", Color = {54, 58, 66}, Material = "Metal", Transparency = 0, Center = {-0.06, 1.7764, 0}, Size = {1.0399, 2.6871, 0.4398}},
+		{Name = "Venom", Mesh = "ToxicFang__Venom", Color = {120, 255, 64}, Material = "Neon", Transparency = 0, Center = {0.1057, 0.8361, 0}, Size = {1.1212, 3.7421, 0.4945}},
+		{Name = "Guard", Mesh = "ToxicFang__Guard", Color = {46, 112, 50}, Material = "Metal", Transparency = 0, Center = {0, 0.19, 0}, Size = {1.2993, 1.86, 0.34}},
+		{Name = "Grip", Mesh = "ToxicFang__Grip", Color = {28, 28, 34}, Material = "Fabric", Transparency = 0, Center = {-0.0001, -0.18, -0.0001}, Size = {0.3097, 0.96, 0.2943}},
+	}},
+	{Id = "EmberKnife", Rarity = "Epic", Top = 3.08, Bottom = -0.99, Fx = {0, 2.95, 0}, Parts = {
+		{Name = "Blade", Mesh = "EmberKnife__Blade", Color = {50, 36, 34}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 1.77, 0}, Size = {0.55, 2.62, 0.22}},
+		{Name = "Ember", Mesh = "EmberKnife__Ember", Color = {255, 120, 26}, Material = "Neon", Transparency = 0, Center = {0, 1.0437, 0}, Size = {0.68, 4.0727, 0.26}},
+		{Name = "Guard", Mesh = "EmberKnife__Guard", Color = {64, 56, 58}, Material = "Metal", Transparency = 0, Center = {0, 0.183, 0}, Size = {1.5, 1.846, 0.34}},
+		{Name = "Grip", Mesh = "EmberKnife__Grip", Color = {40, 28, 26}, Material = "Fabric", Transparency = 0, Center = {-0.0002, -0.17, -0.0001}, Size = {0.3096, 0.94, 0.2943}},
 	}},
 	{Id = "FolkFang", Rarity = "Legendary", Top = 3.88, Bottom = -0.98, Fx = {-0.4, 3.74, 0}, Parts = {
 		{Name = "Fang", Mesh = "FolkFang__Fang", Color = {255, 196, 52}, Material = "Metal", Transparency = 0, Center = {0, 1.54, 0}, Size = {1.1719, 4.68, 0.4431}},
@@ -56,12 +253,191 @@ local WEAPONS = {
 		{Name = "Gem", Mesh = "FolkFang__Gem", Color = {255, 40, 72}, Material = "Neon", Transparency = 0, Center = {0, -0.13, 0}, Size = {0.408, 1.7, 0.5}},
 		{Name = "Grip", Mesh = "FolkFang__Grip", Color = {32, 42, 104}, Material = "Fabric", Transparency = 0, Center = {0.0004, -0.14, -0.0001}, Size = {0.3232, 0.88, 0.2912}},
 	}},
+	{Id = "StarShard", Rarity = "Legendary", Top = 3.78, Bottom = -1.1, Fx = {0, 0.86, 0}, Parts = {
+		{Name = "Shard", Mesh = "StarShard__Shard", Color = {255, 204, 56}, Material = "Metal", Transparency = 0, Center = {0, 1.52, 0}, Size = {0.92, 4.52, 0.414}},
+		{Name = "Light", Mesh = "StarShard__Light", Color = {255, 252, 230}, Material = "Neon", Transparency = 0, Center = {0, 1.66, 0}, Size = {1.48, 3.08, 0.5}},
+		{Name = "Stars", Mesh = "StarShard__Stars", Color = {255, 236, 120}, Material = "Neon", Transparency = 0, Center = {0.0006, 1.0573, 0.01}, Size = {2.1768, 4.3106, 0.28}},
+		{Name = "Grip", Mesh = "StarShard__Grip", Color = {28, 40, 106}, Material = "Fabric", Transparency = 0, Center = {-0.0001, -0.15, -0.0001}, Size = {0.3098, 0.98, 0.2942}},
+	}},
+	{Id = "CandyCornDagger", Rarity = "Limited", Top = 3.24, Bottom = -0.92, Fx = {0, 3.1, 0}, Parts = {
+		{Name = "Base", Mesh = "CandyCornDagger__Base", Color = {255, 208, 52}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 0.94, 0}, Size = {1.23, 1.08, 0.4}},
+		{Name = "Mid", Mesh = "CandyCornDagger__Mid", Color = {255, 134, 30}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 1.94, 0}, Size = {0.9338, 1.17, 0.4}},
+		{Name = "Tip", Mesh = "CandyCornDagger__Tip", Color = {250, 248, 240}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 1.16, 0}, Size = {0.52, 4.16, 0.36}},
+		{Name = "Ribbon", Mesh = "CandyCornDagger__Ribbon", Color = {140, 62, 206}, Material = "SmoothPlastic", Transparency = 0, Center = {0, -0.1409, 0.0696}, Size = {0.6933, 1.5018, 0.4232}},
+	}},
+	{Id = "VampireFang", Rarity = "Limited", Top = 3.02, Bottom = -0.92, Fx = {-0.414, 2.834, 0}, Parts = {
+		{Name = "Fang", Mesh = "VampireFang__Fang", Color = {250, 246, 236}, Material = "SmoothPlastic", Transparency = 0, Center = {-0.065, 1.7177, 0}, Size = {0.83, 2.6046, 0.385}},
+		{Name = "Wings", Mesh = "VampireFang__Wings", Color = {44, 30, 60}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 0.0426, 0}, Size = {2.3018, 1.927, 0.3545}},
+		{Name = "Gem", Mesh = "VampireFang__Gem", Color = {196, 92, 255}, Material = "Neon", Transparency = 0, Center = {0, 0.42, 0}, Size = {0.28, 0.28, 0.54}},
+		{Name = "Grip", Mesh = "VampireFang__Grip", Color = {88, 40, 132}, Material = "Fabric", Transparency = 0, Center = {-0.0001, -0.18, 0.0001}, Size = {0.3097, 0.88, 0.2942}},
+	}},
+	{Id = "SpiderStinger", Rarity = "Limited", Top = 3.2, Bottom = -0.97, Fx = {0, 3.05, 0}, Parts = {
+		{Name = "Needle", Mesh = "SpiderStinger__Needle", Color = {40, 40, 48}, Material = "Metal", Transparency = 0, Center = {0, 1.84, 0}, Size = {0.3464, 2.72, 0.24}},
+		{Name = "Venom", Mesh = "SpiderStinger__Venom", Color = {190, 90, 255}, Material = "Neon", Transparency = 0, Center = {0, 0.8875, 0}, Size = {0.2688, 3.725, 0.2757}},
+		{Name = "Spider", Mesh = "SpiderStinger__Spider", Color = {36, 34, 44}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 0.352, 0.0655}, Size = {1.7182, 1.076, 0.709}},
+		{Name = "Eyes", Mesh = "SpiderStinger__Eyes", Color = {250, 250, 250}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 0.75, 0.27}, Size = {0.39, 0.21, 0.21}},
+		{Name = "Grip", Mesh = "SpiderStinger__Grip", Color = {128, 56, 196}, Material = "Fabric", Transparency = 0, Center = {0, -0.24, 0.0002}, Size = {0.3097, 0.84, 0.294}},
+	}},
+	{Id = "UnicornHorn", Rarity = "Mythic", Top = 3.88, Bottom = -0.99, Fx = {0, 3.75, 0}, Parts = {
+		{Name = "Horn", Mesh = "UnicornHorn__Horn", Color = {250, 242, 255}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 2.2, 0}, Size = {0.792, 3.28, 0.7369}},
+		{Name = "Glow", Mesh = "UnicornHorn__Glow", Color = {255, 118, 206}, Material = "Neon", Transparency = 0, Center = {-0.1, 1.3319, 0}, Size = {1.54, 4.465, 0.82}},
+		{Name = "Sparkle", Mesh = "UnicornHorn__Sparkle", Color = {120, 236, 255}, Material = "Neon", Transparency = 0, Center = {0.16, 2.645, 0.0121}, Size = {1.48, 2.47, 0.1858}},
+		{Name = "Gold", Mesh = "UnicornHorn__Gold", Color = {255, 204, 70}, Material = "Metal", Transparency = 0, Center = {0, -0.0661, 0}, Size = {0.79, 1.8522, 0.79}},
+		{Name = "Wings", Mesh = "UnicornHorn__Wings", Color = {255, 255, 255}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 0.8937, 0}, Size = {2.2228, 1.0178, 0.18}},
+		{Name = "Grip", Mesh = "UnicornHorn__Grip", Color = {184, 148, 255}, Material = "Fabric", Transparency = 0, Center = {-0.0001, -0.12, -0.0001}, Size = {0.3198, 1.08, 0.3037}},
+	}},
+	{Id = "Moonfang", Rarity = "Mythic", Top = 3.86, Bottom = -0.95, Fx = {-0.418, 3.75, 0}, Parts = {
+		{Name = "Blade", Mesh = "Moonfang__Blade", Color = {214, 222, 242}, Material = "Metal", Transparency = 0, Center = {-0.0744, 1.4533, 0}, Size = {0.8287, 4.8133, 0.32}},
+		{Name = "Moonlight", Mesh = "Moonfang__Moonlight", Color = {124, 200, 255}, Material = "Neon", Transparency = 0, Center = {-0.035, 2.28, -0.005}, Size = {1.93, 3.16, 0.16}},
+		{Name = "Gem", Mesh = "Moonfang__Gem", Color = {178, 110, 255}, Material = "Neon", Transparency = 0, Center = {-0.08, 1.39, 0}, Size = {1.66, 4.54, 0.5}},
+		{Name = "Moon", Mesh = "Moonfang__Moon", Color = {232, 236, 246}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 0.9035, 0}, Size = {1.595, 1.2829, 0.32}},
+		{Name = "Craters", Mesh = "Moonfang__Craters", Color = {172, 180, 204}, Material = "SmoothPlastic", Transparency = 0, Center = {0.0057, 0.7265, 0}, Size = {1.425, 0.6327, 0.354}},
+		{Name = "Grip", Mesh = "Moonfang__Grip", Color = {30, 36, 104}, Material = "Fabric", Transparency = 0, Center = {-0.0002, -0.15, 0}, Size = {0.3195, 1.02, 0.3038}},
+	}},
+	{Id = "Mallet", Rarity = "Common", Top = 2.98, Bottom = -0.8, Fx = nil, Parts = {
+		{Name = "Head", Mesh = "Mallet__Head", Color = {206, 146, 80}, Material = "Wood", Transparency = 0, Center = {0, 2.4, 0}, Size = {1.52, 1.13, 1.13}},
+		{Name = "Bands", Mesh = "Mallet__Bands", Color = {126, 80, 40}, Material = "Wood", Transparency = 0, Center = {0, 1.0925, 0}, Size = {1.26, 3.785, 1.17}},
+		{Name = "Shaft", Mesh = "Mallet__Shaft", Color = {176, 118, 62}, Material = "Wood", Transparency = 0, Center = {0, 1.325, 0}, Size = {0.2808, 1.55, 0.2808}},
+		{Name = "Grip", Mesh = "Mallet__Grip", Color = {98, 60, 28}, Material = "Fabric", Transparency = 0, Center = {0, -0.03, -0.0001}, Size = {0.3638, 1.26, 0.3637}},
+	}},
+	{Id = "Gavel", Rarity = "Common", Top = 2.83, Bottom = -0.82, Fx = nil, Parts = {
+		{Name = "Head", Mesh = "Gavel__Head", Color = {142, 88, 44}, Material = "Wood", Transparency = 0, Center = {0, 2.4, 0}, Size = {1.44, 0.84, 0.84}},
+		{Name = "Bands", Mesh = "Gavel__Bands", Color = {242, 188, 56}, Material = "Metal", Transparency = 0, Center = {0, 1.0075, 0}, Size = {1.37, 3.655, 0.87}},
+		{Name = "Shaft", Mesh = "Gavel__Shaft", Color = {112, 68, 34}, Material = "Wood", Transparency = 0, Center = {0, 1.375, 0}, Size = {0.29, 1.65, 0.29}},
+		{Name = "Grip", Mesh = "Gavel__Grip", Color = {62, 38, 22}, Material = "Fabric", Transparency = 0, Center = {0.0001, -0.04, -0.0001}, Size = {0.3398, 1.24, 0.3398}},
+	}},
+	{Id = "FryingPan", Rarity = "Common", Top = 3.74, Bottom = -0.8, Fx = nil, Parts = {
+		{Name = "Pan", Mesh = "FryingPan__Pan", Color = {48, 48, 56}, Material = "Metal", Transparency = 0, Center = {0, 1.4925, -0.005}, Size = {2, 4.495, 0.27}},
+		{Name = "Egg", Mesh = "FryingPan__Egg", Color = {250, 250, 246}, Material = "SmoothPlastic", Transparency = 0, Center = {0.0578, 2.75, -0.035}, Size = {1.0044, 0.9, 0.06}},
+		{Name = "Yolk", Mesh = "FryingPan__Yolk", Color = {255, 196, 36}, Material = "SmoothPlastic", Transparency = 0, Center = {0.08, 2.8, -0.02}, Size = {0.3939, 0.4, 0.2167}},
+		{Name = "Grip", Mesh = "FryingPan__Grip", Color = {112, 70, 36}, Material = "Wood", Transparency = 0, Center = {0, -0.07, 0}, Size = {0.36, 1.46, 0.27}},
+	}},
+	{Id = "Plunger", Rarity = "Common", Top = 3.12, Bottom = -0.8, Fx = nil, Parts = {
+		{Name = "Cup", Mesh = "Plunger__Cup", Color = {198, 52, 44}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 2.5, 0}, Size = {1.7864, 1.24, 1.7864}},
+		{Name = "Shaft", Mesh = "Plunger__Shaft", Color = {226, 170, 94}, Material = "Wood", Transparency = 0, Center = {0, 1.225, 0}, Size = {0.24, 1.65, 0.24}},
+		{Name = "Grip", Mesh = "Plunger__Grip", Color = {64, 40, 30}, Material = "SmoothPlastic", Transparency = 0, Center = {0, -0.18, 0}, Size = {0.36, 1.24, 0.36}},
+	}},
+	{Id = "SqueakyHammer", Rarity = "Uncommon", Top = 2.86, Bottom = -0.86, Fx = nil, Parts = {
+		{Name = "Head", Mesh = "SqueakyHammer__Head", Color = {232, 42, 40}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 2.3, 0}, Size = {1.28, 1, 1}},
+		{Name = "Caps", Mesh = "SqueakyHammer__Caps", Color = {255, 206, 46}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 1.58, 0}, Size = {1.78, 2.56, 1.12}},
+		{Name = "Grip", Mesh = "SqueakyHammer__Grip", Color = {52, 140, 250}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 0.57, 0}, Size = {0.44, 2.86, 0.4333}},
+	}},
+	{Id = "Sledgehammer", Rarity = "Uncommon", Top = 4.38, Bottom = -1.16, Fx = nil, Parts = {
+		{Name = "Head", Mesh = "Sledgehammer__Head", Color = {146, 154, 172}, Material = "Metal", Transparency = 0, Center = {0, 3.8, 0}, Size = {2, 1.1, 1.06}},
+		{Name = "Faces", Mesh = "Sledgehammer__Faces", Color = {214, 220, 232}, Material = "Metal", Transparency = 0, Center = {0, 3.8, 0}, Size = {2.3, 0.88, 0.88}},
+		{Name = "Collar", Mesh = "Sledgehammer__Collar", Color = {70, 76, 94}, Material = "Metal", Transparency = 0, Center = {0, 3.6575, 0}, Size = {0.52, 1.435, 1.11}},
+		{Name = "Shaft", Mesh = "Sledgehammer__Shaft", Color = {176, 118, 62}, Material = "Wood", Transparency = 0, Center = {0, 1.47, 0}, Size = {0.32, 3.74, 0.272}},
+		{Name = "Grip", Mesh = "Sledgehammer__Grip", Color = {40, 40, 48}, Material = "SmoothPlastic", Transparency = 0, Center = {0, -0.44, 0}, Size = {0.41, 1.44, 0.3485}},
+	}},
+	{Id = "MeatTenderizer", Rarity = "Uncommon", Top = 2.82, Bottom = -1, Fx = nil, Parts = {
+		{Name = "Head", Mesh = "MeatTenderizer__Head", Color = {220, 226, 238}, Material = "Metal", Transparency = 0, Center = {0, 0.9075, 0}, Size = {1.2, 3.825, 0.88}},
+		{Name = "Studs", Mesh = "MeatTenderizer__Studs", Color = {150, 160, 182}, Material = "Metal", Transparency = 0, Center = {0, 2.38, 0}, Size = {1.48, 0.77, 0.77}},
+		{Name = "Shaft", Mesh = "MeatTenderizer__Shaft", Color = {200, 140, 76}, Material = "Wood", Transparency = 0, Center = {0, 1.215, 0}, Size = {0.28, 1.53, 0.28}},
+		{Name = "Grip", Mesh = "MeatTenderizer__Grip", Color = {138, 90, 44}, Material = "Fabric", Transparency = 0, Center = {0, -0.08, -0.0002}, Size = {0.3598, 1.16, 0.3597}},
+	}},
+	{Id = "StopSign", Rarity = "Uncommon", Top = 3.82, Bottom = -1.06, Fx = nil, Parts = {
+		{Name = "Sign", Mesh = "StopSign__Sign", Color = {224, 26, 32}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 2.9, 0}, Size = {1.8478, 1.8478, 0.14}},
+		{Name = "Letters", Mesh = "StopSign__Letters", Color = {250, 250, 250}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 2.9, 0}, Size = {1.6999, 1.6999, 0.18}},
+		{Name = "Pole", Mesh = "StopSign__Pole", Color = {176, 184, 198}, Material = "Metal", Transparency = 0, Center = {0, 0.57, 0}, Size = {0.3, 3.18, 0.28}},
+		{Name = "Grip", Mesh = "StopSign__Grip", Color = {32, 32, 38}, Material = "SmoothPlastic", Transparency = 0, Center = {0, -0.29, 0}, Size = {0.36, 1.54, 0.36}},
+	}},
+	{Id = "WarHammer", Rarity = "Rare", Top = 5.12, Bottom = -1.37, Fx = nil, Parts = {
+		{Name = "Head", Mesh = "WarHammer__Head", Color = {62, 70, 92}, Material = "Metal", Transparency = 0, Center = {-0.38, 3.395, 0}, Size = {2.36, 2.03, 1.06}},
+		{Name = "Trim", Mesh = "WarHammer__Trim", Color = {255, 198, 56}, Material = "Metal", Transparency = 0, Center = {0.32, 1.875, 0}, Size = {1.76, 6.49, 1.18}},
+		{Name = "Gem", Mesh = "WarHammer__Gem", Color = {236, 34, 66}, Material = "Glass", Transparency = 0.12, Center = {0, 3.8, 0}, Size = {0.34, 0.34, 1.3}},
+		{Name = "Shaft", Mesh = "WarHammer__Shaft", Color = {120, 74, 38}, Material = "Wood", Transparency = 0, Center = {0, 1.87, 0}, Size = {0.31, 3.06, 0.31}},
+		{Name = "Grip", Mesh = "WarHammer__Grip", Color = {142, 90, 44}, Material = "Fabric", Transparency = 0, Center = {0.0002, -0.3, 0}, Size = {0.3877, 1.36, 0.3878}},
+	}},
+	{Id = "Lollipop", Rarity = "Rare", Top = 3.72, Bottom = -0.75, Fx = nil, Parts = {
+		{Name = "Candy", Mesh = "Lollipop__Candy", Color = {255, 118, 168}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 1.5313, 0}, Size = {2, 4.3775, 0.42}},
+		{Name = "Swirl", Mesh = "Lollipop__Swirl", Color = {252, 250, 252}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 2.7904, 0}, Size = {1.7099, 1.4267, 0.494}},
+		{Name = "Stick", Mesh = "Lollipop__Stick", Color = {246, 244, 248}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 0.685, 0}, Size = {0.25, 2.87, 0.25}},
+		{Name = "Bow", Mesh = "Lollipop__Bow", Color = {255, 202, 64}, Material = "Metal", Transparency = 0, Center = {0, 1.3513, 0}, Size = {1.1762, 0.7562, 0.32}},
+	}},
+	{Id = "AnvilHammer", Rarity = "Rare", Top = 4.46, Bottom = -1.15, Fx = nil, Parts = {
+		{Name = "Anvil", Mesh = "AnvilHammer__Anvil", Color = {58, 64, 82}, Material = "Metal", Transparency = 0, Center = {0.25, 1.6337, 0}, Size = {2.7, 5.5674, 0.96}},
+		{Name = "Top", Mesh = "AnvilHammer__Top", Color = {188, 196, 212}, Material = "Metal", Transparency = 0, Center = {-0.13, 4.425, 0}, Size = {1.72, 0.07, 0.78}},
+		{Name = "Rivets", Mesh = "AnvilHammer__Rivets", Color = {242, 186, 56}, Material = "Metal", Transparency = 0, Center = {-0.12, 1.7775, 0}, Size = {1.51, 2.995, 1.026}},
+		{Name = "Shaft", Mesh = "AnvilHammer__Shaft", Color = {120, 76, 38}, Material = "Wood", Transparency = 0, Center = {0, 1.6, 0}, Size = {0.31, 2.6, 0.31}},
+		{Name = "Grip", Mesh = "AnvilHammer__Grip", Color = {44, 44, 54}, Material = "Fabric", Transparency = 0, Center = {0.0002, -0.35, 0}, Size = {0.4037, 1.34, 0.4038}},
+	}},
+	{Id = "GoldMallet", Rarity = "Rare", Top = 2.98, Bottom = -0.8, Fx = nil, Parts = {
+		{Name = "Head", Mesh = "GoldMallet__Head", Color = {255, 204, 62}, Material = "Metal", Transparency = 0, Center = {0, 1.0525, 0}, Size = {1.6, 3.705, 1.09}},
+		{Name = "Bands", Mesh = "GoldMallet__Bands", Color = {216, 148, 20}, Material = "Metal", Transparency = 0, Center = {0, 1.6525, 0}, Size = {1.84, 2.585, 1.17}},
+		{Name = "Caps", Mesh = "GoldMallet__Caps", Color = {255, 238, 156}, Material = "Metal", Transparency = 0, Center = {0, 2.36, 0}, Size = {1.76, 0.94, 0.94}},
+		{Name = "Gems", Mesh = "GoldMallet__Gems", Color = {236, 30, 66}, Material = "Glass", Transparency = 0.12, Center = {0, 2.6075, 0}, Size = {0.24, 0.735, 1.23}},
+		{Name = "Shaft", Mesh = "GoldMallet__Shaft", Color = {246, 246, 250}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 1.16, 0}, Size = {0.25, 1.56, 0.25}},
+		{Name = "Grip", Mesh = "GoldMallet__Grip", Color = {184, 30, 44}, Material = "Fabric", Transparency = 0, Center = {-0.0002, -0.15, -0.0001}, Size = {0.3497, 1.1, 0.3498}},
+	}},
+	{Id = "MagmaMaul", Rarity = "Epic", Top = 4.94, Bottom = -1.4, Fx = {0, 3.86, 0}, Parts = {
+		{Name = "Obsidian", Mesh = "MagmaMaul__Obsidian", Color = {46, 32, 40}, Material = "Metal", Transparency = 0, Center = {0, 1.772, 0}, Size = {2.08, 6.344, 1.36}},
+		{Name = "Lava", Mesh = "MagmaMaul__Lava", Color = {255, 98, 18}, Material = "Neon", Transparency = 0, Center = {0, 2.5025, 0}, Size = {2.18, 4.285, 1.41}},
+		{Name = "Core", Mesh = "MagmaMaul__Core", Color = {255, 216, 92}, Material = "Neon", Transparency = 0, Center = {0, 1.365, 0}, Size = {2.3432, 5.49, 1.434}},
+		{Name = "Grip", Mesh = "MagmaMaul__Grip", Color = {58, 40, 38}, Material = "Fabric", Transparency = 0, Center = {0.0001, -0.31, 0.0001}, Size = {0.4038, 1.38, 0.4038}},
+	}},
+	{Id = "IceMallet", Rarity = "Epic", Top = 2.88, Bottom = -0.98, Fx = {0, 2.24, 0}, Parts = {
+		{Name = "Ice", Mesh = "IceMallet__Ice", Color = {178, 228, 255}, Material = "Glass", Transparency = 0.35, Center = {0, 0.88, 0}, Size = {1.68, 3.72, 0.97}},
+		{Name = "Core", Mesh = "IceMallet__Core", Color = {226, 250, 255}, Material = "Neon", Transparency = 0, Center = {0, 2.24, 0}, Size = {0.5994, 0.68, 0.077}},
+		{Name = "Snow", Mesh = "IceMallet__Snow", Color = {250, 252, 255}, Material = "SmoothPlastic", Transparency = 0, Center = {-0.0159, 2.0875, -0.0085}, Size = {1.7063, 1.575, 0.917}},
+		{Name = "Shaft", Mesh = "IceMallet__Shaft", Color = {58, 142, 236}, Material = "Metal", Transparency = 0, Center = {0, 0.55, 0}, Size = {0.34, 2.58, 0.3315}},
+		{Name = "Grip", Mesh = "IceMallet__Grip", Color = {238, 244, 252}, Material = "Fabric", Transparency = 0, Center = {-0.0001, -0.16, -0.0001}, Size = {0.3497, 1.12, 0.3497}},
+	}},
+	{Id = "CrystalMaul", Rarity = "Epic", Top = 5.52, Bottom = -1.22, Fx = {0, 3.86, 0}, Parts = {
+		{Name = "Crystals", Mesh = "CrystalMaul__Crystals", Color = {172, 116, 255}, Material = "Glass", Transparency = 0.3, Center = {0, 2.15, -0.0032}, Size = {2.739, 6.74, 1.3657}},
+		{Name = "Heart", Mesh = "CrystalMaul__Heart", Color = {240, 136, 255}, Material = "Neon", Transparency = 0, Center = {0, 4.3754, 0}, Size = {2.2901, 1.7291, 0.76}},
+		{Name = "Cradle", Mesh = "CrystalMaul__Cradle", Color = {78, 82, 104}, Material = "Metal", Transparency = 0, Center = {0, 1.58, 0}, Size = {0.8869, 5.24, 0.8869}},
+		{Name = "Shaft", Mesh = "CrystalMaul__Shaft", Color = {56, 34, 92}, Material = "Metal", Transparency = 0, Center = {0, 1.805, 0}, Size = {0.31, 3.01, 0.3022}},
+		{Name = "Grip", Mesh = "CrystalMaul__Grip", Color = {38, 22, 64}, Material = "Fabric", Transparency = 0, Center = {0.0001, -0.35, -0.0001}, Size = {0.4038, 1.3, 0.4038}},
+	}},
 	{Id = "ThunderHammer", Rarity = "Legendary", Top = 6.42, Bottom = -1.22, Fx = {0, 4.36, 0}, Parts = {
 		{Name = "Head", Mesh = "ThunderHammer__Head", Color = {255, 200, 56}, Material = "Metal", Transparency = 0, Center = {0, 1.965, 0}, Size = {2.2, 5.97, 1.12}},
 		{Name = "Trim", Mesh = "ThunderHammer__Trim", Color = {46, 92, 210}, Material = "Metal", Transparency = 0, Center = {0, 2.135, 0}, Size = {2.62, 5.51, 1}},
 		{Name = "Bolt", Mesh = "ThunderHammer__Bolt", Color = {70, 224, 255}, Material = "Neon", Transparency = 0, Center = {0, 2.3523, 0}, Size = {4.0602, 7.1495, 1.23}},
 		{Name = "Wings", Mesh = "ThunderHammer__Wings", Color = {248, 250, 255}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 5.5836, 0}, Size = {3.0538, 1.6649, 0.19}},
 		{Name = "Grip", Mesh = "ThunderHammer__Grip", Color = {246, 246, 250}, Material = "Fabric", Transparency = 0, Center = {0.0001, 0, -0.0001}, Size = {0.3938, 1.28, 0.3938}},
+	}},
+	{Id = "StarHammer", Rarity = "Legendary", Top = 6, Bottom = -1.34, Fx = {0, 4.4, 0}, Parts = {
+		{Name = "Star", Mesh = "StarHammer__Star", Color = {255, 200, 48}, Material = "Metal", Transparency = 0, Center = {0.188, 2.3286, -0.3991}, Size = {3.8068, 7.3427, 2.8197}},
+		{Name = "Glow", Mesh = "StarHammer__Glow", Color = {255, 242, 150}, Material = "Neon", Transparency = 0, Center = {0, 4.51, 0}, Size = {3.8277, 2.76, 3.645}},
+		{Name = "Shaft", Mesh = "StarHammer__Shaft", Color = {44, 92, 220}, Material = "Metal", Transparency = 0, Center = {0, 1.88, 0}, Size = {0.33, 3.04, 0.33}},
+		{Name = "Grip", Mesh = "StarHammer__Grip", Color = {246, 246, 250}, Material = "Fabric", Transparency = 0, Center = {0.0001, -0.3, 0}, Size = {0.3837, 1.36, 0.3838}},
+	}},
+	{Id = "PumpkinSmasher", Rarity = "Limited", Top = 3.66, Bottom = -0.93, Fx = {0, 2.56, 0}, Parts = {
+		{Name = "Pumpkin", Mesh = "PumpkinSmasher__Pumpkin", Color = {255, 132, 26}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 1.1843, -0.0027}, Size = {2, 4.2197, 1.9946}},
+		{Name = "Face", Mesh = "PumpkinSmasher__Face", Color = {255, 214, 58}, Material = "Neon", Transparency = 0, Center = {0, 2.52, 0.0104}, Size = {1.12, 0.82, 1.7844}},
+		{Name = "Stem", Mesh = "PumpkinSmasher__Stem", Color = {78, 176, 52}, Material = "SmoothPlastic", Transparency = 0, Center = {-0.0956, 3.3679, 0.0787}, Size = {0.7943, 0.5842, 0.8005}},
+		{Name = "Shaft", Mesh = "PumpkinSmasher__Shaft", Color = {110, 70, 36}, Material = "Wood", Transparency = 0, Center = {0, 1.17, 0}, Size = {0.27, 1.58, 0.2632}},
+		{Name = "Grip", Mesh = "PumpkinSmasher__Grip", Color = {124, 52, 190}, Material = "Fabric", Transparency = 0, Center = {-0.0002, -0.15, -0.0001}, Size = {0.3497, 1.1, 0.3498}},
+	}},
+	{Id = "CauldronMaul", Rarity = "Limited", Top = 4.88, Bottom = -1.15, Fx = {0, 4.38, 0}, Parts = {
+		{Name = "Pot", Mesh = "CauldronMaul__Pot", Color = {42, 42, 54}, Material = "Metal", Transparency = 0, Center = {0, 3.62, 0}, Size = {2.04, 1.4, 2}},
+		{Name = "Brew", Mesh = "CauldronMaul__Brew", Color = {112, 255, 64}, Material = "Neon", Transparency = 0, Center = {0.0061, 4.2198, 0.1505}, Size = {1.6974, 1.3205, 1.901}},
+		{Name = "Rim", Mesh = "CauldronMaul__Rim", Color = {142, 58, 222}, Material = "Metal", Transparency = 0, Center = {0, 1.637, 0}, Size = {2.52, 5.5739, 2}},
+		{Name = "Shaft", Mesh = "CauldronMaul__Shaft", Color = {86, 56, 32}, Material = "Wood", Transparency = 0, Center = {0, 1.71, 0}, Size = {0.31, 2.82, 0.3022}},
+		{Name = "Grip", Mesh = "CauldronMaul__Grip", Color = {122, 46, 196}, Material = "Fabric", Transparency = 0, Center = {-0.0001, -0.35, -0.0001}, Size = {0.4038, 1.3, 0.384}},
+	}},
+	{Id = "TombstoneHammer", Rarity = "Limited", Top = 5.01, Bottom = -1.17, Fx = {0, 4.1, 0}, Parts = {
+		{Name = "Stone", Mesh = "TombstoneHammer__Stone", Color = {152, 158, 176}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 1.8834, 0}, Size = {1.72, 6.1067, 0.56}},
+		{Name = "Carving", Mesh = "TombstoneHammer__Carving", Color = {70, 74, 92}, Material = "SmoothPlastic", Transparency = 0, Center = {0, 2.46, 0}, Size = {1.96, 4.4, 0.76}},
+		{Name = "Moss", Mesh = "TombstoneHammer__Moss", Color = {112, 214, 72}, Material = "SmoothPlastic", Transparency = 0, Center = {-0.0305, 4.08, 0}, Size = {1.8801, 1.86, 0.6334}},
+		{Name = "Shaft", Mesh = "TombstoneHammer__Shaft", Color = {80, 52, 30}, Material = "Wood", Transparency = 0, Center = {0, 1.65, 0}, Size = {0.31, 2.7, 0.3022}},
+		{Name = "Grip", Mesh = "TombstoneHammer__Grip", Color = {112, 48, 172}, Material = "Fabric", Transparency = 0, Center = {-0.0001, -0.35, -0.0001}, Size = {0.4038, 1.3, 0.384}},
+	}},
+	{Id = "MeteorSmash", Rarity = "Mythic", Top = 6.42, Bottom = -1.32, Fx = {0, 5.3, 0}, Parts = {
+		{Name = "Rock", Mesh = "MeteorSmash__Rock", Color = {46, 40, 74}, Material = "Metal", Transparency = 0, Center = {0.2752, 5.3727, 0.0003}, Size = {2.3262, 2.0749, 1.6393}},
+		{Name = "Fire", Mesh = "MeteorSmash__Fire", Color = {70, 206, 255}, Material = "Neon", Transparency = 0, Center = {-0.535, 4.9946, -0.0119}, Size = {3.63, 2.8557, 1.6433}},
+		{Name = "Core", Mesh = "MeteorSmash__Core", Color = {226, 248, 255}, Material = "Neon", Transparency = 0, Center = {-0.235, 2.5156, -0.0055}, Size = {3.03, 7.6788, 0.7265}},
+		{Name = "Gold", Mesh = "MeteorSmash__Gold", Color = {255, 196, 60}, Material = "Metal", Transparency = 0, Center = {0.0042, 1.9982, 0.0058}, Size = {1.3231, 6.6164, 1.294}},
+		{Name = "Shaft", Mesh = "MeteorSmash__Shaft", Color = {62, 66, 90}, Material = "Metal", Transparency = 0, Center = {0, 2.2984, 0}, Size = {0.35, 3.8368, 0.3412}},
+		{Name = "Grip", Mesh = "MeteorSmash__Grip", Color = {36, 46, 116}, Material = "Fabric", Transparency = 0, Center = {0.0001, -0.31, 0.0001}, Size = {0.4038, 1.38, 0.4038}},
+	}},
+	{Id = "KrakenAnchor", Rarity = "Mythic", Top = 6.37, Bottom = -1.36, Fx = {0, 6.05, 0}, Parts = {
+		{Name = "Anchor", Mesh = "KrakenAnchor__Anchor", Color = {232, 180, 64}, Material = "Metal", Transparency = 0, Center = {0, 2.5025, 0}, Size = {3.8381, 7.735, 1.38}},
+		{Name = "Runes", Mesh = "KrakenAnchor__Runes", Color = {64, 255, 196}, Material = "Neon", Transparency = 0, Center = {0, 5.3691, 0}, Size = {3.5429, 1.8619, 0.7271}},
+		{Name = "Tentacle", Mesh = "KrakenAnchor__Tentacle", Color = {126, 58, 186}, Material = "SmoothPlastic", Transparency = 0, Center = {0.3706, 3.6753, 0.0166}, Size = {1.8043, 5.2506, 1.0985}},
+		{Name = "Suckers", Mesh = "KrakenAnchor__Suckers", Color = {255, 116, 206}, Material = "Neon", Transparency = 0, Center = {0.3567, 3.7826, 0.036}, Size = {1.7538, 4.9372, 1.0111}},
+		{Name = "Barnacles", Mesh = "KrakenAnchor__Barnacles", Color = {240, 232, 214}, Material = "SmoothPlastic", Transparency = 0, Center = {0.173, 5.7712, 0.0139}, Size = {2.5412, 1.1677, 0.5904}},
+		{Name = "Grip", Mesh = "KrakenAnchor__Grip", Color = {196, 160, 108}, Material = "Fabric", Transparency = 0, Center = {0, -0.14, 0.0001}, Size = {0.5099, 1.12, 0.5097}},
 	}},
 }
 
@@ -182,12 +558,17 @@ end
 
 folder.Parent = ServerStorage
 
--- 3. tidy up: marker cubes and the now-empty imported model
-for _, name in ipairs({"FV_AxisO", "FV_AxisX", "FV_AxisY", "FV_AxisZ"}) do
-	containers[meshes[name].Parent] = true
-	meshes[name]:Destroy()
+-- 3. tidy up: every marker cube (from every import of the file) and the now-empty imported model
+for _, root in ipairs({workspace, ServerStorage, game:GetService("ReplicatedStorage")}) do
+	for _, d in ipairs(root:GetDescendants()) do
+		if d:IsA("BasePart") and d.Name:match("^FV_Axis[OXYZ]$") then
+			containers[d.Parent] = true
+			d:Destroy()
+		end
+	end
 end
-for c in pairs(containers) do
+for container in pairs(containers) do
+	local c = container
 	while c and c ~= game and c ~= workspace and c.Parent and not c:IsA("Folder") do
 		local hasParts = false
 		for _, d in ipairs(c:GetDescendants()) do

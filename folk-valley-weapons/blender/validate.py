@@ -25,7 +25,7 @@ import wlib  # noqa: E402
 
 args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else sys.argv[1:]
 OPTS = dict(a[2:].split("=", 1) if "=" in a else (a[2:], "1") for a in args if a.startswith("--"))
-IDS = OPTS["ids"].split(",") if "ids" in OPTS else list(defs.WEAPONS)
+IDS = OPTS["ids"].split(",") if "ids" in OPTS else list(defs.ORDER)
 
 RANGES = {"Sword": (4.7, 6.4), "Dagger": (3.7, 4.9), "Hammer": (3.6, 7.8)}
 MATERIALS = {"SmoothPlastic", "Metal", "Neon", "Glass", "Wood", "Fabric"}

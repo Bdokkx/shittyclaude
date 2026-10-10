@@ -1,11 +1,12 @@
 """Presentation renders for review:
   hero/<Id>.png      3/4 view of each weapon
   hand/<Id>.png      held by a blocky R6 avatar (5 studs tall) for scale
-  phone.png          all of them 60 studs from a Roblox-style camera (70 deg FOV),
-                     framed like a phone screen, plus a zoomed crop
-and composed sheets (sheet_hero.png, sheet_hand.png, sheet_phone.png).
+  phone_<class>.png  a whole class 60 studs from a Roblox-style camera (70 deg FOV),
+                     framed like a phone screen
+and composed sheets per class (swords, daggers, hammers) plus one for the Mythics:
+  sheet_<group>_hero.png, sheet_<group>_hand.png, sheet_<group>_phone.png
 
-    python blender/present.py <out_dir> [--ids=A,B] [--samples=48]
+    python blender/present.py <out_dir> [--ids=A,B] [--samples=48] [--only=hero,hand,phone,sheets]
 """
 import math
 import os
@@ -24,15 +25,21 @@ import wlib  # noqa: E402
 args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else sys.argv[1:]
 OUT = os.path.abspath(args[0])
 OPTS = dict(a[2:].split("=", 1) if "=" in a else (a[2:], "1") for a in args[1:] if a.startswith("--"))
-IDS = OPTS["ids"].split(",") if "ids" in OPTS else list(defs.WEAPONS)
+IDS = OPTS["ids"].split(",") if "ids" in OPTS else list(defs.ORDER)
 SAMPLES = int(OPTS.get("samples", 48))
-ONLY = set(OPTS.get("only", "hero,hand,phone").split(","))
+ONLY = set(OPTS.get("only", "hero,hand,phone,sheets").split(","))
 for d in ("hero", "hand"):
     os.makedirs(os.path.join(OUT, d), exist_ok=True)
 
 RARITY_COLORS = {"Common": (170, 176, 186), "Uncommon": (92, 200, 92), "Rare": (70, 140, 255),
                  "Epic": (178, 92, 255), "Legendary": (255, 176, 40), "Limited": (255, 120, 30),
                  "Mythic": (255, 70, 120)}
+GROUPS = [("swords", "Swords", lambda r, k: k == "Sword"), ("daggers", "Daggers", lambda r, k: k == "Dagger"),
+          ("hammers", "Hammers", lambda r, k: k == "Hammer"), ("mythics", "Mythics", lambda r, k: r == "Mythic")]
+
+
+def group_ids(test):
+    return [w for w in IDS if test(*defs.WEAPONS[w][:2])]
 
 
 def rb(x, y, z):
@@ -86,19 +93,20 @@ rs.setup_world(scene)
 rs.setup_render(scene, 700, 1000, samples=SAMPLES, transparent=True)
 
 built = {}
-for wid in IDS:
-    rarity, kind, fn = defs.WEAPONS[wid]
-    w = wlib.Weapon(wid, rarity, kind)
-    fn(w)
-    coll = bpy.data.collections.new(wid)
-    scene.collection.children.link(coll)
-    objs, info = w.build(coll)
-    built[wid] = (coll, objs, info)
+if ONLY & {"hero", "hand", "phone"}:
+    for wid in IDS:
+        rarity, kind, fn = defs.WEAPONS[wid]
+        w = wlib.Weapon(wid, rarity, kind)
+        fn(w)
+        coll = bpy.data.collections.new(wid)
+        scene.collection.children.link(coll)
+        objs, info = w.build(coll)
+        built[wid] = (coll, objs, info)
 
 
-def only(wid):
+def only(wids):
     for other, (coll, objs, info) in built.items():
-        coll.hide_render = other != wid
+        coll.hide_render = other not in wids
 
 
 def move(wid, pos_rb):
@@ -114,7 +122,7 @@ cam = rs.add_camera(scene, (0, -30, 0), (0, 0, 0), ortho=8)
 if "hero" in ONLY:
     yaw, pitch = math.radians(34), math.radians(12)
     for wid in IDS:
-        only(wid)
+        only({wid})
         coll, objs, info = built[wid]
         lo, hi = rs.bounds(objs)
         c = (lo + hi) / 2
@@ -133,15 +141,16 @@ if "hand" in ONLY:
     cam.data.type = "PERSP"
     cam.data.lens = 50
     for wid in IDS:
-        only(wid)
+        only({wid})
         move(wid, grip)
-        target = rb(0.7, 4.3, -0.6)
-        rs.look_at(cam, rb(-9.5, 7.0, -17.0), target)
+        rs.look_at(cam, rb(-9.5, 7.0, -17.0), rb(0.7, 4.3, -0.6))
         rs.render(scene, os.path.join(OUT, "hand", wid + ".png"))
         move(wid, (0, 0, 0))
+    for ob in list(av.objects):
+        bpy.data.objects.remove(ob)
     bpy.data.collections.remove(av)
 
-# ---------------------------------------------------------------- phone distance test
+# ---------------------------------------------------------------- phone distance test, one class at a time
 if "phone" in ONLY:
     scene.render.film_transparent = False
     scene.render.resolution_x, scene.render.resolution_y = 2532, 1170
@@ -163,83 +172,102 @@ if "phone" in ONLY:
     bg = scene.world.node_tree.nodes["Background"]
     bg.inputs[0].default_value = (0.42, 0.66, 1.0, 1)
     bg.inputs[1].default_value = 1.0
-    av = bpy.data.collections.new("Avatars")
-    scene.collection.children.link(av)
-    n = len(IDS)
-    spacing = 8.0
-    for i, wid in enumerate(IDS):
-        x = -(i - (n - 1) / 2) * spacing      # +X shows on the left from this camera
-        g = r6(av, at=(x, 0, 0))
-        move(wid, g)
-    for coll, objs, info in built.values():
-        coll.hide_render = False
     cam.data.type = "PERSP"
     cam.data.sensor_fit = "VERTICAL"
     cam.data.angle_y = math.radians(70)
-    rs.look_at(cam, rb(0, 9, -60), rb(0, 3.0, 0))
-    rs.render(scene, os.path.join(OUT, "phone.png"))
+    for key, title, test in GROUPS[:3]:
+        wids = group_ids(test)
+        if not wids:
+            continue
+        av = bpy.data.collections.new("Avatars")
+        scene.collection.children.link(av)
+        n = len(wids)
+        spacing = 7.0
+        for i, wid in enumerate(wids):
+            x = -(i - (n - 1) / 2) * spacing      # +X shows on the left from this camera
+            g = r6(av, at=(x, 0, 0))
+            move(wid, g)
+        only(set(wids))
+        rs.look_at(cam, rb(0, 9, -60), rb(0, 3.0, 0))
+        rs.render(scene, os.path.join(OUT, "phone_%s.png" % key))
+        for wid in wids:
+            move(wid, (0, 0, 0))
+        for ob in list(av.objects):
+            bpy.data.objects.remove(ob)
+        bpy.data.collections.remove(av)
 
 # ---------------------------------------------------------------- sheets
-from PIL import Image, ImageDraw, ImageFont  # noqa: E402
+if "sheets" in ONLY:
+    from PIL import Image, ImageDraw, ImageFont
 
-FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-FONT2 = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+    FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+    FONT2 = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
 
+    def gradient(w, h, top=(118, 146, 190), bottom=(70, 92, 130)):
+        col = Image.new("RGB", (1, h))
+        px = col.load()
+        for y in range(h):
+            t = y / max(h - 1, 1)
+            px[0, y] = tuple(int(top[i] + (bottom[i] - top[i]) * t) for i in range(3))
+        return col.resize((w, h))
 
-def gradient(w, h, top=(118, 146, 190), bottom=(70, 92, 130)):
-    im = Image.new("RGB", (w, h))
-    px = im.load()
-    for y in range(h):
-        t = y / max(h - 1, 1)
-        c = tuple(int(top[i] + (bottom[i] - top[i]) * t) for i in range(3))
-        for x in range(w):
-            px[x, y] = c
-    return im
+    def label(draw, x, y, w, name, rarity, size=30):
+        f = ImageFont.truetype(FONT, size)
+        f2 = ImageFont.truetype(FONT2, int(size * 0.62))
+        while draw.textlength(name, font=f) > w - 16 and size > 16:
+            size -= 2
+            f = ImageFont.truetype(FONT, size)
+        tw = draw.textlength(name, font=f)
+        draw.text((x + (w - tw) / 2, y), name, font=f, fill=(255, 255, 255))
+        rc = RARITY_COLORS.get(rarity, (200, 200, 200))
+        rw = draw.textlength(rarity.upper(), font=f2) + 24
+        cy = y + 38
+        draw.rounded_rectangle((x + (w - rw) / 2, cy, x + (w + rw) / 2, cy + 26), radius=10, fill=rc)
+        draw.text((x + (w - rw) / 2 + 12, cy + 2), rarity.upper(), font=f2, fill=(20, 22, 30))
 
+    def sheet(folder, wids, name, title, tile_w, tile_h, cols=6, crop=None, label_h=80):
+        rows = (len(wids) + cols - 1) // cols
+        head = 80
+        W, H = tile_w * cols, head + rows * (tile_h + label_h)
+        im = gradient(W, H)
+        d = ImageDraw.Draw(im)
+        d.text((24, 18), title, font=ImageFont.truetype(FONT, 42), fill=(255, 255, 255))
+        for i, wid in enumerate(wids):
+            r, c = divmod(i, cols)
+            t = Image.open(os.path.join(OUT, folder, wid + ".png")).convert("RGBA")
+            if crop:
+                t = t.crop(crop)
+            t = t.resize((tile_w, int(t.height * tile_w / t.width)))
+            x0, y0 = c * tile_w, head + r * (tile_h + label_h)
+            im.paste(t, (x0, y0 + (tile_h - t.height) // 2), t)
+            label(d, x0, y0 + tile_h + 2, tile_w, defs.NAMES.get(wid, wid), defs.WEAPONS[wid][0])
+        im.save(os.path.join(OUT, name))
+        print("sheet", name, im.size)
 
-def label(draw, x, y, w, name, rarity, size=34):
-    f = ImageFont.truetype(FONT, size)
-    f2 = ImageFont.truetype(FONT2, int(size * 0.62))
-    tw = draw.textlength(name, font=f)
-    draw.text((x + (w - tw) / 2, y), name, font=f, fill=(255, 255, 255))
-    rc = RARITY_COLORS.get(rarity, (200, 200, 200))
-    rw = draw.textlength(rarity.upper(), font=f2) + 24
-    draw.rounded_rectangle((x + (w - rw) / 2, y + size + 8, x + (w + rw) / 2, y + size + 8 + size * 0.85),
-                           radius=10, fill=rc)
-    draw.text((x + (w - rw) / 2 + 12, y + size + 10), rarity.upper(), font=f2, fill=(20, 22, 30))
-
-
-def sheet(folder, name, tile_w, tile_h, label_h=110):
-    tiles = [Image.open(os.path.join(OUT, folder, wid + ".png")) for wid in IDS]
-    W = tile_w * len(tiles)
-    im = gradient(W, tile_h + label_h)
-    d = ImageDraw.Draw(im)
-    for i, (wid, t) in enumerate(zip(IDS, tiles)):
-        t = t.resize((tile_w, int(t.height * tile_w / t.width)))
-        im.paste(t, (i * tile_w, 0), t)
-        label(d, i * tile_w, tile_h + 6, tile_w, defs.NAMES.get(wid, wid), built[wid][2]["Rarity"])
-    im.save(os.path.join(OUT, name))
-
-
-if "hero" in ONLY:
-    sheet("hero", "sheet_hero.png", 420, 600)
-if "hand" in ONLY:
-    sheet("hand", "sheet_hand.png", 420, 552)
-if "phone" in ONLY:
-    ph = Image.open(os.path.join(OUT, "phone.png")).convert("RGB")
-    W, H = ph.size
-    # crop the middle third and enlarge 3x (nearest) to show what the pixels actually look like
-    cw, ch = int(W * 0.40), int(H * 0.25)
-    cx, cy = W // 2, int(H * 0.50)
-    crop = ph.crop((cx - cw // 2, cy - ch // 2, cx + cw // 2, cy + ch // 2))
-    big = crop.resize((crop.width * 3 // 2, crop.height * 3 // 2), Image.NEAREST)
-    small = ph.resize((big.width, int(H * big.width / W)))
-    out = Image.new("RGB", (big.width, small.height + big.height + 70), (24, 26, 34))
-    out.paste(small, (0, 0))
-    out.paste(big, (0, small.height + 70))
-    d = ImageDraw.Draw(out)
-    f = ImageFont.truetype(FONT, 30)
-    d.text((20, small.height + 18), "60 studs away on a phone (70 deg FOV): full screen above, middle enlarged below",
-           font=f, fill=(255, 255, 255))
-    out.save(os.path.join(OUT, "sheet_phone.png"))
+    for key, title, test in GROUPS:
+        wids = group_ids(test)
+        if not wids:
+            continue
+        if os.path.exists(os.path.join(OUT, "hero", wids[0] + ".png")):
+            sheet("hero", wids, "sheet_%s_hero.png" % key, "%s (%d)" % (title, len(wids)), 300, 430,
+                  cols=min(len(wids), 8))
+        if os.path.exists(os.path.join(OUT, "hand", wids[0] + ".png")):
+            sheet("hand", wids, "sheet_%s_hand.png" % key, "%s in hand" % title, 260, 342,
+                  cols=min(len(wids), 8))
+        ph = os.path.join(OUT, "phone_%s.png" % key)
+        if os.path.exists(ph):
+            img = Image.open(ph).convert("RGB")
+            W, H = img.size
+            cw, ch = int(W * 0.50), int(H * 0.30)
+            cx, cy = W // 2, int(H * 0.50)
+            crop = img.crop((cx - cw // 2, cy - ch // 2, cx + cw // 2, cy + ch // 2))
+            big = crop.resize((crop.width * 3 // 2, crop.height * 3 // 2), Image.NEAREST)
+            small = img.resize((big.width, int(H * big.width / W)))
+            out = Image.new("RGB", (big.width, small.height + big.height + 70), (24, 26, 34))
+            out.paste(small, (0, 0))
+            out.paste(big, (0, small.height + 70))
+            d = ImageDraw.Draw(out)
+            d.text((20, small.height + 18), "%s 60 studs away on a phone (70 deg FOV): full screen above, middle "
+                   "enlarged below" % title, font=ImageFont.truetype(FONT, 28), fill=(255, 255, 255))
+            out.save(os.path.join(OUT, "sheet_%s_phone.png" % key))
 print("done")

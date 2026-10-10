@@ -156,12 +156,17 @@ end
 
 folder.Parent = ServerStorage
 
--- 3. tidy up: marker cubes and the now-empty imported model
-for _, name in ipairs({"FV_AxisO", "FV_AxisX", "FV_AxisY", "FV_AxisZ"}) do
-	containers[meshes[name].Parent] = true
-	meshes[name]:Destroy()
+-- 3. tidy up: every marker cube (from every import of the file) and the now-empty imported model
+for _, root in ipairs({workspace, ServerStorage, game:GetService("ReplicatedStorage")}) do
+	for _, d in ipairs(root:GetDescendants()) do
+		if d:IsA("BasePart") and d.Name:match("^FV_Axis[OXYZ]$") then
+			containers[d.Parent] = true
+			d:Destroy()
+		end
+	end
 end
-for c in pairs(containers) do
+for container in pairs(containers) do
+	local c = container
 	while c and c ~= game and c ~= workspace and c.Parent and not c:IsA("Folder") do
 		local hasParts = false
 		for _, d in ipairs(c:GetDescendants()) do
