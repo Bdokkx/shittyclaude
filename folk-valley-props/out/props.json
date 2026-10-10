@@ -1,0 +1,4574 @@
+[
+ {
+  "Id": "Meteor",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Rock",
+    "Mesh": "Meteor__Rock",
+    "Color": [
+     62,
+     46,
+     44
+    ],
+    "Material": "Slate",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     5.5311,
+     5.6374,
+     6.0184
+    ],
+    "Center": [
+     0.0099,
+     0.0477,
+     0.1743
+    ],
+    "Tris": 1058
+   },
+   {
+    "Name": "Glow",
+    "Mesh": "Meteor__Glow",
+    "Color": [
+     255,
+     122,
+     26
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     5.32,
+     5.32,
+     5.32
+    ],
+    "Center": [
+     -0.0,
+     0.0,
+     -0.0
+    ],
+    "Tris": 840
+   }
+  ],
+  "Top": 2.8664,
+  "Bottom": -2.7709,
+  "Tris": 1898,
+  "Extents": {
+   "lo": [
+    -2.756,
+    -2.771,
+    -2.835
+   ],
+   "hi": [
+    2.775,
+    2.866,
+    3.184
+   ]
+  }
+ },
+ {
+  "Id": "Coin",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Rim",
+    "Mesh": "Coin__Rim",
+    "Color": [
+     255,
+     176,
+     0
+    ],
+    "Material": "Metal",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     2.0,
+     2.0,
+     0.31
+    ],
+    "Center": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Tris": 960
+   },
+   {
+    "Name": "Face",
+    "Mesh": "Coin__Face",
+    "Color": [
+     255,
+     222,
+     64
+    ],
+    "Material": "Metal",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.58,
+     1.58,
+     0.2
+    ],
+    "Center": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Tris": 192
+   },
+   {
+    "Name": "Star",
+    "Mesh": "Coin__Star",
+    "Color": [
+     255,
+     240,
+     138
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.9511,
+     0.9045,
+     0.37
+    ],
+    "Center": [
+     0.0,
+     0.0677,
+     0.0
+    ],
+    "Tris": 80
+   }
+  ],
+  "Top": 1.0,
+  "Bottom": -1.0,
+  "Tris": 1232,
+  "Extents": {
+   "lo": [
+    -1.0,
+    -1.0,
+    -0.185
+   ],
+   "hi": [
+    1.0,
+    1.0,
+    0.185
+   ]
+  }
+ },
+ {
+  "Id": "UFO",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Hull",
+    "Mesh": "UFO__Hull",
+    "Color": [
+     160,
+     168,
+     188
+    ],
+    "Material": "Metal",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     17.7,
+     2.12,
+     17.7
+    ],
+    "Center": [
+     0.0,
+     -0.86,
+     0.0
+    ],
+    "Tris": 1152
+   },
+   {
+    "Name": "Trim",
+    "Mesh": "UFO__Trim",
+    "Color": [
+     96,
+     102,
+     130
+    ],
+    "Material": "Metal",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     18.2,
+     1.48,
+     18.2
+    ],
+    "Center": [
+     0.0,
+     -0.28,
+     0.0
+    ],
+    "Tris": 880
+   },
+   {
+    "Name": "Dome",
+    "Mesh": "UFO__Dome",
+    "Color": [
+     124,
+     245,
+     255
+    ],
+    "Material": "Glass",
+    "Transparency": 0.35,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     7.1992,
+     4.1873,
+     7.1992
+    ],
+    "Center": [
+     0.0,
+     2.3464,
+     0.0
+    ],
+    "Tris": 960
+   },
+   {
+    "Name": "Lights",
+    "Mesh": "UFO__Lights",
+    "Color": [
+     255,
+     226,
+     46
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     18.3775,
+     0.69,
+     18.3775
+    ],
+    "Center": [
+     0.0,
+     -0.75,
+     0.0
+    ],
+    "Tris": 768
+   },
+   {
+    "Name": "Emitter",
+    "Mesh": "UFO__Emitter",
+    "Color": [
+     124,
+     245,
+     255
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     4.6,
+     0.18,
+     4.6
+    ],
+    "Center": [
+     0.0,
+     -1.89,
+     0.0
+    ],
+    "Tris": 320
+   },
+   {
+    "Name": "Alien",
+    "Mesh": "UFO__Alien",
+    "Color": [
+     124,
+     222,
+     86
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     2.6435,
+     3.69,
+     1.84
+    ],
+    "Center": [
+     0.1484,
+     2.095,
+     0.0
+    ],
+    "Tris": 1184
+   },
+   {
+    "Name": "AlienEyes",
+    "Mesh": "UFO__AlienEyes",
+    "Color": [
+     24,
+     24,
+     34
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.2309,
+     0.8955,
+     0.27
+    ],
+    "Center": [
+     0.0,
+     2.2478,
+     0.8
+    ],
+    "Tris": 640
+   }
+  ],
+  "Top": 4.44,
+  "Bottom": -1.98,
+  "Tris": 5904,
+  "Extents": {
+   "lo": [
+    -9.189,
+    -1.98,
+    -9.189
+   ],
+   "hi": [
+    9.189,
+    4.44,
+    9.189
+   ]
+  }
+ },
+ {
+  "Id": "Moon",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Moon",
+    "Mesh": "Moon__Moon",
+    "Color": [
+     242,
+     238,
+     220
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     10.0,
+     10.0,
+     10.031
+    ],
+    "Center": [
+     -0.0,
+     0.0,
+     -0.0155
+    ],
+    "Tris": 5120
+   },
+   {
+    "Name": "Craters",
+    "Mesh": "Moon__Craters",
+    "Color": [
+     196,
+     190,
+     164
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     9.393,
+     9.3306,
+     9.2983
+    ],
+    "Center": [
+     -0.0708,
+     0.0277,
+     -0.2638
+    ],
+    "Tris": 1344
+   },
+   {
+    "Name": "Stars",
+    "Mesh": "Moon__Stars",
+    "Color": [
+     255,
+     226,
+     46
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     15.6923,
+     16.8111,
+     0.44
+    ],
+    "Center": [
+     -0.2491,
+     0.6403,
+     0.6
+    ],
+    "Tris": 200
+   }
+  ],
+  "Top": 9.0459,
+  "Bottom": -7.7652,
+  "Tris": 6664,
+  "Extents": {
+   "lo": [
+    -8.095,
+    -7.765,
+    -5.031
+   ],
+   "hi": [
+    7.597,
+    9.046,
+    5.0
+   ]
+  }
+ },
+ {
+  "Id": "Bolt",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Bolt",
+    "Mesh": "Bolt__Bolt",
+    "Color": [
+     255,
+     226,
+     46
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     5.9074,
+     9.7644,
+     1.0
+    ],
+    "Center": [
+     0.0146,
+     0.0199,
+     0.0
+    ],
+    "Tris": 444
+   },
+   {
+    "Name": "Edge",
+    "Mesh": "Bolt__Edge",
+    "Color": [
+     255,
+     150,
+     30
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     6.9174,
+     10.8206,
+     0.62
+    ],
+    "Center": [
+     0.0667,
+     -0.1075,
+     0.0
+    ],
+    "Tris": 444
+   }
+  ],
+  "Top": 5.3028,
+  "Bottom": -5.5178,
+  "Tris": 888,
+  "Extents": {
+   "lo": [
+    -3.392,
+    -5.518,
+    -0.5
+   ],
+   "hi": [
+    3.525,
+    5.303,
+    0.5
+   ]
+  }
+ },
+ {
+  "Id": "CandyCorn",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Base",
+    "Mesh": "CandyCorn__Base",
+    "Color": [
+     255,
+     196,
+     40
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     2.3275,
+     0.98,
+     1.7223
+    ],
+    "Center": [
+     0.0,
+     0.49,
+     0.0
+    ],
+    "Tris": 640
+   },
+   {
+    "Name": "Mid",
+    "Mesh": "CandyCorn__Mid",
+    "Color": [
+     255,
+     128,
+     24
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.9959,
+     1.05,
+     1.4769
+    ],
+    "Center": [
+     0.0,
+     1.505,
+     0.0
+    ],
+    "Tris": 512
+   },
+   {
+    "Name": "Tip",
+    "Mesh": "CandyCorn__Tip",
+    "Color": [
+     255,
+     248,
+     234
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.109,
+     0.84,
+     0.8206
+    ],
+    "Center": [
+     0.0,
+     2.45,
+     0.0
+    ],
+    "Tris": 576
+   }
+  ],
+  "Top": 2.87,
+  "Bottom": 0.0,
+  "Tris": 1728,
+  "Extents": {
+   "lo": [
+    -1.164,
+    0.0,
+    -0.861
+   ],
+   "hi": [
+    1.164,
+    2.87,
+    0.861
+   ]
+  }
+ },
+ {
+  "Id": "Tornado",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Funnel",
+    "Mesh": "Tornado__Funnel",
+    "Color": [
+     201,
+     211,
+     224
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.3,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     17.3155,
+     24.0,
+     17.3826
+    ],
+    "Center": [
+     0.1723,
+     12.0,
+     0.1518
+    ],
+    "Tris": 2078
+   },
+   {
+    "Name": "Bands",
+    "Mesh": "Tornado__Bands",
+    "Color": [
+     255,
+     255,
+     255
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     15.114,
+     21.2314,
+     16.6505
+    ],
+    "Center": [
+     -0.6763,
+     12.5466,
+     -0.7064
+    ],
+    "Tris": 1680
+   },
+   {
+    "Name": "Debris",
+    "Mesh": "Tornado__Debris",
+    "Color": [
+     150,
+     98,
+     48
+    ],
+    "Material": "Wood",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     14.3862,
+     18.5877,
+     13.1919
+    ],
+    "Center": [
+     -1.5576,
+     13.293,
+     1.097
+    ],
+    "Tris": 440
+   },
+   {
+    "Name": "Leaves",
+    "Mesh": "Tornado__Leaves",
+    "Color": [
+     82,
+     194,
+     52
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     13.5867,
+     18.0073,
+     12.2053
+    ],
+    "Center": [
+     2.5108,
+     11.999,
+     -1.2479
+    ],
+    "Tris": 440
+   }
+  ],
+  "Top": 24.0,
+  "Bottom": 0.0,
+  "Tris": 4638,
+  "Extents": {
+   "lo": [
+    -8.751,
+    0.0,
+    -9.032
+   ],
+   "hi": [
+    9.304,
+    24.0,
+    8.843
+   ]
+  }
+ },
+ {
+  "Id": "IcePatch",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Ice",
+    "Mesh": "IcePatch__Ice",
+    "Color": [
+     191,
+     239,
+     255
+    ],
+    "Material": "Ice",
+    "Transparency": 0.15,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     13.46,
+     0.36,
+     13.0049
+    ],
+    "Center": [
+     0.124,
+     0.16,
+     -0.161
+    ],
+    "Tris": 1148
+   },
+   {
+    "Name": "Shine",
+    "Mesh": "IcePatch__Shine",
+    "Color": [
+     255,
+     255,
+     255
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     6.3829,
+     0.05,
+     5.8982
+    ],
+    "Center": [
+     -0.0867,
+     0.335,
+     -0.5426
+    ],
+    "Tris": 180
+   },
+   {
+    "Name": "Crystals",
+    "Mesh": "IcePatch__Crystals",
+    "Color": [
+     124,
+     245,
+     255
+    ],
+    "Material": "Glass",
+    "Transparency": 0.25,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     11.3161,
+     2.7732,
+     10.5111
+    ],
+    "Center": [
+     -0.3591,
+     1.3134,
+     0.1476
+    ],
+    "Tris": 288
+   }
+  ],
+  "Top": 2.7,
+  "Bottom": -0.0732,
+  "Tris": 1616,
+  "Extents": {
+   "lo": [
+    -6.606,
+    -0.073,
+    -6.664
+   ],
+   "hi": [
+    6.854,
+    2.7,
+    6.341
+   ]
+  }
+ },
+ {
+  "Id": "SnowCloud",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Cloud",
+    "Mesh": "SnowCloud__Cloud",
+    "Color": [
+     232,
+     238,
+     248
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     19.9,
+     8.156,
+     10.2
+    ],
+    "Center": [
+     0.05,
+     1.01,
+     -0.1
+    ],
+    "Tris": 3472
+   },
+   {
+    "Name": "Belly",
+    "Mesh": "SnowCloud__Belly",
+    "Color": [
+     176,
+     188,
+     210
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     15.09,
+     3.712,
+     6.9
+    ],
+    "Center": [
+     -0.835,
+     -2.244,
+     0.2
+    ],
+    "Tris": 1234
+   },
+   {
+    "Name": "Icicles",
+    "Mesh": "SnowCloud__Icicles",
+    "Color": [
+     191,
+     239,
+     255
+    ],
+    "Material": "Ice",
+    "Transparency": 0.1,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     14.1403,
+     5.093,
+     3.0238
+    ],
+    "Center": [
+     -0.2208,
+     -4.0465,
+     -0.1827
+    ],
+    "Tris": 504
+   }
+  ],
+  "Top": 5.088,
+  "Bottom": -6.593,
+  "Tris": 5210,
+  "Extents": {
+   "lo": [
+    -9.9,
+    -6.593,
+    -5.2
+   ],
+   "hi": [
+    10.0,
+    5.088,
+    5.0
+   ]
+  }
+ },
+ {
+  "Id": "FogCloud",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Puffs",
+    "Mesh": "FogCloud__Puffs",
+    "Color": [
+     230,
+     234,
+     240
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.5,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     20.425,
+     7.595,
+     11.455
+    ],
+    "Center": [
+     -0.1375,
+     3.1975,
+     0.0025
+    ],
+    "Tris": 2278
+   }
+  ],
+  "Top": 6.995,
+  "Bottom": -0.6,
+  "Tris": 2278,
+  "Extents": {
+   "lo": [
+    -10.35,
+    -0.6,
+    -5.725
+   ],
+   "hi": [
+    10.075,
+    6.995,
+    5.73
+   ]
+  }
+ },
+ {
+  "Id": "BananaPeel",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Peel",
+    "Mesh": "BananaPeel__Peel",
+    "Color": [
+     255,
+     222,
+     52
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     5.5477,
+     1.302,
+     5.054
+    ],
+    "Center": [
+     -0.1149,
+     0.62,
+     -0.0656
+    ],
+    "Tris": 976
+   },
+   {
+    "Name": "Inside",
+    "Mesh": "BananaPeel__Inside",
+    "Color": [
+     255,
+     246,
+     196
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     4.5297,
+     0.7541,
+     4.166
+    ],
+    "Center": [
+     -0.0995,
+     0.506,
+     -0.1128
+    ],
+    "Tris": 496
+   },
+   {
+    "Name": "Stem",
+    "Mesh": "BananaPeel__Stem",
+    "Color": [
+     107,
+     74,
+     30
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     5.8932,
+     1.2081,
+     5.3822
+    ],
+    "Center": [
+     -0.114,
+     0.8999,
+     -0.0595
+    ],
+    "Tris": 358
+   }
+  ],
+  "Top": 1.504,
+  "Bottom": -0.031,
+  "Tris": 1830,
+  "Extents": {
+   "lo": [
+    -3.061,
+    -0.031,
+    -2.751
+   ],
+   "hi": [
+    2.833,
+    1.504,
+    2.632
+   ]
+  }
+ },
+ {
+  "Id": "UFOBeam",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Beam",
+    "Mesh": "UFOBeam__Beam",
+    "Color": [
+     124,
+     245,
+     255
+    ],
+    "Material": "Neon",
+    "Transparency": 0.7,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     26.88,
+     34.0,
+     26.88
+    ],
+    "Center": [
+     0.0,
+     17.0,
+     0.0
+    ],
+    "Tris": 3672
+   }
+  ],
+  "Top": 34.0,
+  "Bottom": 0.0,
+  "Tris": 3672,
+  "Extents": {
+   "lo": [
+    -13.44,
+    0.0,
+    -13.44
+   ],
+   "hi": [
+    13.44,
+    34.0,
+    13.44
+   ]
+  }
+ },
+ {
+  "Id": "FxRing",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Ring",
+    "Mesh": "FxRing__Ring",
+    "Color": [
+     255,
+     255,
+     255
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     2.14,
+     0.12,
+     2.14
+    ],
+    "Center": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Tris": 768
+   }
+  ],
+  "Top": 0.06,
+  "Bottom": -0.06,
+  "Tris": 768,
+  "Extents": {
+   "lo": [
+    -1.07,
+    -0.06,
+    -1.07
+   ],
+   "hi": [
+    1.07,
+    0.06,
+    1.07
+   ]
+  }
+ },
+ {
+  "Id": "FxSpikes",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Spikes",
+    "Mesh": "FxSpikes__Spikes",
+    "Color": [
+     154,
+     160,
+     180
+    ],
+    "Material": "Slate",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.7782,
+     1.086,
+     1.1984
+    ],
+    "Center": [
+     -0.0401,
+     0.357,
+     -0.052
+    ],
+    "Tris": 220
+   }
+  ],
+  "Top": 0.9,
+  "Bottom": -0.186,
+  "Tris": 220,
+  "Extents": {
+   "lo": [
+    -0.929,
+    -0.186,
+    -0.651
+   ],
+   "hi": [
+    0.849,
+    0.9,
+    0.547
+   ]
+  }
+ },
+ {
+  "Id": "FxCrescent",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Arc",
+    "Mesh": "FxCrescent__Arc",
+    "Color": [
+     255,
+     255,
+     255
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.7659,
+     0.06,
+     0.5305
+    ],
+    "Center": [
+     -0.14,
+     0.0,
+     1.6347
+    ],
+    "Tris": 220
+   }
+  ],
+  "Top": 0.03,
+  "Bottom": -0.03,
+  "Tris": 220,
+  "Extents": {
+   "lo": [
+    -1.023,
+    -0.03,
+    1.369
+   ],
+   "hi": [
+    0.743,
+    0.03,
+    1.9
+   ]
+  }
+ },
+ {
+  "Id": "FxShard",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Shard",
+    "Mesh": "FxShard__Shard",
+    "Color": [
+     191,
+     239,
+     255
+    ],
+    "Material": "Glass",
+    "Transparency": 0.1,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.4537,
+     0.9945,
+     0.3933
+    ],
+    "Center": [
+     -0.0307,
+     0.1989,
+     0.0065
+    ],
+    "Tris": 36
+   }
+  ],
+  "Top": 0.6962,
+  "Bottom": -0.2984,
+  "Tris": 36,
+  "Extents": {
+   "lo": [
+    -0.258,
+    -0.298,
+    -0.19
+   ],
+   "hi": [
+    0.196,
+    0.696,
+    0.203
+   ]
+  }
+ },
+ {
+  "Id": "FxStar",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Star",
+    "Mesh": "FxStar__Star",
+    "Color": [
+     255,
+     226,
+     46
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.9511,
+     0.9045,
+     0.14
+    ],
+    "Center": [
+     0.0,
+     0.0977,
+     0.0
+    ],
+    "Tris": 40
+   }
+  ],
+  "Top": 0.55,
+  "Bottom": -0.3545,
+  "Tris": 40,
+  "Extents": {
+   "lo": [
+    -0.476,
+    -0.355,
+    -0.07
+   ],
+   "hi": [
+    0.476,
+    0.55,
+    0.07
+   ]
+  }
+ },
+ {
+  "Id": "SpookyCase",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Box",
+    "Mesh": "SpookyCase__Box",
+    "Color": [
+     112,
+     46,
+     200
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     2.12,
+     1.727,
+     1.32
+    ],
+    "Center": [
+     0.0,
+     0.8635,
+     0.0
+    ],
+    "Tris": 232
+   },
+   {
+    "Name": "Bands",
+    "Mesh": "SpookyCase__Bands",
+    "Color": [
+     255,
+     138,
+     31
+    ],
+    "Material": "Metal",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     2.18,
+     1.7703,
+     1.39
+    ],
+    "Center": [
+     0.0,
+     0.8751,
+     0.0
+    ],
+    "Tris": 548
+   },
+   {
+    "Name": "Face",
+    "Mesh": "SpookyCase__Face",
+    "Color": [
+     255,
+     226,
+     46
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.62,
+     0.7566,
+     0.195
+    ],
+    "Center": [
+     0.0,
+     0.6117,
+     0.7325
+    ],
+    "Tris": 136
+   },
+   {
+    "Name": "Lock",
+    "Mesh": "SpookyCase__Lock",
+    "Color": [
+     40,
+     40,
+     50
+    ],
+    "Material": "Metal",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.36,
+     0.545,
+     0.14
+    ],
+    "Center": [
+     0.0,
+     1.0225,
+     0.74
+    ],
+    "Tris": 260
+   }
+  ],
+  "Top": 1.7603,
+  "Bottom": -0.01,
+  "Tris": 1176,
+  "Extents": {
+   "lo": [
+    -1.09,
+    -0.01,
+    -0.695
+   ],
+   "hi": [
+    1.09,
+    1.76,
+    0.83
+   ]
+  }
+ },
+ {
+  "Id": "QuestMarker",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Pumpkin",
+    "Mesh": "QuestMarker__Pumpkin",
+    "Color": [
+     255,
+     138,
+     31
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.32,
+     0.9273,
+     1.154
+    ],
+    "Center": [
+     0.0,
+     -0.02,
+     0.0
+    ],
+    "Tris": 792
+   },
+   {
+    "Name": "Stem",
+    "Mesh": "QuestMarker__Stem",
+    "Color": [
+     82,
+     194,
+     52
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.4649,
+     0.4524,
+     0.3325
+    ],
+    "Center": [
+     -0.03,
+     0.5162,
+     0.0883
+    ],
+    "Tris": 328
+   },
+   {
+    "Name": "Face",
+    "Mesh": "QuestMarker__Face",
+    "Color": [
+     90,
+     40,
+     12
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.62,
+     0.4898,
+     0.1399
+    ],
+    "Center": [
+     0.0,
+     -0.0417,
+     0.5145
+    ],
+    "Tris": 340
+   }
+  ],
+  "Top": 0.7424,
+  "Bottom": -0.4836,
+  "Tris": 1460,
+  "Extents": {
+   "lo": [
+    -0.66,
+    -0.484,
+    -0.577
+   ],
+   "hi": [
+    0.66,
+    0.742,
+    0.584
+   ]
+  }
+ },
+ {
+  "Id": "Cauldron",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Pot",
+    "Mesh": "Cauldron__Pot",
+    "Color": [
+     38,
+     38,
+     48
+    ],
+    "Material": "Metal",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     3.2,
+     2.61,
+     3.1
+    ],
+    "Center": [
+     0.0,
+     1.225,
+     0.0
+    ],
+    "Tris": 2092
+   },
+   {
+    "Name": "Brew",
+    "Mesh": "Cauldron__Brew",
+    "Color": [
+     108,
+     255,
+     58
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     2.14,
+     0.88,
+     2.14
+    ],
+    "Center": [
+     0.0,
+     2.62,
+     0.0
+    ],
+    "Tris": 916
+   },
+   {
+    "Name": "Fire",
+    "Mesh": "Cauldron__Fire",
+    "Color": [
+     255,
+     138,
+     31
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.6513,
+     0.7929,
+     1.8755
+    ],
+    "Center": [
+     -0.1184,
+     0.3832,
+     -0.0317
+    ],
+    "Tris": 354
+   },
+   {
+    "Name": "Logs",
+    "Mesh": "Cauldron__Logs",
+    "Color": [
+     110,
+     70,
+     36
+    ],
+    "Material": "Wood",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.6839,
+     0.22,
+     1.6839
+    ],
+    "Center": [
+     -0.0,
+     0.06,
+     -0.0
+    ],
+    "Tris": 112
+   }
+  ],
+  "Top": 3.06,
+  "Bottom": -0.08,
+  "Tris": 3474,
+  "Extents": {
+   "lo": [
+    -1.6,
+    -0.08,
+    -1.55
+   ],
+   "hi": [
+    1.6,
+    3.06,
+    1.55
+   ]
+  }
+ },
+ {
+  "Id": "Crown",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Band",
+    "Mesh": "Crown__Band",
+    "Color": [
+     255,
+     196,
+     38
+    ],
+    "Material": "Metal",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.6065,
+     0.36,
+     1.6065
+    ],
+    "Center": [
+     0.0,
+     0.24,
+     0.0
+    ],
+    "Tris": 768
+   },
+   {
+    "Name": "Rim",
+    "Mesh": "Crown__Rim",
+    "Color": [
+     214,
+     148,
+     20
+    ],
+    "Material": "Metal",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.8,
+     0.4238,
+     1.8
+    ],
+    "Center": [
+     0.0,
+     0.2119,
+     0.0
+    ],
+    "Tris": 960
+   },
+   {
+    "Name": "Pearl",
+    "Mesh": "Crown__Pearl",
+    "Color": [
+     255,
+     240,
+     170
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.6869,
+     0.45,
+     1.6967
+    ],
+    "Center": [
+     0.0,
+     0.985,
+     0.0
+    ],
+    "Tris": 800
+   },
+   {
+    "Name": "Jewel",
+    "Mesh": "Crown__Jewel",
+    "Color": [
+     235,
+     60,
+     70
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.09,
+     0.2,
+     0.2
+    ],
+    "Center": [
+     0.845,
+     0.27,
+     0.0
+    ],
+    "Tris": 32
+   },
+   {
+    "Name": "Jewel",
+    "Mesh": "Crown__Jewel2",
+    "Color": [
+     70,
+     150,
+     255
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.2,
+     0.2,
+     0.09
+    ],
+    "Center": [
+     0.0,
+     0.27,
+     0.845
+    ],
+    "Tris": 32
+   },
+   {
+    "Name": "Jewel",
+    "Mesh": "Crown__Jewel3",
+    "Color": [
+     80,
+     220,
+     120
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.09,
+     0.2,
+     0.2
+    ],
+    "Center": [
+     -0.845,
+     0.27,
+     0.0
+    ],
+    "Tris": 32
+   },
+   {
+    "Name": "Jewel",
+    "Mesh": "Crown__Jewel4",
+    "Color": [
+     190,
+     90,
+     255
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.2,
+     0.2,
+     0.09
+    ],
+    "Center": [
+     0.0,
+     0.27,
+     -0.845
+    ],
+    "Tris": 32
+   },
+   {
+    "Name": "Point",
+    "Mesh": "Crown__Point",
+    "Color": [
+     255,
+     196,
+     38
+    ],
+    "Material": "Metal",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.6153,
+     0.5247,
+     1.6153
+    ],
+    "Center": [
+     0.0,
+     0.6823,
+     0.0
+    ],
+    "Tris": 1024
+   }
+  ],
+  "Top": 1.21,
+  "Bottom": 0.0,
+  "Tris": 3680,
+  "Extents": {
+   "lo": [
+    -0.9,
+    0.0,
+    -0.9
+   ],
+   "hi": [
+    0.9,
+    1.21,
+    0.9
+   ]
+  }
+ },
+ {
+  "Id": "Ladle",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Shaft",
+    "Mesh": "Ladle__Shaft",
+    "Color": [
+     124,
+     82,
+     46
+    ],
+    "Material": "Wood",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.24,
+     2.0103,
+     0.215
+    ],
+    "Center": [
+     0.0,
+     -0.5552,
+     0.0175
+    ],
+    "Tris": 424
+   },
+   {
+    "Name": "Cup",
+    "Mesh": "Ladle__Cup",
+    "Color": [
+     58,
+     60,
+     72
+    ],
+    "Material": "Metal",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.64,
+     0.3238,
+     0.64
+    ],
+    "Center": [
+     0.0,
+     -1.9381,
+     0.0
+    ],
+    "Tris": 624
+   },
+   {
+    "Name": "Brew",
+    "Mesh": "Ladle__Brew",
+    "Color": [
+     120,
+     235,
+     80
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.6141,
+     0.26,
+     0.56
+    ],
+    "Center": [
+     0.0271,
+     -1.95,
+     0.0
+    ],
+    "Tris": 192
+   }
+  ],
+  "Top": 0.45,
+  "Bottom": -2.1,
+  "Tris": 1240,
+  "Extents": {
+   "lo": [
+    -0.32,
+    -2.1,
+    -0.32
+   ],
+   "hi": [
+    0.334,
+    0.45,
+    0.32
+   ]
+  }
+ },
+ {
+  "Id": "NpcPumpkinHead",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Pumpkin",
+    "Mesh": "NpcPumpkinHead__Pumpkin",
+    "Color": [
+     255,
+     138,
+     31
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     3.42,
+     2.6949,
+     3.2526
+    ],
+    "Center": [
+     0.0,
+     0.7,
+     0.0
+    ],
+    "Tris": 1908
+   },
+   {
+    "Name": "Face",
+    "Mesh": "NpcPumpkinHead__Face",
+    "Color": [
+     255,
+     226,
+     46
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.45,
+     1.1455,
+     0.2892
+    ],
+    "Center": [
+     0.0,
+     0.7693,
+     1.3606
+    ],
+    "Tris": 584
+   }
+  ],
+  "Top": 2.0475,
+  "Bottom": -0.6475,
+  "Tris": 2492,
+  "Extents": {
+   "lo": [
+    -1.71,
+    -0.647,
+    -1.626
+   ],
+   "hi": [
+    1.71,
+    2.047,
+    1.626
+   ]
+  }
+ },
+ {
+  "Id": "NpcCrookedHat",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Hat",
+    "Mesh": "NpcCrookedHat__Hat",
+    "Color": [
+     34,
+     32,
+     42
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     3.1009,
+     1.7665,
+     3.1613
+    ],
+    "Center": [
+     0.1404,
+     2.4722,
+     0.0399
+    ],
+    "Tris": 1030
+   },
+   {
+    "Name": "Band",
+    "Mesh": "NpcCrookedHat__Band",
+    "Color": [
+     224,
+     106,
+     16
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     2.0211,
+     0.5953,
+     2.02
+    ],
+    "Center": [
+     0.0337,
+     2.1455,
+     0.0
+    ],
+    "Tris": 256
+   },
+   {
+    "Name": "Patch",
+    "Mesh": "NpcCrookedHat__Patch",
+    "Color": [
+     124,
+     52,
+     190
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.3664,
+     0.4039,
+     0.2872
+    ],
+    "Center": [
+     -0.4576,
+     2.5564,
+     0.5848
+    ],
+    "Tris": 60
+   }
+  ],
+  "Top": 3.3554,
+  "Bottom": 1.5889,
+  "Tris": 1346,
+  "Extents": {
+   "lo": [
+    -1.41,
+    1.589,
+    -1.541
+   ],
+   "hi": [
+    1.691,
+    3.355,
+    1.621
+   ]
+  }
+ },
+ {
+  "Id": "NpcScarf",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Scarf",
+    "Mesh": "NpcScarf__Scarf",
+    "Color": [
+     138,
+     52,
+     218
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.8094,
+     1.7693,
+     1.5644
+    ],
+    "Center": [
+     0.0,
+     0.2947,
+     0.0238
+    ],
+    "Tris": 1288
+   },
+   {
+    "Name": "Stripes",
+    "Mesh": "NpcScarf__Stripes",
+    "Color": [
+     255,
+     200,
+     60
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.698,
+     1.1934,
+     1.4848
+    ],
+    "Center": [
+     0.0096,
+     0.589,
+     0.008
+    ],
+    "Tris": 320
+   }
+  ],
+  "Top": 1.1856,
+  "Bottom": -0.59,
+  "Tris": 1608,
+  "Extents": {
+   "lo": [
+    -0.905,
+    -0.59,
+    -0.758
+   ],
+   "hi": [
+    0.905,
+    1.186,
+    0.806
+   ]
+  }
+ },
+ {
+  "Id": "NpcCoatPatches",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "PatchRed",
+    "Mesh": "NpcCoatPatches__PatchRed",
+    "Color": [
+     192,
+     85,
+     43
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.6613,
+     0.6146,
+     0.04
+    ],
+    "Center": [
+     -0.4937,
+     0.4031,
+     0.58
+    ],
+    "Tris": 188
+   },
+   {
+    "Name": "PatchBlue",
+    "Mesh": "NpcCoatPatches__PatchBlue",
+    "Color": [
+     63,
+     127,
+     191
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.5298,
+     0.4961,
+     0.04
+    ],
+    "Center": [
+     0.4946,
+     -0.4973,
+     0.58
+    ],
+    "Tris": 188
+   },
+   {
+    "Name": "Buttons",
+    "Mesh": "NpcCoatPatches__Buttons",
+    "Color": [
+     255,
+     226,
+     46
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.23,
+     1.0242,
+     0.05
+    ],
+    "Center": [
+     0.0,
+     0.55,
+     0.59
+    ],
+    "Tris": 336
+   },
+   {
+    "Name": "Tails",
+    "Mesh": "NpcCoatPatches__Tails",
+    "Color": [
+     128,
+     82,
+     38
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.94,
+     0.7401,
+     0.1696
+    ],
+    "Center": [
+     0.0,
+     -1.288,
+     0.4818
+    ],
+    "Tris": 208
+   },
+   {
+    "Name": "Stitches",
+    "Mesh": "NpcCoatPatches__Stitches",
+    "Color": [
+     60,
+     40,
+     22
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.6785,
+     1.5357,
+     0.02
+    ],
+    "Center": [
+     -0.0305,
+     -0.0232,
+     0.605
+    ],
+    "Tris": 576
+   }
+  ],
+  "Top": 1.0621,
+  "Bottom": -1.658,
+  "Tris": 1496,
+  "Extents": {
+   "lo": [
+    -0.97,
+    -1.658,
+    0.397
+   ],
+   "hi": [
+    0.97,
+    1.062,
+    0.615
+   ]
+  }
+ },
+ {
+  "Id": "NpcStrawCollar",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Straw",
+    "Mesh": "NpcStrawCollar__Straw",
+    "Color": [
+     255,
+     217,
+     102
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     2.0442,
+     0.4032,
+     1.7789
+    ],
+    "Center": [
+     -0.038,
+     1.1789,
+     0.0194
+    ],
+    "Tris": 616
+   }
+  ],
+  "Top": 1.3805,
+  "Bottom": 0.9773,
+  "Tris": 616,
+  "Extents": {
+   "lo": [
+    -1.06,
+    0.977,
+    -0.87
+   ],
+   "hi": [
+    0.984,
+    1.38,
+    0.909
+   ]
+  }
+ },
+ {
+  "Id": "NpcStrawCuff",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Straw",
+    "Mesh": "NpcStrawCuff__Straw",
+    "Color": [
+     255,
+     217,
+     102
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.4408,
+     0.5966,
+     1.4033
+    ],
+    "Center": [
+     -0.0303,
+     -1.1537,
+     -0.0024
+    ],
+    "Tris": 378
+   }
+  ],
+  "Top": -0.8554,
+  "Bottom": -1.452,
+  "Tris": 378,
+  "Extents": {
+   "lo": [
+    -0.751,
+    -1.452,
+    -0.704
+   ],
+   "hi": [
+    0.69,
+    -0.855,
+    0.699
+   ]
+  }
+ },
+ {
+  "Id": "NpcLantern",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Frame",
+    "Mesh": "NpcLantern__Frame",
+    "Color": [
+     43,
+     43,
+     51
+    ],
+    "Material": "Metal",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.5273,
+     1.325,
+     0.5367
+    ],
+    "Center": [
+     0.0,
+     -1.5175,
+     0.0
+    ],
+    "Tris": 296
+   },
+   {
+    "Name": "Flame",
+    "Mesh": "NpcLantern__Flame",
+    "Color": [
+     255,
+     176,
+     32
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.1755,
+     0.67,
+     0.1755
+    ],
+    "Center": [
+     0.0,
+     -1.695,
+     -0.0
+    ],
+    "Tris": 192
+   },
+   {
+    "Name": "Glass",
+    "Mesh": "NpcLantern__Glass",
+    "Color": [
+     255,
+     214,
+     140
+    ],
+    "Material": "Glass",
+    "Transparency": 0.55,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.44,
+     0.6,
+     0.44
+    ],
+    "Center": [
+     0.0,
+     -1.76,
+     0.0
+    ],
+    "Tris": 12
+   }
+  ],
+  "Top": -0.855,
+  "Bottom": -2.18,
+  "Tris": 500,
+  "Extents": {
+   "lo": [
+    -0.264,
+    -2.18,
+    -0.268
+   ],
+   "hi": [
+    0.264,
+    -0.855,
+    0.268
+   ]
+  }
+ },
+ {
+  "Id": "NpcBat",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Bat",
+    "Mesh": "NpcBat__Bat",
+    "Color": [
+     62,
+     44,
+     88
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     2.2202,
+     0.8629,
+     0.57
+    ],
+    "Center": [
+     0.0,
+     0.0514,
+     0.0
+    ],
+    "Tris": 832
+   },
+   {
+    "Name": "Eyes",
+    "Mesh": "NpcBat__Eyes",
+    "Color": [
+     255,
+     226,
+     46
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.3436,
+     0.1625,
+     0.078
+    ],
+    "Center": [
+     0.0,
+     0.06,
+     0.265
+    ],
+    "Tris": 200
+   },
+   {
+    "Name": "Fangs",
+    "Mesh": "NpcBat__Fangs",
+    "Color": [
+     250,
+     248,
+     240
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.1352,
+     0.06,
+     0.0476
+    ],
+    "Center": [
+     0.0024,
+     -0.1,
+     0.27
+    ],
+    "Tris": 20
+   }
+  ],
+  "Top": 0.4829,
+  "Bottom": -0.38,
+  "Tris": 1052,
+  "Extents": {
+   "lo": [
+    -1.11,
+    -0.38,
+    -0.285
+   ],
+   "hi": [
+    1.11,
+    0.483,
+    0.304
+   ]
+  }
+ },
+ {
+  "Id": "NpcWitchHat",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Hat",
+    "Mesh": "NpcWitchHat__Hat",
+    "Color": [
+     106,
+     43,
+     194
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     3.0455,
+     2.6044,
+     3.0455
+    ],
+    "Center": [
+     0.0,
+     1.6622,
+     0.0
+    ],
+    "Tris": 1154
+   },
+   {
+    "Name": "Band",
+    "Mesh": "NpcWitchHat__Band",
+    "Color": [
+     30,
+     28,
+     38
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.66,
+     0.36,
+     1.66
+    ],
+    "Center": [
+     0.0,
+     0.68,
+     0.0
+    ],
+    "Tris": 256
+   },
+   {
+    "Name": "Buckle",
+    "Mesh": "NpcWitchHat__Buckle",
+    "Color": [
+     255,
+     210,
+     58
+    ],
+    "Material": "Metal",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.4,
+     0.345,
+     0.1067
+    ],
+    "Center": [
+     0.0,
+     0.68,
+     0.82
+    ],
+    "Tris": 128
+   },
+   {
+    "Name": "Star",
+    "Mesh": "NpcWitchHat__Star",
+    "Color": [
+     255,
+     226,
+     46
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.3746,
+     0.3778,
+     0.1675
+    ],
+    "Center": [
+     0.0893,
+     1.6282,
+     0.5275
+    ],
+    "Tris": 40
+   }
+  ],
+  "Top": 2.9644,
+  "Bottom": 0.36,
+  "Tris": 1578,
+  "Extents": {
+   "lo": [
+    -1.523,
+    0.36,
+    -1.523
+   ],
+   "hi": [
+    1.523,
+    2.964,
+    1.523
+   ]
+  }
+ },
+ {
+  "Id": "NpcWitchHair",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Hair",
+    "Mesh": "NpcWitchHair__Hair",
+    "Color": [
+     232,
+     97,
+     42
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.7345,
+     2.31,
+     1.2983
+    ],
+    "Center": [
+     0.0,
+     -0.535,
+     -0.1357
+    ],
+    "Tris": 2368
+   },
+   {
+    "Name": "Ties",
+    "Mesh": "NpcWitchHair__Ties",
+    "Color": [
+     82,
+     194,
+     52
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.867,
+     0.1623,
+     0.31
+    ],
+    "Center": [
+     0.0,
+     -1.31,
+     0.08
+    ],
+    "Tris": 496
+   }
+  ],
+  "Top": 0.62,
+  "Bottom": -1.69,
+  "Tris": 2864,
+  "Extents": {
+   "lo": [
+    -0.934,
+    -1.69,
+    -0.785
+   ],
+   "hi": [
+    0.934,
+    0.62,
+    0.513
+   ]
+  }
+ },
+ {
+  "Id": "NpcBelt",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Belt",
+    "Mesh": "NpcBelt__Belt",
+    "Color": [
+     30,
+     28,
+     38
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     2.24,
+     0.3,
+     1.24
+    ],
+    "Center": [
+     0.0,
+     -0.6,
+     0.0
+    ],
+    "Tris": 384
+   },
+   {
+    "Name": "Buckle",
+    "Mesh": "NpcBelt__Buckle",
+    "Color": [
+     255,
+     210,
+     58
+    ],
+    "Material": "Metal",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.0328,
+     0.44,
+     0.1878
+    ],
+    "Center": [
+     0.2464,
+     -0.6,
+     0.7139
+    ],
+    "Tris": 448
+   },
+   {
+    "Name": "Pouch",
+    "Mesh": "NpcBelt__Pouch",
+    "Color": [
+     82,
+     194,
+     52
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.42,
+     0.48,
+     0.26
+    ],
+    "Center": [
+     0.72,
+     -0.83,
+     0.63
+    ],
+    "Tris": 216
+   }
+  ],
+  "Top": -0.38,
+  "Bottom": -1.07,
+  "Tris": 1048,
+  "Extents": {
+   "lo": [
+    -1.12,
+    -1.07,
+    -0.62
+   ],
+   "hi": [
+    1.12,
+    -0.38,
+    0.808
+   ]
+  }
+ },
+ {
+  "Id": "NpcBroom",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Stick",
+    "Mesh": "NpcBroom__Stick",
+    "Color": [
+     138,
+     90,
+     43
+    ],
+    "Material": "Wood",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.3136,
+     4.3329,
+     0.3075
+    ],
+    "Center": [
+     0.6332,
+     -0.0865,
+     0.0263
+    ],
+    "Tris": 496
+   },
+   {
+    "Name": "Bristles",
+    "Mesh": "NpcBroom__Bristles",
+    "Color": [
+     232,
+     193,
+     90
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.1902,
+     1.0147,
+     1.1691
+    ],
+    "Center": [
+     0.66,
+     -2.5073,
+     0.0
+    ],
+    "Tris": 608
+   },
+   {
+    "Name": "Binding",
+    "Mesh": "NpcBroom__Binding",
+    "Color": [
+     224,
+     20,
+     28
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.46,
+     0.2,
+     0.46
+    ],
+    "Center": [
+     0.66,
+     -2.12,
+     0.0
+    ],
+    "Tris": 256
+   }
+  ],
+  "Top": 2.08,
+  "Bottom": -3.0147,
+  "Tris": 1360,
+  "Extents": {
+   "lo": [
+    0.065,
+    -3.015,
+    -0.585
+   ],
+   "hi": [
+    1.255,
+    2.08,
+    0.585
+   ]
+  }
+ },
+ {
+  "Id": "BroomPumpkin",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Pumpkin",
+    "Mesh": "BroomPumpkin__Pumpkin",
+    "Color": [
+     240,
+     116,
+     18
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     2.84,
+     1.8836,
+     2.6671
+    ],
+    "Center": [
+     0.0,
+     0.02,
+     0.0
+    ],
+    "Tris": 1690
+   },
+   {
+    "Name": "Glow",
+    "Mesh": "BroomPumpkin__Glow",
+    "Color": [
+     255,
+     201,
+     60
+    ],
+    "Material": "Neon",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     1.15,
+     0.9085,
+     0.3015
+    ],
+    "Center": [
+     0.0,
+     -0.0703,
+     -1.0955
+    ],
+    "Tris": 400
+   },
+   {
+    "Name": "Stem",
+    "Mesh": "BroomPumpkin__Stem",
+    "Color": [
+     91,
+     122,
+     46
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": null,
+    "Size": [
+     0.8385,
+     0.7236,
+     0.5304
+    ],
+    "Center": [
+     -0.1208,
+     1.1756,
+     0.0681
+    ],
+    "Tris": 420
+   }
+  ],
+  "Top": 1.5374,
+  "Bottom": -0.9218,
+  "Tris": 2510,
+  "Extents": {
+   "lo": [
+    -1.42,
+    -0.922,
+    -1.334
+   ],
+   "hi": [
+    1.42,
+    1.537,
+    1.334
+   ]
+  }
+ },
+ {
+  "Id": "Trapdoor",
+  "Kind": "Prop",
+  "Parts": [
+   {
+    "Name": "Turf",
+    "Mesh": "Trapdoor__Turf",
+    "Color": [
+     96,
+     170,
+     70
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 0,
+    "CastShadow": true,
+    "Size": [
+     4.43,
+     0.14,
+     2.3815
+    ],
+    "Center": [
+     2.275,
+     0.13,
+     0.0
+    ],
+    "Tris": 32
+   },
+   {
+    "Name": "Soil",
+    "Mesh": "Trapdoor__Soil",
+    "Color": [
+     112,
+     76,
+     44
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 0,
+    "CastShadow": true,
+    "Size": [
+     4.43,
+     0.18,
+     2.3815
+    ],
+    "Center": [
+     2.275,
+     -0.03,
+     0.0
+    ],
+    "Tris": 8
+   },
+   {
+    "Name": "Grass",
+    "Mesh": "Trapdoor__Grass",
+    "Color": [
+     78,
+     150,
+     56
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 0,
+    "CastShadow": true,
+    "Size": [
+     0.3335,
+     0.3315,
+     0.3311
+    ],
+    "Center": [
+     2.0355,
+     0.3538,
+     0.1377
+    ],
+    "Tris": 48
+   },
+   {
+    "Name": "Turf",
+    "Mesh": "Trapdoor__Turf2",
+    "Color": [
+     96,
+     170,
+     70
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 1,
+    "CastShadow": true,
+    "Size": [
+     4.4319,
+     0.14,
+     3.2462
+    ],
+    "Center": [
+     2.2679,
+     0.13,
+     1.6531
+    ],
+    "Tris": 32
+   },
+   {
+    "Name": "Soil",
+    "Mesh": "Trapdoor__Soil2",
+    "Color": [
+     112,
+     76,
+     44
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 1,
+    "CastShadow": true,
+    "Size": [
+     4.4319,
+     0.18,
+     3.2462
+    ],
+    "Center": [
+     2.2679,
+     -0.03,
+     1.6531
+    ],
+    "Tris": 8
+   },
+   {
+    "Name": "Grass",
+    "Mesh": "Trapdoor__Grass2",
+    "Color": [
+     78,
+     150,
+     56
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 1,
+    "CastShadow": true,
+    "Size": [
+     2.103,
+     0.3315,
+     1.0944
+    ],
+    "Center": [
+     2.6299,
+     0.3538,
+     1.261
+    ],
+    "Tris": 48
+   },
+   {
+    "Name": "Turf",
+    "Mesh": "Trapdoor__Turf3",
+    "Color": [
+     96,
+     170,
+     70
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 2,
+    "CastShadow": true,
+    "Size": [
+     3.2462,
+     0.14,
+     4.4319
+    ],
+    "Center": [
+     1.6531,
+     0.13,
+     2.2679
+    ],
+    "Tris": 32
+   },
+   {
+    "Name": "Soil",
+    "Mesh": "Trapdoor__Soil3",
+    "Color": [
+     112,
+     76,
+     44
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 2,
+    "CastShadow": true,
+    "Size": [
+     3.2462,
+     0.18,
+     4.4319
+    ],
+    "Center": [
+     1.6531,
+     -0.03,
+     2.2679
+    ],
+    "Tris": 8
+   },
+   {
+    "Name": "Grass",
+    "Mesh": "Trapdoor__Grass3",
+    "Color": [
+     78,
+     150,
+     56
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 2,
+    "CastShadow": true,
+    "Size": [
+     0.3412,
+     0.3315,
+     0.577
+    ],
+    "Center": [
+     1.4825,
+     0.3538,
+     2.4999
+    ],
+    "Tris": 48
+   },
+   {
+    "Name": "Turf",
+    "Mesh": "Trapdoor__Turf4",
+    "Color": [
+     96,
+     170,
+     70
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 3,
+    "CastShadow": true,
+    "Size": [
+     2.3815,
+     0.14,
+     4.43
+    ],
+    "Center": [
+     -0.0,
+     0.13,
+     2.275
+    ],
+    "Tris": 32
+   },
+   {
+    "Name": "Soil",
+    "Mesh": "Trapdoor__Soil4",
+    "Color": [
+     112,
+     76,
+     44
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 3,
+    "CastShadow": true,
+    "Size": [
+     2.3815,
+     0.18,
+     4.43
+    ],
+    "Center": [
+     -0.0,
+     -0.03,
+     2.275
+    ],
+    "Tris": 8
+   },
+   {
+    "Name": "Grass",
+    "Mesh": "Trapdoor__Grass4",
+    "Color": [
+     78,
+     150,
+     56
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 3,
+    "CastShadow": true,
+    "Size": [
+     0.3836,
+     0.3315,
+     0.4439
+    ],
+    "Center": [
+     0.0054,
+     0.3538,
+     1.9224
+    ],
+    "Tris": 48
+   },
+   {
+    "Name": "Turf",
+    "Mesh": "Trapdoor__Turf5",
+    "Color": [
+     96,
+     170,
+     70
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 4,
+    "CastShadow": true,
+    "Size": [
+     3.2462,
+     0.14,
+     4.4319
+    ],
+    "Center": [
+     -1.6531,
+     0.13,
+     2.2679
+    ],
+    "Tris": 32
+   },
+   {
+    "Name": "Soil",
+    "Mesh": "Trapdoor__Soil5",
+    "Color": [
+     112,
+     76,
+     44
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 4,
+    "CastShadow": true,
+    "Size": [
+     3.2462,
+     0.18,
+     4.4319
+    ],
+    "Center": [
+     -1.6531,
+     -0.03,
+     2.2679
+    ],
+    "Tris": 8
+   },
+   {
+    "Name": "Grass",
+    "Mesh": "Trapdoor__Grass5",
+    "Color": [
+     78,
+     150,
+     56
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 4,
+    "CastShadow": true,
+    "Size": [
+     0.8313,
+     0.3315,
+     0.7815
+    ],
+    "Center": [
+     -1.1075,
+     0.3538,
+     1.7599
+    ],
+    "Tris": 48
+   },
+   {
+    "Name": "Turf",
+    "Mesh": "Trapdoor__Turf6",
+    "Color": [
+     96,
+     170,
+     70
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 5,
+    "CastShadow": true,
+    "Size": [
+     4.4319,
+     0.14,
+     3.2462
+    ],
+    "Center": [
+     -2.2679,
+     0.13,
+     1.6531
+    ],
+    "Tris": 32
+   },
+   {
+    "Name": "Soil",
+    "Mesh": "Trapdoor__Soil6",
+    "Color": [
+     112,
+     76,
+     44
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 5,
+    "CastShadow": true,
+    "Size": [
+     4.4319,
+     0.18,
+     3.2462
+    ],
+    "Center": [
+     -2.2679,
+     -0.03,
+     1.6531
+    ],
+    "Tris": 8
+   },
+   {
+    "Name": "Grass",
+    "Mesh": "Trapdoor__Grass6",
+    "Color": [
+     78,
+     150,
+     56
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 5,
+    "CastShadow": true,
+    "Size": [
+     0.1469,
+     0.3315,
+     0.7389
+    ],
+    "Center": [
+     -2.0274,
+     0.3538,
+     1.1549
+    ],
+    "Tris": 48
+   },
+   {
+    "Name": "Turf",
+    "Mesh": "Trapdoor__Turf7",
+    "Color": [
+     96,
+     170,
+     70
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 6,
+    "CastShadow": true,
+    "Size": [
+     4.43,
+     0.14,
+     2.3815
+    ],
+    "Center": [
+     -2.275,
+     0.13,
+     -0.0
+    ],
+    "Tris": 32
+   },
+   {
+    "Name": "Soil",
+    "Mesh": "Trapdoor__Soil7",
+    "Color": [
+     112,
+     76,
+     44
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 6,
+    "CastShadow": true,
+    "Size": [
+     4.43,
+     0.18,
+     2.3815
+    ],
+    "Center": [
+     -2.275,
+     -0.03,
+     -0.0
+    ],
+    "Tris": 8
+   },
+   {
+    "Name": "Grass",
+    "Mesh": "Trapdoor__Grass7",
+    "Color": [
+     78,
+     150,
+     56
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 6,
+    "CastShadow": true,
+    "Size": [
+     0.8465,
+     0.3315,
+     0.2402
+    ],
+    "Center": [
+     -2.1165,
+     0.3538,
+     -0.084
+    ],
+    "Tris": 48
+   },
+   {
+    "Name": "Turf",
+    "Mesh": "Trapdoor__Turf8",
+    "Color": [
+     96,
+     170,
+     70
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 7,
+    "CastShadow": true,
+    "Size": [
+     4.4319,
+     0.14,
+     3.2462
+    ],
+    "Center": [
+     -2.2679,
+     0.13,
+     -1.6531
+    ],
+    "Tris": 32
+   },
+   {
+    "Name": "Soil",
+    "Mesh": "Trapdoor__Soil8",
+    "Color": [
+     112,
+     76,
+     44
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 7,
+    "CastShadow": true,
+    "Size": [
+     4.4319,
+     0.18,
+     3.2462
+    ],
+    "Center": [
+     -2.2679,
+     -0.03,
+     -1.6531
+    ],
+    "Tris": 8
+   },
+   {
+    "Name": "Grass",
+    "Mesh": "Trapdoor__Grass8",
+    "Color": [
+     78,
+     150,
+     56
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 7,
+    "CastShadow": true,
+    "Size": [
+     0.4282,
+     0.3315,
+     0.3801
+    ],
+    "Center": [
+     -2.1937,
+     0.3538,
+     -1.4021
+    ],
+    "Tris": 48
+   },
+   {
+    "Name": "Turf",
+    "Mesh": "Trapdoor__Turf9",
+    "Color": [
+     96,
+     170,
+     70
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 8,
+    "CastShadow": true,
+    "Size": [
+     3.2462,
+     0.14,
+     4.4319
+    ],
+    "Center": [
+     -1.6531,
+     0.13,
+     -2.2679
+    ],
+    "Tris": 32
+   },
+   {
+    "Name": "Soil",
+    "Mesh": "Trapdoor__Soil9",
+    "Color": [
+     112,
+     76,
+     44
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 8,
+    "CastShadow": true,
+    "Size": [
+     3.2462,
+     0.18,
+     4.4319
+    ],
+    "Center": [
+     -1.6531,
+     -0.03,
+     -2.2679
+    ],
+    "Tris": 8
+   },
+   {
+    "Name": "Grass",
+    "Mesh": "Trapdoor__Grass9",
+    "Color": [
+     78,
+     150,
+     56
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 8,
+    "CastShadow": true,
+    "Size": [
+     0.8143,
+     0.3315,
+     1.8397
+    ],
+    "Center": [
+     -1.4505,
+     0.3538,
+     -2.4741
+    ],
+    "Tris": 48
+   },
+   {
+    "Name": "Turf",
+    "Mesh": "Trapdoor__Turf10",
+    "Color": [
+     96,
+     170,
+     70
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 9,
+    "CastShadow": true,
+    "Size": [
+     2.3815,
+     0.14,
+     4.43
+    ],
+    "Center": [
+     0.0,
+     0.13,
+     -2.275
+    ],
+    "Tris": 32
+   },
+   {
+    "Name": "Soil",
+    "Mesh": "Trapdoor__Soil10",
+    "Color": [
+     112,
+     76,
+     44
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 9,
+    "CastShadow": true,
+    "Size": [
+     2.3815,
+     0.18,
+     4.43
+    ],
+    "Center": [
+     0.0,
+     -0.03,
+     -2.275
+    ],
+    "Tris": 8
+   },
+   {
+    "Name": "Grass",
+    "Mesh": "Trapdoor__Grass10",
+    "Color": [
+     78,
+     150,
+     56
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 9,
+    "CastShadow": true,
+    "Size": [
+     0.3394,
+     0.3315,
+     1.9389
+    ],
+    "Center": [
+     0.125,
+     0.3538,
+     -3.0018
+    ],
+    "Tris": 48
+   },
+   {
+    "Name": "Turf",
+    "Mesh": "Trapdoor__Turf11",
+    "Color": [
+     96,
+     170,
+     70
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 10,
+    "CastShadow": true,
+    "Size": [
+     3.2462,
+     0.14,
+     4.4319
+    ],
+    "Center": [
+     1.6531,
+     0.13,
+     -2.2679
+    ],
+    "Tris": 32
+   },
+   {
+    "Name": "Soil",
+    "Mesh": "Trapdoor__Soil11",
+    "Color": [
+     112,
+     76,
+     44
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 10,
+    "CastShadow": true,
+    "Size": [
+     3.2462,
+     0.18,
+     4.4319
+    ],
+    "Center": [
+     1.6531,
+     -0.03,
+     -2.2679
+    ],
+    "Tris": 8
+   },
+   {
+    "Name": "Grass",
+    "Mesh": "Trapdoor__Grass11",
+    "Color": [
+     78,
+     150,
+     56
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 10,
+    "CastShadow": true,
+    "Size": [
+     0.2025,
+     0.3315,
+     0.9897
+    ],
+    "Center": [
+     1.6927,
+     0.3538,
+     -2.9248
+    ],
+    "Tris": 48
+   },
+   {
+    "Name": "Turf",
+    "Mesh": "Trapdoor__Turf12",
+    "Color": [
+     96,
+     170,
+     70
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 11,
+    "CastShadow": true,
+    "Size": [
+     4.4319,
+     0.14,
+     3.2462
+    ],
+    "Center": [
+     2.2679,
+     0.13,
+     -1.6531
+    ],
+    "Tris": 32
+   },
+   {
+    "Name": "Soil",
+    "Mesh": "Trapdoor__Soil12",
+    "Color": [
+     112,
+     76,
+     44
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 11,
+    "CastShadow": true,
+    "Size": [
+     4.4319,
+     0.18,
+     3.2462
+    ],
+    "Center": [
+     2.2679,
+     -0.03,
+     -1.6531
+    ],
+    "Tris": 8
+   },
+   {
+    "Name": "Grass",
+    "Mesh": "Trapdoor__Grass12",
+    "Color": [
+     78,
+     150,
+     56
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": 11,
+    "CastShadow": true,
+    "Size": [
+     0.6001,
+     0.3315,
+     0.3188
+    ],
+    "Center": [
+     1.9883,
+     0.3538,
+     -0.9906
+    ],
+    "Tris": 48
+   }
+  ],
+  "Top": 0.5195,
+  "Bottom": -0.12,
+  "Tris": 1056,
+  "Extents": {
+   "lo": [
+    -4.49,
+    -0.12,
+    -4.49
+   ],
+   "hi": [
+    4.49,
+    0.519,
+    4.49
+   ]
+  }
+ },
+ {
+  "Id": "PeteCoat",
+  "Kind": "NpcBody",
+  "Parts": [
+   {
+    "Name": "Coat",
+    "Mesh": "PeteCoat__Coat",
+    "Color": [
+     138,
+     90,
+     43
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": true,
+    "Size": [
+     2.2,
+     2.19,
+     1.2
+    ],
+    "Center": [
+     0.0,
+     -0.005,
+     0.0
+    ],
+    "Tris": 636
+   },
+   {
+    "Name": "Lapels",
+    "Mesh": "PeteCoat__Lapels",
+    "Color": [
+     100,
+     64,
+     30
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": true,
+    "Size": [
+     0.92,
+     2.13,
+     0.2457
+    ],
+    "Center": [
+     0.0,
+     -0.005,
+     0.4873
+    ],
+    "Tris": 572
+   },
+   {
+    "Name": "Rope",
+    "Mesh": "PeteCoat__Rope",
+    "Color": [
+     204,
+     168,
+     98
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": true,
+    "Size": [
+     2.2782,
+     0.644,
+     1.4086
+    ],
+    "Center": [
+     -0.0005,
+     -1.052,
+     0.0457
+    ],
+    "Tris": 918
+   }
+  ],
+  "Top": 1.09,
+  "Bottom": -1.374,
+  "Tris": 2126,
+  "Extents": {
+   "lo": [
+    -1.14,
+    -1.374,
+    -0.659
+   ],
+   "hi": [
+    1.139,
+    1.09,
+    0.75
+   ]
+  }
+ },
+ {
+  "Id": "PeteSleeve",
+  "Kind": "NpcBody",
+  "Parts": [
+   {
+    "Name": "Sleeve",
+    "Mesh": "PeteSleeve__Sleeve",
+    "Color": [
+     138,
+     90,
+     43
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": true,
+    "Size": [
+     0.94,
+     1.94,
+     0.94
+    ],
+    "Center": [
+     0.0,
+     0.11,
+     0.0
+    ],
+    "Tris": 332
+   },
+   {
+    "Name": "Cuff",
+    "Mesh": "PeteSleeve__Cuff",
+    "Color": [
+     100,
+     64,
+     30
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": true,
+    "Size": [
+     1.1,
+     0.22,
+     1.1
+    ],
+    "Center": [
+     0.0,
+     -0.89,
+     0.0
+    ],
+    "Tris": 280
+   }
+  ],
+  "Top": 1.08,
+  "Bottom": -1.0,
+  "Tris": 612,
+  "Extents": {
+   "lo": [
+    -0.55,
+    -1.0,
+    -0.55
+   ],
+   "hi": [
+    0.55,
+    1.08,
+    0.55
+   ]
+  }
+ },
+ {
+  "Id": "PeteTrousers",
+  "Kind": "NpcBody",
+  "Parts": [
+   {
+    "Name": "Trousers",
+    "Mesh": "PeteTrousers__Trousers",
+    "Color": [
+     74,
+     53,
+     36
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": true,
+    "Size": [
+     1.08,
+     2.06,
+     1.08
+    ],
+    "Center": [
+     0.0,
+     0.05,
+     0.0
+    ],
+    "Tris": 612
+   },
+   {
+    "Name": "Patch",
+    "Mesh": "PeteTrousers__Patch",
+    "Color": [
+     196,
+     150,
+     60
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": true,
+    "Size": [
+     0.4015,
+     0.3782,
+     0.0973
+    ],
+    "Center": [
+     -0.0035,
+     0.0183,
+     0.4364
+    ],
+    "Tris": 236
+   }
+  ],
+  "Top": 1.08,
+  "Bottom": -0.98,
+  "Tris": 848,
+  "Extents": {
+   "lo": [
+    -0.54,
+    -0.98,
+    -0.54
+   ],
+   "hi": [
+    0.54,
+    1.08,
+    0.54
+   ]
+  }
+ },
+ {
+  "Id": "WandaDress",
+  "Kind": "NpcBody",
+  "Parts": [
+   {
+    "Name": "Dress",
+    "Mesh": "WandaDress__Dress",
+    "Color": [
+     106,
+     43,
+     194
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": true,
+    "Size": [
+     2.96,
+     3.5271,
+     1.84
+    ],
+    "Center": [
+     0.0,
+     -0.6836,
+     0.0
+    ],
+    "Tris": 1436
+   },
+   {
+    "Name": "Trim",
+    "Mesh": "WandaDress__Trim",
+    "Color": [
+     255,
+     138,
+     31
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": true,
+    "Size": [
+     3.0133,
+     0.3422,
+     1.8731
+    ],
+    "Center": [
+     0.0,
+     -2.2211,
+     0.0
+    ],
+    "Tris": 288
+   }
+  ],
+  "Top": 1.08,
+  "Bottom": -2.4471,
+  "Tris": 1724,
+  "Extents": {
+   "lo": [
+    -1.507,
+    -2.447,
+    -0.937
+   ],
+   "hi": [
+    1.507,
+    1.08,
+    0.937
+   ]
+  }
+ },
+ {
+  "Id": "WandaSleeveR",
+  "Kind": "NpcBody",
+  "Parts": [
+   {
+    "Name": "Sleeve",
+    "Mesh": "WandaSleeveR__Sleeve",
+    "Color": [
+     106,
+     43,
+     194
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": true,
+    "Size": [
+     1.32,
+     2.2643,
+     1.32
+    ],
+    "Center": [
+     0.0,
+     -0.0622,
+     0.0
+    ],
+    "Tris": 724
+   },
+   {
+    "Name": "Hand",
+    "Mesh": "WandaSleeveR__Hand",
+    "Color": [
+     143,
+     212,
+     106
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": true,
+    "Size": [
+     0.34,
+     0.78,
+     0.5451
+    ],
+    "Center": [
+     0.0,
+     -1.05,
+     0.1025
+    ],
+    "Tris": 296
+   }
+  ],
+  "Top": 1.07,
+  "Bottom": -1.44,
+  "Tris": 1020,
+  "Extents": {
+   "lo": [
+    -0.66,
+    -1.44,
+    -0.66
+   ],
+   "hi": [
+    0.66,
+    1.07,
+    0.66
+   ]
+  }
+ },
+ {
+  "Id": "WandaSleeveL",
+  "Kind": "NpcBody",
+  "Parts": [
+   {
+    "Name": "Sleeve",
+    "Mesh": "WandaSleeveL__Sleeve",
+    "Color": [
+     106,
+     43,
+     194
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": true,
+    "Size": [
+     1.32,
+     2.2643,
+     1.32
+    ],
+    "Center": [
+     0.0,
+     -0.0622,
+     0.0
+    ],
+    "Tris": 724
+   },
+   {
+    "Name": "Hand",
+    "Mesh": "WandaSleeveL__Hand",
+    "Color": [
+     143,
+     212,
+     106
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": true,
+    "Size": [
+     0.83,
+     0.7,
+     0.51
+    ],
+    "Center": [
+     0.245,
+     -1.01,
+     0.045
+    ],
+    "Tris": 296
+   }
+  ],
+  "Top": 1.07,
+  "Bottom": -1.36,
+  "Tris": 1020,
+  "Extents": {
+   "lo": [
+    -0.66,
+    -1.36,
+    -0.66
+   ],
+   "hi": [
+    0.66,
+    1.07,
+    0.66
+   ]
+  }
+ },
+ {
+  "Id": "WandaLeg",
+  "Kind": "NpcBody",
+  "Parts": [
+   {
+    "Name": "Stocking",
+    "Mesh": "WandaLeg__Stocking",
+    "Color": [
+     34,
+     30,
+     44
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": true,
+    "Size": [
+     0.8,
+     1.86,
+     0.8
+    ],
+    "Center": [
+     0.0,
+     0.13,
+     0.0
+    ],
+    "Tris": 284
+   },
+   {
+    "Name": "Stripes",
+    "Mesh": "WandaLeg__Stripes",
+    "Color": [
+     255,
+     138,
+     31
+    ],
+    "Material": "Fabric",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": true,
+    "Size": [
+     0.782,
+     1.32,
+     0.782
+    ],
+    "Center": [
+     0.0,
+     -0.02,
+     0.0
+    ],
+    "Tris": 1152
+   },
+   {
+    "Name": "Shoe",
+    "Mesh": "WandaLeg__Shoe",
+    "Color": [
+     52,
+     34,
+     70
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": true,
+    "Size": [
+     0.6509,
+     0.49,
+     1.2603
+    ],
+    "Center": [
+     0.0,
+     -0.765,
+     0.3047
+    ],
+    "Tris": 630
+   },
+   {
+    "Name": "Buckle",
+    "Mesh": "WandaLeg__Buckle",
+    "Color": [
+     255,
+     210,
+     58
+    ],
+    "Material": "Metal",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": true,
+    "Size": [
+     0.24,
+     0.1198,
+     0.1777
+    ],
+    "Center": [
+     0.0,
+     -0.64,
+     0.3
+    ],
+    "Tris": 128
+   }
+  ],
+  "Top": 1.06,
+  "Bottom": -1.01,
+  "Tris": 2194,
+  "Extents": {
+   "lo": [
+    -0.4,
+    -1.01,
+    -0.4
+   ],
+   "hi": [
+    0.4,
+    1.06,
+    0.935
+   ]
+  }
+ },
+ {
+  "Id": "WandaNose",
+  "Kind": "NpcBody",
+  "Parts": [
+   {
+    "Name": "Nose",
+    "Mesh": "WandaNose__Nose",
+    "Color": [
+     143,
+     212,
+     106
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": true,
+    "Size": [
+     0.3,
+     0.3115,
+     0.703
+    ],
+    "Center": [
+     0.0,
+     0.0323,
+     0.7885
+    ],
+    "Tris": 94
+   },
+   {
+    "Name": "Wart",
+    "Mesh": "WandaNose__Wart",
+    "Color": [
+     96,
+     168,
+     70
+    ],
+    "Material": "SmoothPlastic",
+    "Transparency": 0.0,
+    "Model": null,
+    "CastShadow": true,
+    "Size": [
+     0.1,
+     0.1,
+     0.1
+    ],
+    "Center": [
+     0.07,
+     -0.02,
+     0.84
+    ],
+    "Tris": 80
+   }
+  ],
+  "Top": 0.1881,
+  "Bottom": -0.1235,
+  "Tris": 174,
+  "Extents": {
+   "lo": [
+    -0.15,
+    -0.123,
+    0.437
+   ],
+   "hi": [
+    0.15,
+    0.188,
+    1.14
+   ]
+  }
+ }
+]

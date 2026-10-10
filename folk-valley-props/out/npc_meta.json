@@ -1,0 +1,68 @@
+{
+ "BODY": {
+  "Pete": [
+   [
+    "PeteCoat",
+    "Torso"
+   ],
+   [
+    "PeteSleeve",
+    "Right Arm"
+   ],
+   [
+    "PeteSleeve",
+    "Left Arm"
+   ],
+   [
+    "PeteTrousers",
+    "Right Leg"
+   ],
+   [
+    "PeteTrousers",
+    "Left Leg"
+   ]
+  ],
+  "Wanda": [
+   [
+    "WandaDress",
+    "Torso"
+   ],
+   [
+    "WandaSleeveR",
+    "Right Arm"
+   ],
+   [
+    "WandaSleeveL",
+    "Left Arm"
+   ],
+   [
+    "WandaLeg",
+    "Right Leg"
+   ],
+   [
+    "WandaLeg",
+    "Left Leg"
+   ],
+   [
+    "WandaNose",
+    "Head"
+   ]
+  ]
+ },
+ "HIDE": {
+  "Pete": [
+   "Torso",
+   "Left Arm",
+   "Right Arm",
+   "Left Leg",
+   "Right Leg"
+  ],
+  "Wanda": [
+   "Torso",
+   "Left Arm",
+   "Right Arm",
+   "Left Leg",
+   "Right Leg"
+  ]
+ }
+}

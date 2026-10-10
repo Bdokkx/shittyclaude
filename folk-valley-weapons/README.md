@@ -34,6 +34,7 @@ New meshes have to be uploaded to Roblox by your account, and Studio does that w
 
 1. **File → Import 3D →** `out/FolkValley_Weapons.fbx` **→ Import.** The default settings are fine. Leave "Merge Meshes" off.
    - The file has 284 meshes (all 67 weapons), so the upload takes a minute or two.
+   - **The imported meshes are plain grey, with no colour or material. That's normal:** step 2 gives every part its colour, material and welds.
 2. **View → Command Bar:** paste all of `out/BuildWeapons.lua` and press Enter.
    - It builds `ServerStorage.Weapons` with one Model per weapon. If a `Weapons` folder is already there, the new one is called `Weapons (new)`.
    - It then deletes the imported model. Ctrl+Z undoes everything.
