@@ -142,6 +142,7 @@ class Clip:
         self.frame = None                 # per-frame hook(t, X, ctx)
         self.base = base or {}
         self.cloth_lag = 0.10             # seconds
+        self.floor_mode = "out"           # how robe_floor clears the ground (see there)
 
     def key(self, t, **bones):
         for b, v in bones.items():
@@ -188,7 +189,7 @@ def bake(rig, clip):
         frames.append(X)
     lag_cloth(clip, frames)
     for X in frames:
-        robe_floor(rig, X)
+        robe_floor(rig, X, floor=getattr(clip, "floor_level", 0.12), mode=getattr(clip, "floor_mode", "out"))
     if clip.loop:
         # Roblox loops from the last keyframe straight back to the first: end on a copy of it
         times.append(clip.length)
@@ -249,9 +250,11 @@ def _hem(rig, bone):
     return [np.array([*q, 1.0]) for q in pts]
 
 
-def robe_floor(rig, X, floor=0.12):
+def robe_floor(rig, X, floor=0.12, mode="out"):
     """Swing any cloth panel whose hem would dip under the ground out just far enough
-    to rest on it (kneeling, crouching, big hip swings)."""
+    to rest on it (kneeling, crouching, big hip swings). mode "out" only swings outward
+    (as the first ten animations were made); "both" looks for the smallest swing either
+    way and leaves a panel alone if nothing within 85 degrees clears the ground."""
     if not hasattr(rig, "_hems"):
         rig._hems = {b: _hem(rig, b) for b, _ in FLARE}
     W = rig.fk(X)
@@ -265,18 +268,41 @@ def robe_floor(rig, X, floor=0.12):
             return min((m @ p)[1] for p in rig._hems[b])
         if low(0.0) >= floor:
             continue
-        lo, hi = 0.0, 85.0
-        if low(hi) < floor:
-            lo = hi
-        else:
-            for _ in range(14):
-                mid = (lo + hi) / 2
-                if low(mid) >= floor:
-                    hi = mid
-                else:
-                    lo = mid
-            lo = hi
-        X[b] = E(*(np.array(ax) * lo)) @ base
+        if mode == "out":
+            lo, hi = 0.0, 85.0
+            if low(hi) < floor:
+                lo = hi
+            else:
+                for _ in range(14):
+                    mid = (lo + hi) / 2
+                    if low(mid) >= floor:
+                        hi = mid
+                    else:
+                        lo = mid
+                lo = hi
+            X[b] = E(*(np.array(ax) * lo)) @ base
+            continue
+        # the smallest swing that clears the ground: outward first, then inward; a panel
+        # that can't be cleared within 85 degrees either way is left as it is
+        best = None
+        for sign in (1.0, -1.0):
+            prev = 0.0
+            for step in range(5, 86, 5):
+                if low(sign * step) >= floor:
+                    lo, hi = prev, float(step)
+                    for _ in range(14):
+                        mid = (lo + hi) / 2
+                        if low(sign * mid) >= floor:
+                            hi = mid
+                        else:
+                            lo = mid
+                    best = sign * hi
+                    break
+                prev = float(step)
+            if best is not None:
+                break
+        if best is not None:
+            X[b] = E(*(np.array(ax) * best)) @ base
 
 
 # ---------------------------------------------------------------- writing

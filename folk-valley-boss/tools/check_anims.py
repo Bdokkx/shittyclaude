@@ -48,6 +48,26 @@ def seg_dist(p, a, b):
     return np.linalg.norm(p - (a + ab * t))
 
 
+def cloth_floor():
+    try:
+        from reaper_anims_more import CLOTH_FLOOR
+        return CLOTH_FLOOR
+    except Exception:  # noqa: BLE001
+        return {}
+
+
+CLOTH = ("RobeFront", "RobeBack", "RobeLeft", "RobeRight", "Cape")
+
+
+def airborne():
+    """Clips (or parts of clips) where the feet are off the ground: no floor check there."""
+    try:
+        from reaper_anims_more import AIRBORNE
+        return AIRBORNE
+    except Exception:  # noqa: BLE001
+        return {}
+
+
 def main(rig_path, anims_path):
     rig = B.Rig(rig_path)
     data = json.load(open(rig_path))
@@ -59,6 +79,8 @@ def main(rig_path, anims_path):
     blade = [np.array([*att["BladeBase"]["Position"], 1.0]), np.array([*att["BladeTip"]["Position"], 1.0]),
              np.array([4.78, 17.6, -5.0, 1.0])]
     problems = 0
+    air = airborne()
+    cloth = cloth_floor()
     for name, clip in clips.items():
         ys_low = []
         worst = (1e9, None)
@@ -67,13 +89,17 @@ def main(rig_path, anims_path):
             W = rig.fk(X)
             D = {b: W[b] @ np.linalg.inv(rest[b]) for b in W}
             # lowest corner of every part except the scythe (it may lie on the floor)
-            for p in parts:
+            win = air.get(name)
+            for p in ([] if win and win[0] <= t <= win[1] else parts):
                 if p["Model"] == "Scythe":
                     continue
                 c, s = np.array(p["Center"]), np.array(p["Size"]) / 2
                 lo = min((D[p["Model"]] @ np.array([*(c + s * (dx, dy, dz)), 1.0]))[1]
                          for dx in (-1, 1) for dy in (-1, 1) for dz in (-1, 1))
-                if lo < -0.35:
+                limit = -0.35
+                if p["Name"] in CLOTH and name in cloth:
+                    limit = cloth[name] - 0.3
+                if lo < limit:
                     ys_low.append((round(float(t), 2), p["Name"], round(float(lo), 2)))
             # the shaft and blade against the body (a capsule round the spine) and the head
             spine_a = (D["LowerTorso"] @ np.array([0, 7.5, 0, 1.0]))[:3]

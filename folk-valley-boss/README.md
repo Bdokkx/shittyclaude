@@ -13,6 +13,7 @@ The preview video `previews/reaper_animations.mp4` (41 s) shows a turntable, the
 | `out/FolkValley_GrimReaper.fbx` | the 39 meshes (plus 4 small marker cubes) for Studio's Import 3D |
 | `out/BuildGrimReaper.lua` | the Command Bar script that turns the imported meshes into the rigged `GrimReaper` model |
 | `out/GrimReaper_Animations.rbxm` | a `GrimReaperAnimations` folder with the 10 KeyframeSequences |
+| `out/GrimReaper_AnimationsMore.rbxm` | a `GrimReaperAnimationsMore` folder with 10 more for the same rig (see [More animations](#more-animations)) |
 | `out/ReaperController.lua` | the controller script on its own, for reading (the build script already puts it in the model) |
 | `previews/` | the stills above and the video |
 
@@ -82,6 +83,43 @@ KeyframeSequences with keys every 1/30 s. Times below are at speed 1.
 - **Hurt:** a quick flinch.
 - **Defeat:** it staggers and drops to its knees. The scythe slips out of its fingers and clatters flat on the ground, and it slumps.
 
+## More animations
+
+`out/GrimReaper_AnimationsMore.rbxm` has 10 more KeyframeSequences for the same rig: same model, bone names and rest pose, so the boss already in the game plays them as they are. Times below are at speed 1.
+
+![The 10 new animations](previews/reaper_more_animations.jpg)
+
+| Animation | Length | Priority | Markers |
+|---|---|---|---|
+| ReaperFall | 0.80 s, loop | Action | none |
+| ReaperLand | 1.60 s | Action | **Impact @ 0.167** |
+| ReaperJumpStart | 0.50 s | Action | **Jump @ 0.400** |
+| ReaperJumpAir | 0.60 s, loop | Action | none |
+| ReaperJumpLand | 1.40 s | Action | **Impact @ 0.167** |
+| ReaperIdleReady | 3.00 s, loop | Idle | none |
+| ReaperWalkReady | 1.50 s, loop | Movement | Footstep @ 0.000, 0.733 |
+| ReaperIdleLook | 2.80 s | Movement | Clack @ 1.267, 1.400, 2.200 |
+| ReaperIdleTap | 2.60 s | Movement | **Tap @ 0.900, 1.500** |
+| ReaperDefeat2 | 4.60 s | Action4 | ScytheDrop @ 1.700, Collapsed @ 3.200 |
+
+- **Fall:**
+  - Feet first, the robe and cape streaming up and fluttering, the scythe raised overhead in both hands.
+  - At standing height its toes just reach the floor, so Land can take over when it lands.
+- **Land:** it starts in Fall's pose. The scythe comes down and its blade is driven into the ground 17 studs out to the right front (Impact), in a deep crouch. It looks up, pulls the scythe free and rises to the idle hold.
+- **The jump slam:**
+  - JumpStart: a crouch while the scythe comes into both hands, then the leap. Jump is the frame the feet leave the ground.
+  - JumpAir: airborne with the scythe overhead; loop it for as long as the jump lasts.
+  - JumpLand: it starts in JumpAir's pose. Feet and blade smash down together straight ahead (Impact), then it recovers to idle.
+  - The root part never moves in Fall, Land or the jump: the game moves the model.
+- **IdleReady / WalkReady:** the scythe held in both hands across the body, the blade up over the left shoulder.
+  - IdleReady has a wide stance, a slow sway and the head tracking from side to side.
+  - WalkReady is the walk with the same hold, made for about 7 studs a second like ReaperWalk.
+- **IdleLook / IdleTap:** fidgets to play over ReaperIdle.
+  - They start and end at the idle pose.
+  - At Movement priority they cover the idle, and attacks, Hurt and the defeats play over them. Stop them before it walks.
+- **Defeat2:** it staggers back, stumbles, drops to its knees and lets the scythe fall (ScytheDrop). Then it keels over face down (Collapsed) and stays there.
+- **The robe in the deep poses:** in the landings and when lying down, the robe settles a little into the floor instead of sticking out stiffly.
+
 ## The controller (`ReaperController` inside the model)
 
 It plays the animations and runs a simple fight AI:
@@ -150,6 +188,7 @@ All the source is here; with Blender's `bpy` module and numpy:
 ```
 python blender/build_boss.py <dir> --fbx=out/FolkValley_GrimReaper.fbx     # model, rig data (<dir>/rig.json), FBX, preview renders
 python tools/reaper_anims.py <dir>/rig.json anims.json                     # the 10 animations (rbxtool JSON)
+python tools/reaper_anims_more.py <dir>/rig.json more.json                 # the 10 more (then rbxtool build as below)
 rbxtool build anims.json out/GrimReaper_Animations.rbxm                    # folk-valley-weapons/tools/rbxtool
 python tools/gen_boss.py <dir>/rig.json tools/ReaperController.lua out/BuildGrimReaper.lua --controller-out=out/ReaperController.lua
 python tools/check_anims.py <dir>/rig.json anims.json
@@ -159,4 +198,4 @@ python blender/render_anims.py <dir>/rig.json anims.json <renders> --frames   # 
 
 - `blender/reaper.py` is the model.
 - `tools/banim.py` is the animation toolkit: leg IK, the scythe solver, cloth lag and the robe's floor collision.
-- `tools/reaper_anims.py` holds the animations themselves.
+- `tools/reaper_anims.py` holds the animations themselves, and `tools/reaper_anims_more.py` the 10 more, with the two-handed holds done by arm IK.
