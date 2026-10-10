@@ -2,17 +2,17 @@
 
 All 61 of the hunters' cosmetic weapons, remade in Blender, plus six new **Mythics**: two swords, two daggers and two hammers. They keep the old models' structure, so they drop into the game unchanged. BanHammer is left alone.
 
-![Swords](previews/sheet_swords_hero.png)
-![Daggers](previews/sheet_daggers_hero.png)
-![Hammers](previews/sheet_hammers_hero.png)
-![Mythics](previews/sheet_mythics_hero.png)
+![Swords](previews/sheet_swords_hero.jpg)
+![Daggers](previews/sheet_daggers_hero.jpg)
+![Hammers](previews/sheet_hammers_hero.jpg)
+![Mythics](previews/sheet_mythics_hero.jpg)
 
 | Preview | What it shows |
 |---|---|
-| `previews/sheet_<class>_hero.png` | every weapon in a class at the same scale (swords, daggers, hammers, mythics) |
-| `previews/ba_<class>.png` | each old model next to its remake, under the same lights |
-| `previews/sheet_<class>_hand.png` | each one held by a 5-stud R6 avatar |
-| `previews/sheet_<class>_phone.png` | a whole class 60 studs from a 70° Roblox camera, framed like a phone screen |
+| `previews/sheet_<class>_hero.jpg` | every weapon in a class at the same scale (swords, daggers, hammers, mythics) |
+| `previews/ba_<class>.jpg` | each old model next to its remake, under the same lights |
+| `previews/sheet_<class>_hand.jpg` | each one held by a 5-stud R6 avatar |
+| `previews/sheet_<class>_phone.jpg` | a whole class 60 studs from a 70° Roblox camera, framed like a phone screen |
 | `previews/hero/` | one image per weapon |
 
 ## The six Mythics
