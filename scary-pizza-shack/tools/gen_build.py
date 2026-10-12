@@ -14,6 +14,9 @@ CONFIGS = {
     "map": dict(root="PizzaShack", cache="PizzaShackMeshes", axis="FV_Axis", fbx="ScaryPizzaShack_Batch1.fbx",
                 batch=1, title="batch 1 map builder", what="the Pizza Shack",
                 folders="Shack, Outside, Stations, Items, Markers"),
+    "remake": dict(root="PizzaShack", cache="PizzaShackMeshes", axis="FV_Axis", fbx="ScaryPizzaShack_Remake.fbx",
+                   batch=1, title="remade map builder", what="the remade Pizza Shack",
+                   folders="Shack, Outside, Stations, Items, Markers"),
     "assets": dict(root="PizzaShackAssets", cache="PizzaShackAssetMeshes", axis="PSA_Axis",
                    fbx="ScaryPizzaShack_Batch2.fbx", batch=2, title="batch 2 assets builder",
                    what="the Pizza Shack assets",
@@ -64,9 +67,10 @@ def pos(cf):
 
 
 def lua_name(name):
-    """Instance names go into a whitespace-separated record: spaces travel as '~'."""
-    assert "~" not in name and "\n" not in name, name
-    return name.replace(" ", "~")
+    """Names and string attributes go into a whitespace-separated record: spaces travel as
+    '~', line breaks (a board's text on several lines) as '^'."""
+    assert "~" not in name and "^" not in name, name
+    return name.replace(" ", "~").replace("\n", "^")
 
 
 def main(src, dst, config="map"):
@@ -397,7 +401,7 @@ local n = 0
 local counts = {parts = 0, meshes = 0, markers = 0}
 
 local function nm(s)
-	return (string.gsub(s, "~", " "))
+	return (string.gsub(string.gsub(s, "~", " "), "%^", "\n"))
 end
 local function fields(line)
 	local f = {}
