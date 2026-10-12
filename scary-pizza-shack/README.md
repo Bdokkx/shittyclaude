@@ -94,6 +94,10 @@ flags, surfaces, PivotOffset, welds, joints, attachments, lights, attributes): 0
 
 ![inside plan](previews/plan_inside.jpg)
 
+![the kitchen](previews/interior.jpg)
+
+![the front at night](previews/front_night.jpg)
+
 ## The map at a glance
 
 * **Shack:** outer footprint X -18..18, Z -11..11 (walls 1 thick), so the room inside is
@@ -349,7 +353,7 @@ python blender/build_map.py out                 # scene -> checks -> out/map.jso
 python tools/gen_build.py out/map.json out/BuildPizzaShack.lua
 python tools/mock_shack.py out/map.json out/BuildPizzaShack.lua   # dry run in the Studio stand-in
 python blender/render_plan.py previews           # labelled plans
-python blender/render_final.py previews          # interior / front at night / aerial / yard
+python blender/render_final.py previews          # interior x2 / front at night / aerial / yard (test=1: quick camera tests)
 python blender/render_sheets.py previews         # station and item sheets
 python tools/make_readme.py
 ```
