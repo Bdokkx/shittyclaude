@@ -165,7 +165,7 @@ def _leg_lamp(d, p):
 # ---------------------------------------------------------------- inside
 
 def inside(sc, out, samples, reuse):
-    v = View(0.0, 0.0, 40.0, 25.0, 55.0)
+    v = View(-2.0, 0.0, 44.0, 27.5, 55.0)
     raw = os.path.join(out, "plan_inside_raw.png")
 
     def filt(n):
@@ -181,7 +181,6 @@ def inside(sc, out, samples, reuse):
     d = ImageDraw.Draw(ov)
     lab = Labels(d)
     # what later passes add, dashed
-    dcircle(d, v, -0.5, 0.5, L.INSPECT_R)
     drect(d, v, *L.HOOD)
     dcircle(d, v, IP.FAN[0], IP.FAN[1], IP.FAN_R)
     for m in L.MATS:
@@ -229,12 +228,12 @@ def inside(sc, out, samples, reuse):
         sy = max(p[1] for p in spawns)
         lab.put((sx, sy + 24), "PlayerSpawn1-4", font(14, False), fill=(255, 220, 120), bg=(16, 16, 20, 170))
     small = font(14, False)
-    for text, (x, z) in (("new-tile circle (Inspector_Rise, kept clear)", (-0.5, -3.9)), ("vent hood + duct", (15.0, -6.9)),
+    for text, (x, z) in (("vent hood + duct", (15.0, -6.9)),
                          ("ceiling fan (Spin)", (IP.FAN[0], IP.FAN[1] + 3.0)), ("drain", (L.DRAIN[0] + 1.6, L.DRAIN[1])),
                          ("mats", (-6.0, -2.2)), ("Radio shelf", (L.RADIO[0], L.RADIO[1] - 1.0))):
         lab.put(v.px(x, z), text, small, fill=(255, 190, 120), bg=(16, 16, 20, 170))
     header(d, v, "Remake, pass 1 (blockout): inside, roof and ceiling off. North up, +X east, +Z south (road). "
-           "Room X -17..17, Z -10..10.", size=18)
+           "Room X %d..%d, Z -10..10." % (L.IN_X0, L.IN_X1), size=18)
     legend(d, v, (("Stand", _leg_stand), ("item marker", _leg_item), ("Markers", _leg_marker),
                   ("work lamp (warm spot)", _leg_lamp), ("later pass", _leg_plan)), size=16)
     img = Image.alpha_composite(img, ov).convert("RGB")

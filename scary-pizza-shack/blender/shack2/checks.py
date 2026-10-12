@@ -639,6 +639,128 @@ def budget(sc):
     return cnt
 
 
+# ---------------------------------------------------------------- bodies, items and swings
+
+BODY = (2.0, 5.0, 1.0)             # an R6 player: 2 wide, 5 tall, 1 deep
+PIZZA_STATIONS = {"DoughStation": ["Work"], "SauceStation": ["WorkSauce", "WorkCheese"], "ChopStation": ["Work"],
+                  "ToppingRail": ["Work"], "CutTable": ["Work"], "BoxStation": ["Work"]}
+BOX_WORK = {"BoxStation": ["Work"]}
+SIDE = 4.0                         # clear floor a Stand needs on at least two sides
+
+
+FLOORISH = ("Mat", "Tile", "Floor", "Puddle", "Drain", "Threshold", "Skirting")
+CONTAINERS = ("Tub", "DeckLining", "Hearth", "StoreFloor", "Liner", "Back")
+
+
+def _not_floor(n):
+    return not any(f in n.name for f in FLOORISH)
+
+
+def _hits_obb(b, C, R, H, skip=(), depth=0.05, keep=None, min_top=None):
+    """Paths of the boxes in b that overlap the oriented box (C, R, H) deeper than `depth`;
+    min_top: ignore what does not reach above that height (a dusting of flour under a pizza)."""
+    ext = np.abs(R) @ H
+    out = []
+    for i in b.query(C - ext, C + ext):
+        n = b.nodes[i]
+        if n.kind == "Marker" or n.top() == "Items" or id(n) in skip:
+            continue
+        if min_top is not None and b.hi[i][1] <= min_top:
+            continue
+        if keep is not None and not keep(n):
+            continue
+        if sat_depth(b.C[i], b.R[i], b.H[i], C, R, H) > depth:
+            out.append(n.path().replace("PizzaShack/", ""))
+    return out
+
+
+def _flat(R):
+    """The marker's frame turned upright: its look kept level."""
+    look = -R[:, 2]
+    f = np.array((look[0], 0.0, look[2]))
+    f = f / (np.linalg.norm(f) or 1.0)
+    z = -f
+    x = np.cross((0.0, 1.0, 0.0), z)
+    return np.column_stack((x, (0.0, 1.0, 0.0), z))
+
+
+def bodies(sc):
+    """Real bodies and items instead of points.
+    * a 2 x 5 x 1 body at every Stand, Queue, Customer and PlayerSpawn hits nothing that collides;
+    * every Stand has 4 studs of clear floor (nothing that collides, 0.5 .. 5 up) on two of its sides;
+    * a pizza (3.4 x 0.4 x 3.4) at every pizza Work, an open box's lid zone at the box station's
+      Work (3.6 wide, 3.2 behind the marker, 3.5 up), a 0.8 cube at every Slot and Tub, hit
+      nothing visible but what they sit on;
+    * the oven: 6 studs of clear floor in front of its mouths, nothing in the doors' swing plus
+      the peel (2 studs)."""
+    out = []
+    bc = Boxes(sc, keep=lambda n: bool(n.p.get("collide")) and n.p["transparency"] < 0.99)
+    bv = Boxes(sc, keep=lambda n: n.p["transparency"] < 0.99)
+    mk = sc.root.get("Markers")
+    people = [(c.name, c) for c in mk.children if c.name.startswith(("Queue", "PlayerSpawn"))]
+    st = sc.root.get("Stations")
+    for m in st.children:
+        for c in m.walk():
+            if c.kind == "Marker" and (c.name.startswith("Stand") or c.name == "Customer"):
+                people.append((m.name + "." + c.name, c))
+    for name, c in people:
+        R = _flat(c.p["cf"].R)
+        p = c.p["cf"].p
+        C = p + np.array((0.0, BODY[1] / 2 + 0.3, 0.0))              # feet clear of mats and sills
+        hit = _hits_obb(bc, C, R, np.array(BODY) / 2, keep=_not_floor)
+        if hit:
+            out.append(("body", name, hit[:4]))
+        if ".Stand" in name:
+            clear_sides = 0
+            for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                d = R @ np.array((dx, 0.0, dz))
+                along = SIDE / 2 + (BODY[0] / 2 if dx else BODY[2] / 2)
+                Cs = p + d * along + np.array((0.0, 1.75, 0.0))          # the floor up to the hips
+                Hs = np.array((BODY[0] / 2 if dz else SIDE / 2, 1.25, SIDE / 2 if dz else BODY[2] / 2 + 0.5))
+                if not _hits_obb(bc, Cs, R, Hs, keep=_not_floor):
+                    clear_sides += 1
+            if clear_sides < 2:
+                out.append(("sides", name, clear_sides))
+    for m in st.children:
+        own_surface = {id(n) for n in m.walk() if n.name in ("Top", "Board", "Shelf", "Deck", "Hearth", "Rail")}
+        for c in m.walk():
+            if c.kind != "Marker":
+                continue
+            p, R = c.p["cf"].p, _flat(c.p["cf"].R)
+            if c.name in PIZZA_STATIONS.get(m.name, ()):
+                hit = _hits_obb(bv, p + np.array((0.0, 0.22, 0.0)), R, np.array((1.7, 0.2, 1.7)), skip=own_surface,
+                                min_top=p[1] + 0.25)
+                if hit:
+                    out.append(("pizza", m.name + "." + c.name, hit[:4]))
+            if c.name in BOX_WORK.get(m.name, ()):
+                Cb = p + R @ np.array((0.0, 1.9, -1.6))           # behind = along the marker's look (-Z), from
+                hit = _hits_obb(bv, Cb, R, np.array((1.8, 1.6, 1.6)), skip=own_surface)     # the box's rim up
+                if hit:
+                    out.append(("lid", m.name + "." + c.name, hit[:4]))
+            if c.name.startswith(("Slot", "Tub")):
+                hold = own_surface | {id(n) for n in m.walk() if n.name in CONTAINERS}
+                hit = _hits_obb(bv, p + np.array((0.0, 0.45, 0.0)), R, np.array((0.4, 0.4, 0.4)), skip=hold,
+                                depth=0.08)
+                if hit:
+                    out.append(("item", m.name + "." + c.name, hit[:4]))
+    oven = st.get("Oven")
+    if oven is not None:
+        from . import st_east as OE
+        own = {id(n) for n in oven.walk()}
+        zc = (OE.MZ[0] + OE.MZ[1]) / 2
+        zh = (OE.MZ[1] - OE.MZ[0]) / 2 + 0.3
+        C = np.array((OE.X0 - OE.APRON / 2, 3.0, zc))
+        hit = _hits_obb(bc, C, np.eye(3), np.array((OE.APRON / 2, 2.5, zh)), keep=_not_floor, skip=own)
+        if hit:
+            out.append(("apron", "Oven", hit[:4]))
+        for (yf, ys, yc) in OE.DECKS:
+            C = np.array((OE.X0 - 1.6, yf + 0.75, zc))
+            hit = _hits_obb(bv, C, np.eye(3), np.array((1.6, 0.75, zh)), skip=own)
+            if hit:
+                out.append(("swing", "Oven", hit[:4]))
+    return out
+
+
 # ---------------------------------------------------------------- z-fighting
 
 def zfight(sc, boxes=None):
@@ -704,6 +826,7 @@ def run(sc, old=None, quick=False):
     rep["floating"] = floating(sc, b)
     rep["pierce"] = pierce(sc, b)
     rep["clear"] = clear(sc)
+    rep["bodies"] = bodies(sc)
     if not quick:
         rep["planes"] = planes(sc, b)
         rep["horizon"] = horizon(sc, b)
@@ -739,6 +862,10 @@ def show(rep, limit=25):
     print(len(rep["pierce"]))
     for a, c in rep["pierce"][:limit]:
         print("  ", a, " -> ", c)
+    head("bodies, items and swings")
+    print(len(rep["bodies"]))
+    for r in rep["bodies"][:limit * 2]:
+        print("  ", r)
     head("clear boxes at markers")
     print(len(rep["clear"]))
     for k, v in rep["clear"][:limit]:

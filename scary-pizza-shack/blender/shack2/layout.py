@@ -21,6 +21,9 @@ WIDEN = 4.0
 OUT_X0 = _L1.OUT_X0 - WIDEN
 IN_X0 = _L1.IN_X0 - WIDEN
 DOOR_X0, DOOR_X1 = _L1.DOOR_X0 - 2.0, _L1.DOOR_X1 - 2.0
+# the serving window's head raised 0.8 (to 7.8): an open box's lid on the box station stands up
+# into the opening with clear air round it
+WIN_Y1 = 7.8
 
 # (the bands, beams, hatch, fan and work lamps inside are in interior.py and shell.py)
 
@@ -180,7 +183,7 @@ YARD_PROPS = {
 # inside
 RADIO = (-12.0, 9.4)              # Radio (Speaker, Dial) on a shelf at head height, desk's west end
 DRAIN = (-14.0, 5.0)              # floor drain by the sink (the middle of a floor tile)
-HOOD = (12.6, 17.0, -6.4, 1.4)    # vent hood over the oven (X0, X1, Z0, Z1), duct up through the roof
+HOOD = (12.6, 17.0, -6.4, 2.4)    # vent hood over the oven (X0, X1, Z0, Z1), duct up through the roof
 INSPECT_R = 4.0                   # new-tile circle at Inspector_Rise, kept clear of furniture
 MATS = ((-8.6, 2.6, -3.9, -2.1),  # rubber mats (X0, X1, Z0, Z1): the prep line,
         (10.4, 12.6, -4.2, 0.4))  # and the oven front

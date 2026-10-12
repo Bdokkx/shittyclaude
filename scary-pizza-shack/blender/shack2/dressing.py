@@ -94,10 +94,10 @@ def inspection_certificate(k, f):
 
 
 def employee_frame(k, f):
-    """Over the box station: EMPLOYEE OF THE MONTH, the photo gone, its clean ghost and four
-    bits of tape left on the backing."""
+    """On the south wall over the open corner: EMPLOYEE OF THE MONTH, the photo gone, its
+    clean ghost and four bits of tape left on the backing."""
     m = k.sc.model(f, "EmployeeOfTheMonth")
-    fr = wf("E", 8.0, 7.4)
+    fr = wf("S", 15.4, 7.4)
     k.mesh(m, "Frame", "Dress__EmpFrame", frame_geo(1.7, 2.1, 0.22, 0.22), fr, "wood_dark", shadow=False)
     k.mesh(m, "Backing", "Dress__EmpBacking", bevel_box(1.3, 1.7, 0.1, 0.02, c=(0, 0, 0.05)), fr, "paper_old",
            shadow=False)
@@ -201,7 +201,7 @@ def wet_floor_sign(k, f):
 def fly_strips(k, f):
     """Sticky fly papers hanging from the ceiling by the bin and by the back door (Sway), with
     the flies they have not caught yet."""
-    for i, (x, z) in enumerate(((12.5, 7.6), (-13.6, -3.4))):
+    for i, (x, z) in enumerate(((2.0, 4.0), (-13.6, -3.4))):
         m = k.sc.model(f, "FlyStrip%d" % (i + 1))
         k.mesh(m, "Canister", "Dress__FlyCan", ccyl(0.16, 0.4, 8, "y", (0, -0.2, 0), 0.03), CF((x, L.CEIL, z)),
                "red_dark", shadow=False)
@@ -255,7 +255,8 @@ def conduit_drops(k, f, sc):
     apart); where the wall above one is clear all the way up, its conduit drops to it from the
     run under the ceiling, clipped with saddles."""
     lo, hi = _blockers(sc)
-    tops = [n for n in sc.nodes(("Part",)) if n.name == "Top" and n.top() == "Stations"]
+    tops = [n for n in sc.nodes(("Part",)) if n.name == "Top" and n.top() == "Stations"
+            and n.path().split("/")[2] != "BoxStation"]          # an open box's lid stands against that wall
     tlo = np.array([n.p["cf"].p - np.abs(n.p["cf"].R) @ (np.asarray(n.p["size"]) / 2) for n in tops])
     thi = np.array([n.p["cf"].p + np.abs(n.p["cf"].R) @ (np.asarray(n.p["size"]) / 2) for n in tops])
     g, boxes = G.Geo(), G.Geo()

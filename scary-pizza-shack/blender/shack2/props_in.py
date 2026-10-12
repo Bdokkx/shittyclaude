@@ -660,8 +660,8 @@ def _flat_boxes(rng, n, assembled_top=0):
     g, edges, prints = G.Geo(), G.Geo(), G.Geo()
     y = 0.0
     for i in range(n):
-        a = rng.uniform(-3, 3)
-        dx, dz = rng.uniform(-0.1, 0.1), rng.uniform(-0.1, 0.1)
+        a = rng.uniform(-1.5, 1.5)                       # squared up: the stack fills its bay
+        dx, dz = rng.uniform(-0.05, 0.05), rng.uniform(-0.05, 0.05)
         g.add(bevel_box(3.6, 0.15, 3.6, 0.03, c=(dx, y + 0.075, dz)).xf(RY(a)))
         y += 0.17
     for i in range(assembled_top):

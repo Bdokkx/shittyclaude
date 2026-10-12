@@ -98,7 +98,7 @@ def bus_stop(k, gr):
           text_color=(250, 240, 220))
     k.mesh(fl, "Plate", "BusStop__FlagPlate", bevel_box(1.2, 0.6, 0.15, 0.03), CF((BX0 - 1.4, y + 6.0, BZ1 + 0.53)),
            "timetable", shadow=False)
-    stand(k, m, (BX0 + BX1) / 2, 21.6, S_, y=y)
+    stand(k, m, (BX0 + BX1) / 2, 23.2, S_, y=gr.y((BX0 + BX1) / 2, 23.2))     # kerbside, clear of the posts
     k.mark_used("BusShelter", "outside")
     return m
 

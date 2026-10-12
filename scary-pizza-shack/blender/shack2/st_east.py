@@ -1,6 +1,7 @@
-"""The east wall, north to south: the brick chimney breast and the Oven (the hero), the
-PeelRack, the CutTable, the Bin on the floor, the BoxStation. Same Models, markers and
-moving parts as batch 1.
+"""The east wall, north to south: the brick chimney breast, the Oven (the hero, the room's
+centrepiece: its mouths face the middle of the room over 6 studs of clear floor), the
+PeelRack beside it. (The CutTable, the BoxStation and the Bin moved to the south wall, on the
+way from the oven to the serving window.)
 
 The oven: brick in three close reds on a dark mortar core (each brick a part, 0.15 proud),
 two arched mouths with brick voussoirs and riveted steel surrounds, soot licking up over each
@@ -21,9 +22,11 @@ from .st_common import E, FACE, N, S_, W, board, moving, pivot, spot, stand, sta
 
 X0 = L.E_FRONT            # 13, the oven's front face
 X1 = L.IN_X1              # 17, the east wall
-OZ = (-6.0, 1.0)          # oven span (Z)
+OZ = (-6.0, 2.0)          # oven span (Z): its brick body runs on from the breast
 BZ = (-10.0, -6.0)        # breast span (Z)
-MZ = (-5.0, 0.0)          # mouths (Z)
+MZ = (-3.0, 1.0)          # mouths (Z): a stud clear of the prep line (front Z -4), 6 studs of floor in front
+APRON = 6.0               # clear floor in front of the mouths (X 7..13), the doors' and the peel's swing inside it
+OVEN_STAND_X = 9.5        # outside the doors' swing (1.14) plus the peel (2): X 10..13
 DECKS = ((2.2, 3.0, 3.4), (5.0, 5.8, 6.2))     # (floor, springing, crown) of each mouth (Slot1 2.2, Slot2 5.0)
 LOGS = (0.6, 1.8)         # log store opening (Y)
 TOP = 7.8                 # top of the brick body (the hood sits on it)
@@ -182,7 +185,7 @@ def oven(k):
     k.prop(m, "OvenBrush", CF((bf, 6.6, -6.55), G.ry(-90)), name="OvenBrush")
     for dz, seed in ((-8.9, 1), (-9.55, 2)):
         k.prop(m, "OvenMitt", CF((bf, 7.4, dz), G.ry(-90)), name="OvenMitt", seed=seed)
-    k.prop(m, "AshBucket", CF((12.35, L.FLOOR, -0.5)), name="AshBucket")     # between the stands' clear boxes
+    k.prop(m, "AshBucket", CF((12.5, L.FLOOR, -5.0)), name="AshBucket")      # in the fire gap by the breast
     # ---- the old brick chimney on the roof (batch 1's Smoke attachment) and the steel flue
     ch = k.box(m, "Chimney", (X0 + 0.5, L.ROOF_TOP - 0.4, BZ[0] + 0.5), (X1 - 0.5, 18.6, BZ[1] - 0.5), "brick2",
                studs=False, solid=True)
@@ -191,7 +194,7 @@ def oven(k):
     k.sc.attachment(ch, "Smoke", CF(((X0 + X1) / 2, 20.2, (BZ[0] + BZ[1]) / 2)))
     k.sc.attachment(ch, "Fx_Smoke", CF(((X0 + X1) / 2, 20.2, (BZ[0] + BZ[1]) / 2)))
     flue(k, m)
-    stand(k, m, X0 - IP.STAND_GAP - 0.6, (MZ[0] + MZ[1]) / 2, E)
+    stand(k, m, OVEN_STAND_X, (MZ[0] + MZ[1]) / 2, E)
     return m
 
 
@@ -387,11 +390,11 @@ def flue(k, m):
 # ---------------------------------------------------------------- peel rack
 
 def peel_rack(k):
-    """Peels standing on their poles between the oven and the cut table, heads down, held by a
-    wooden rack on the wall and a steel cup rail on the floor: the PizzaPeel item and an old
-    one with a wide head, burnt along its edge."""
+    """Peels standing on their poles just south of the oven, heads down, held by a wooden rack
+    on the wall and a steel cup rail on the floor: the PizzaPeel item and an old one with a
+    wide head, burnt along its edge."""
     m = station(k, "PeelRack")
-    z0, z1 = 1.0, 2.0
+    z0, z1 = OZ[1], OZ[1] + 1.0
     zc = (z0 + z1) / 2
     xb = X1
     # peels stand head-down on a rubber-lined floor rail; a wall arm holds their poles
@@ -415,76 +418,33 @@ def peel_rack(k):
     # the two poles side by side in the arm's opening (Z 1.16..1.84)
     items2.place(k, m, "PizzaPeel", CF((xp, L.FLOOR + 0.3 - lo[2], z0 + 0.35), R_down))
     k.prop(m, "OldPeel", CF((xp, L.FLOOR + 0.3, z1 - 0.3)), name="OldPeel")
-    stand(k, m, X0 - IP.STAND_GAP, zc, E)
+    stand(k, m, X0 - 2.0, zc, E)
     return m
 
 
 # ---------------------------------------------------------------- cut table
 
+CUT = (OZ[1] + 1.0, L.IN_Z1)     # Z 3..10: from the peel rack into the corner
+
+
 def cut_table(k):
-    """Counter with a butcher-block top, the round cutting board, the slice guide hung on the
-    wall, the PizzaCutter item on its hook on a tool rail."""
+    """A long butcher-block counter on the east wall from the peel rack into the corner: the
+    round cutting board at its north end (next to the oven), the PizzaCutter item hung on its
+    hook on a tool rail, the slice guide and the employee of the month on the wall above."""
     m = station(k, "CutTable")
-    z0, z1 = 2.0, 6.0
-    zc = (z0 + z1) / 2
-    C.counter(k, m, "E", z0, z1, 4.0, top="wood", fronts=[(2, "drawers"), (2, "door")], end_left=True,
-              end_right=False, owner="CutTable")
-    k.prop(m, "RoundBoard", CF((15.0, L.WORK, zc), G.ry(90)), name="Board")
-    spot(k, m, "Work", 15.0, L.WORK + 0.4, zc, E)
-    k.prop(m, "ToolRail", C.wcf("E", zc, 7.1, 0.0), name="ToolRail")
+    z0, z1 = CUT
+    C.counter(k, m, "E", z0, z1, 4.0, top="wood", fronts=[(2, "drawers"), (3, "doors2"), (2, "door")],
+              end_left=True, end_right=False, owner="CutTable")
+    zw = z0 + 1.9
+    k.prop(m, "RoundBoard", CF((15.0, L.WORK, zw), G.ry(90)), name="Board")
+    spot(k, m, "Work", 15.0, L.WORK + 0.4, zw, E)
+    k.prop(m, "ToolRail", C.wcf("E", z0 + 2.4, 6.2, 0.0), name="ToolRail")
     R = np.column_stack(((1, 0, 0), (0, 0, -1), (0, 1, 0)))     # hanging wheel-down, flat to the wall
-    items2.place(k, m, "PizzaCutter", CF((X1 - 0.4, 7.1 - 0.9, zc + 0.9), R))     # grip in the hook
-    k.prop(m, "SliceGuide", C.wcf("E", zc - 0.8, 5.2, 0.0), name="SliceGuide")
-    stand(k, m, X0 - IP.STAND_GAP, zc, E)
-    return m
-
-
-# ---------------------------------------------------------------- bin
-
-def kitchen_bin(k):
-    """Pedal bin on the floor against the counters between the cut table and the box
-    station; its Lid is hinged at the back."""
-    m = station(k, "Bin")
-    c = (X0 - 0.95, L.FLOOR, 6.0)
-    body = G.outward(G.lathe([(0, 0.0), (0.62, 0.0), (0.7, 0.1), (0.76, 2.1), (0, 2.1)], 12))
-    k.mesh(m, "Body", "Bin__Body", body, CF(c), "steel_dark", solid=True)
-    k.mesh(m, "Band", "Bin__Band", G.ring(0.8, 0.7, 0.3, 12, c=(0, 1.95, 0)), CF(c), "red", shadow=False)
-    k.mesh(m, "Foot", "Bin__Foot", G.ring(0.7, 0.5, 0.15, 12, c=(0, 0.075, 0)), CF(c), "black", shadow=False)
-    lid = G.outward(G.lathe([(0, 0.0), (0.82, 0.0), (0.82, 0.15), (0.6, 0.35), (0, 0.42)], 12))
-    lid.add(bevel_box(0.3, 0.15, 0.4, 0.04, c=(0.82, 0.1, 0)))
-    lidp = k.mesh(m, "Lid", "Bin__Lid", lid, CF((c[0], c[1] + 2.1, c[2])), "steel", solid=True)
-    pivot(lidp, CF((c[0] + 0.8, c[1] + 2.1, c[2])))
-    moving(m, "Lid", "hinged at the back (counter side); rotate the pivot -90 deg about Z to flip it up")
-    ped = G.Geo()
-    ped.add(bevel_box(0.5, 0.15, 0.7, 0.04, c=(-0.95, 0.2, 0)))
-    ped.add(rod((-0.7, 0.2, 0), (-0.55, 0.35, 0), 0.08, 4))
-    k.mesh(m, "Pedal", "Bin__Pedal", ped, CF(c), "black", shadow=False)
-    k.prop(m, "LitterFloor", CF((c[0] - 1.3, L.FLOOR, c[2] + 0.5)), name="Litter")
-    st = np.array((c[0] - 1.2, L.FLOOR, c[2] - 1.5))
-    d = np.array((c[0], L.FLOOR, c[2])) - st
-    k.sc.marker(m, "Stand", CF(st, G.facing(d / np.linalg.norm(d))))
-    return m
-
-
-# ---------------------------------------------------------------- box station
-
-def box_station(k):
-    """Counter with its open bay stacked to the top with flat boxes, a folded box with the
-    PAPA STUD'S print on top of the pile, and the roll of stickers on the worktop."""
-    m = station(k, "BoxStation")
-    z0, z1 = 6.0, 10.0
-    zc = (z0 + z1) / 2
-    C.counter(k, m, "E", z0, z1, 4.0, top="wood_light", fronts=[(4, "open")], end_left=False, end_right=False,
-              owner="BoxStation", open_sides=False)
-    k.prop(m, "FlatBoxStack", CF((14.85, 0.9, zc)), name="FlatBoxes", seed=5)     # 7 flat + 1 folded: 0.9 .. 2.9
-    board(k, m, (3.0, 0.45, 0.15), CF((13.05 - 0.08, 0.9 + 7 * 0.17 + 0.35, zc), FACE["E"]), "cardboard",
-          text="PAPA STUD'S PIZZA", text_color=(170, 32, 26), name="BoxPrint")
-    zw = zc - 0.6                       # the work spot clear of the rules board in the corner
-    spot(k, m, "Work", 15.0, L.WORK, zw, E)
-    k.prop(m, "StickerRoll", CF((16.1, L.WORK, z1 - 1.6)), name="StickerRoll")
-    stand(k, m, X0 - IP.STAND_GAP, zw, E)
+    items2.place(k, m, "PizzaCutter", CF((X1 - 0.4, 6.2 - 0.9, z0 + 2.4 + 0.9), R))     # grip in the hook
+    k.prop(m, "SliceGuide", C.wcf("E", z1 - 1.7, 6.0, 0.0), name="SliceGuide")
+    stand(k, m, X0 - IP.STAND_GAP - 0.3, zw - 0.8, E)
     return m
 
 
 def build(k):
-    return [oven(k), peel_rack(k), cut_table(k), kitchen_bin(k), box_station(k)]
+    return [oven(k), peel_rack(k), cut_table(k)]

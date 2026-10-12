@@ -155,6 +155,11 @@ def outside_markers(sc):
     n = mk.find("Spawn_ForestSouth")
     if n is not None:
         n.p["cf"] = CF((-6.0, gr.y(-6.0, 69.0), 69.0), n.p["cf"].R)
+    # Queue1 stands where ServingWindow.Customer does: a whole body clear of the ledge
+    n = mk.find("Queue1")
+    if n is not None:
+        q = n.p["cf"].p
+        n.p["cf"] = CF((q[0], q[1], L.QUEUE_Z + 0.85), n.p["cf"].R)
     # the Watcher's spot outside the side window moves out with the widened west wall
     n = mk.find("Watcher_Window")
     if n is not None:

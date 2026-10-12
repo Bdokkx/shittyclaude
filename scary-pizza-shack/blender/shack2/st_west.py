@@ -23,11 +23,11 @@ def storage_shelf(k):
     Slot5/6 on the shelf above; stock on the top board (tins, tubs, a box of hairnets)."""
     m = station(k, "StorageShelf")
     z0, z1 = 2.0, 6.0
-    x0, x1 = WX, WX + 2
+    x0, x1 = WX, WX + 4                          # as deep as the cooler: no recess beside it
     xc = (x0 + x1) / 2
     k.box(m, "Base", (x0, L.FLOOR, z0), (x1, 1.2, z1), "wood_dark", solid=True)
     for zz in (z0 + 0.2, z1 - 0.2):
-        k.mesh(m, "Upright", "StorageShelf__Upright", bevel_box(2.0, 7.0, 0.4, 0.06), CF((xc, 1.2 + 3.5, zz)), "wood",
+        k.mesh(m, "Upright", "StorageShelf__Upright", bevel_box(x1 - x0, 7.0, 0.4, 0.06), CF((xc, 1.2 + 3.5, zz)), "wood",
                solid=True)
     for y in (4.0, 6.8, 8.2):
         k.box(m, "Shelf", (x0, y - 0.4, z0), (x1, y, z1), "wood", solid=True)
@@ -36,10 +36,10 @@ def storage_shelf(k):
     kk = 1
     for y in (4.0, 1.2, 6.8):
         for z in (z1 - 1.4, z0 + 1.3):              # clear of the sink counter and the cooler
-            spot(k, m, "Slot%d" % kk, x0 + 1.0, y, z, W)
+            spot(k, m, "Slot%d" % kk, x1 - 1.0, y, z, W)
             kk += 1
     # more stock at the backs of the shelves, behind the slots (out of their clear boxes)
-    xb = x0 + 0.4
+    xb = x0 + 0.7
     k.prop(m, "SackPile", CF((xb, 1.2, (z0 + z1) / 2 + 0.2), G.ry(3)), name="Sacks")
     k.prop(m, "JarRow", CF((xb + 0.05, 4.0, z0 + 1.0), G.ry(90)), name="Jars")
     k.prop(m, "TinPair", CF((xb + 0.05, 4.0, z1 - 1.3), G.ry(90)), name="BackTins")
@@ -48,7 +48,7 @@ def storage_shelf(k):
     k.prop(m, "TinRow", CF((xc, 8.2, z1 - 1.0), G.ry(90)), name="Tins")
     k.prop(m, "HairnetBox", CF((xc, 8.2, z0 + 1.1), G.ry(90)), name="Hairnets")
     k.prop(m, "LabelStrip", CF((x1 + 0.28, 3.75, (z0 + z1) / 2), G.ry(90)), name="Labels")
-    stand(k, m, x1 + IP.STAND_GAP + 0.4, (z0 + z1) / 2, W)
+    stand(k, m, x1 + IP.STAND_GAP, (z0 + z1) / 2, W)
     return m
 
 
@@ -168,28 +168,29 @@ def side_window(k, parent):
 
 def fuse_box(k):
     """A grey steel fuse box with its red Lever (up = ON), a hazard sticker, conduit going up
-    to the ceiling; the light switch for the room beside it."""
+    to the ceiling; on the north wall between the back door and the fridge, where anyone
+    coming in from the yard finds it, the light switch under it."""
     m = station(k, "FuseBox")
-    z = -8.4
-    x0 = WX
-    k.mesh(m, "Box", "FuseBox__Box6", bevel_box(0.6, 2.2, 2.0, 0.1), CF((x0 + 0.3, 5.7, z)), "grey", solid=True)
-    k.mesh(m, "Door", "FuseBox__Door", bevel_box(0.15, 1.8, 1.6, 0.05), CF((x0 + 0.65, 5.7, z - 0.1)), "grey_light",
+    x = -14.0                                     # the 2 studs of wall between the door (X -15) and the fridge
+    z0 = L.IN_Z0
+    k.mesh(m, "Box", "FuseBox__Box6", bevel_box(1.8, 2.2, 0.6, 0.1), CF((x, 5.7, z0 + 0.3)), "grey", solid=True)
+    k.mesh(m, "Door", "FuseBox__Door", bevel_box(1.4, 1.8, 0.15, 0.05), CF((x - 0.1, 5.7, z0 + 0.65)), "grey_light",
            shadow=False)
-    wall_board(k, m, "W", z - 0.5, 6.25, (0.6, 0.6), "mustard", d=0.78, text="DANGER", text_color=(20, 20, 20),
+    wall_board(k, m, "N", x - 0.4, 6.25, (0.6, 0.6), "mustard", d=0.78, text="DANGER", text_color=(20, 20, 20),
                name="Sticker")
-    k.part(m, "Hub", (0.4, 0.8, 0.8), CF((x0 + 0.8, 5.4, z + 0.5)), "black", shape="Cylinder", grid=False)
+    k.part(m, "Hub", (0.4, 0.8, 0.8), CF((x + 0.5, 5.4, z0 + 0.8), G.ry(90)), "black", shape="Cylinder", grid=False)
     lev = G.Geo()
     lev.add(bevel_box(0.2, 1.2, 0.2, 0.05, c=(0, 0.6, 0)))
     lev.add(G.sphere(0.22, 8, 4, c=(0, 1.25, 0)))
-    lv = k.mesh(m, "Lever", "FuseBox__Lever", lev, CF((x0 + 1.1, 5.4, z + 0.5)), "red", solid=True)
-    pivot(lv, CF((x0 + 1.1, 5.4, z + 0.5)))
+    lv = k.mesh(m, "Lever", "FuseBox__Lever", lev, CF((x + 0.5, 5.4, z0 + 1.1)), "red", solid=True)
+    pivot(lv, CF((x + 0.5, 5.4, z0 + 1.1), G.ry(-90)))
     moving(m, "Lever", "pointing up = ON. Rotate the pivot about X (the wall's normal): +120 deg swings it down = OFF")
     cond = G.Geo()
-    for dz in (-0.5, 0.0, 0.5):
-        cond.add(rod((x0 + 0.3, 6.8, z + dz), (x0 + 0.3, L.CEIL, z + dz), 0.1, 6))
+    for dx in (-0.5, 0.0, 0.5):
+        cond.add(rod((x + dx, 6.8, z0 + 0.3), (x + dx, L.CEIL, z0 + 0.3), 0.1, 6))
     k.mesh(m, "Conduit", "FuseBox__Conduit", cond, CF(), "steel_dark", shadow=False)
-    k.prop(m, "LightSwitch", C.wcf("W", -6.9, 4.9, 0.0), name="LightSwitch")
-    stand(k, m, x0 + 2.4, z, W)
+    k.prop(m, "LightSwitch", C.wcf("N", x, 3.6, 0.0), name="LightSwitch")
+    stand(k, m, x, z0 + 2.4, N)
     return m
 
 
@@ -198,6 +199,11 @@ def build(k):
     dress = k.sc.folder(k.sc.root.get("Shack"), "Dressing")
     lockers(k, dress)
     side_window(k, dress)
+    # the staff hooks on the west wall beside the lockers: an apron and a tea towel
+    hk = C.wcf("W", -8.0, 6.8, 0.0)
+    k.prop(dress, "CoatHooks", hk, name="CoatHooks")
+    k.prop(dress, "Apron", hk * CF((-0.4, 0.15, 0.3)), name="Apron", seed=1)
+    k.prop(dress, "TeaTowel", hk * CF((0.45, 0.15, 0.42)), name="TeaTowel")
     # the broom leans on the cooler's side by the lockers, out of the way in
     k.prop(dress, "Broom", CF((WX + 2.55, L.FLOOR, -2.75), G.ry(-90)), name="Broom")
     return st

@@ -20,9 +20,12 @@ IN_X0, IN_X1, IN_Z0, IN_Z1 = L.IN_X0, L.IN_X1, L.IN_Z0, L.IN_Z1
 COUNTERS = [
     ("N", -9.0, 12.0, 6.0),        # dough, sauce + cheese, chop, topping rail (6 deep: pots and crates
                                    # at the back, a whole pizza in front of them)
-    ("E", 2.0, 10.0, 4.0),         # cut table, box station
     ("S", L.IN_X0, -13.0, 4.0),    # sink, a cupboard west of it into the corner
-    ("S", -5.0, 10.0, 4.0),        # serving window counter, till
+    ("S", -5.0, 1.0, 4.0),         # serving window counter (the handover)
+    ("S", 1.0, 5.0, 4.0),          # box station, in front of the window's east end: an open box's lid
+                                   # stands up into the window opening behind it
+    ("S", 5.0, 8.0, 4.0),          # register: the till, the plushie shelf over it (X 8..13: an open bay)
+    ("E", 3.0, 10.0, 4.0),         # cut table, below the oven and the peel rack
 ]
 DESK = ("S", -13.0, -7.0, 4.0, 2.6)       # the camera desk: lower, a stool fits under it
 
@@ -31,7 +34,7 @@ TALL = [
     ("N", -13.0, -9.0, 8.2),       # fridge (5 deep)
     ("N", 13.0, 17.0, 9.4),        # chimney breast
     ("E", -10.0, -6.0, 9.4),       # chimney breast
-    ("E", -6.0, 1.0, 9.4),         # oven, its hood up to the ceiling
+    ("E", -6.0, 2.0, 9.4),         # oven, its hood up to the ceiling
     ("W", 2.0, 6.0, 8.2),          # storage shelf
     ("W", -2.0, 2.0, 8.2),         # drinks cooler
 ]
@@ -60,9 +63,8 @@ def bays():
 WORK_LAMPS = {
     "PrepLamp1": (-9.5, -7.4, "tube"), "PrepLamp2": (-3.5, -7.4, "tube"),
     "PrepLamp3": (2.5, -7.4, "tube"), "PrepLamp4": (8.5, -7.4, "tube"),
-    "WindowLamp1": (-3.5, 7.4, "tube"), "WindowLamp2": (2.5, 7.4, "tube"),
-    "TillLamp": (8.5, 7.0, "tube"),
-    "CutLamp": (14.5, 4.0, "pendant"),
+    "WindowLamp1": (-4.6, 7.4, "tube"), "WindowLamp2": (0.4, 7.4, "tube"),
+    "TillLamp": (3.0, 7.4, "cage"),           # over the box station
     "SinkLamp": (-15.0, 7.6, "cage"),         # over the basin (X -16..-14)
     "DoorLamp": (-16.0, -7.6, "cage"),
 }

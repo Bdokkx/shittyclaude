@@ -1,7 +1,10 @@
-"""The south wall, east to west: PlushieShelf and RulesBoard (above), Register,
-ServingWindow (with the PlayerBlock in its opening), ShutterButton, CCTVDesk, Sink, and the
-Extinguisher bracket on the west wall over the sink. Same Models, markers and moving parts
-as batch 1."""
+"""The south wall, east to west, the way a pizza leaves the room: the open bay by the cut
+table (the RulesBoard on the wall, the Bin in its corner), the Register's till with the
+PlushieShelf over it, the BoxStation in front of the window's east end (behind its Work only
+the window opening: an open box's lid stands up in clear air), the ServingWindow counter with
+the Handover (the PlayerBlock in the opening), the ShutterButton with the TicketPrinter on a
+shelf over it, the CCTVDesk, the Sink. The Extinguisher is on the fridge's
+side by the back door."""
 import math
 
 import numpy as np
@@ -19,18 +22,27 @@ FRONT = SZ - 4.0                # 6, the counters' front edge
 STZ = FRONT - IP.STAND_GAP      # 4.6, stands
 
 
-def _counter(k, m, x0, x1, **kw):
-    return C.counter(k, m, "S", x0, x1, 4.0, **kw)
+def _counter(k, m, x0, x1, depth=4.0, **kw):
+    return C.counter(k, m, "S", x0, x1, depth, **kw)
+
+
+WIN_COUNTER = (-5.0, 1.0)       # the serving window's counter (the window itself is X -5..5)
+HANDOVER_X = -2.0               # a box handed over sits at X -3.8..-0.2
+BOX = (1.0, 5.0)                # box station, in front of the window's east end
+BOX_WORK_X = 2.8                # an open box (X 1.0..4.6) and its lid stand clear of the window's jamb
+REGISTER = (5.0, 8.0)           # the till, the plushie shelf on the wall over it
+TILL = (5.3, 7.5)
+BAY = (8.0, 13.0)               # open floor to the cut table (east wall): the rules board, the bin
 
 
 # ---------------------------------------------------------------- plushie shelf + rules board
 
 def plushie_shelf(k):
-    """A wooden shelf on two brackets above the till; Slot1..4 along it for the plushies, a
-    price card at the end."""
+    """A wooden shelf on two brackets over the till; Slot1..4 along it for the plushies, a price
+    card at the end, a strip light under it on the till."""
     m = station(k, "PlushieShelf")
-    x0, x1 = 5.0, 9.2
-    y = 6.8
+    x0, x1 = REGISTER[0] + 0.2, REGISTER[1] + 0.1     # clear of the window jamb
+    y = 7.0
     k.mesh(m, "Shelf", "PlushieShelf__Shelf", bevel_box(x1 - x0, 0.4, 2.0, 0.05), CF(((x0 + x1) / 2, y - 0.2, SZ - 1.0)),
            "wood", solid=True)
     k.mesh(m, "Lip", "PlushieShelf__Lip", bevel_box(x1 - x0, 0.3, 0.2, 0.05), CF(((x0 + x1) / 2, y + 0.1, SZ - 1.95)),
@@ -41,37 +53,47 @@ def plushie_shelf(k):
         k.mesh(m, "Bracket", "PlushieShelf__Bracket", br.xf(G.M(G.ry(180))), CF((x, y - 0.4, SZ)), "wood_dark",
                solid=True)
     for i in range(4):
-        spot(k, m, "Slot%d" % (i + 1), x0 + 0.55 + 1.03 * i, y, SZ - 0.9, N)
+        spot(k, m, "Slot%d" % (i + 1), x0 + 0.4 + 0.7 * i, y, SZ - 0.9, N)
     board(k, m, (1.2, 0.8, 0.15), CF((x1 - 0.7, y + 0.45, SZ - 1.85), G.rx(-15)), "cream",
           text="PLUSHIES $4.99", text_color=(150, 30, 24), name="PriceCard")
-    stand(k, m, (x0 + x1) / 2, STZ, S_)
+    # a strip light under the shelf: it lights the cut table below (no lamp hangs in front of the shelf)
+    lm = k.sc.model(m, "ShelfLight")
+    k.mesh(lm, "Housing", "PlushieShelf__LightHousing", bevel_box(2.6, 0.3, 0.5, 0.06),
+           CF(((x0 + x1) / 2, y - 0.55, SZ - 1.2)), "charcoal", shadow=False)
+    bulb = k.part(lm, "Bulb", (2.4, 0.15, 0.3), CF(((x0 + x1) / 2, y - 0.775, SZ - 1.2)), (255, 236, 200),
+                  material="Neon", grid=False, shadow=False)
+    k.lamp(lm, bulb, "Shack", "Spot", 12.0, 1.2, (255, 214, 160), angle=120.0, shadows=False)
+    stand(k, m, x1 - 0.5, STZ - 0.2, S_)
     return m
 
 
 def rules_board(k):
-    """The staff rules chalkboard (Face 7 x 5, its Front towards the room) in a wooden frame,
-    standing off the wall on two cleats over the box station's corner, with a chalk ledge."""
+    """The staff rules chalkboard (Face 4 x 4.2, its Front towards the room) in a wooden frame,
+    standing off the south wall on two cleats over the open bay between the till and the cut
+    table, a chalk ledge under it."""
     m = station(k, "RulesBoard")
-    x0, x1 = 9.5, 16.5                               # the frame stays clear of the east dado rail
-    xc, yc = (x0 + x1) / 2, 6.25                    # its frame clear above the worktops, under the ceiling
-    zf = SZ - 0.75                                  # the face, 0.75 off the wall (clear of dado and cornice)
-    k.part(m, "Face", (7.0, 5.0, 0.2), CF((xc, yc, zf)), "chalkboard", material="SmoothPlastic", grid=False)
+    x0, x1 = BAY[0] + 0.4, BAY[1] - 0.6
+    xc, yc = (x0 + x1) / 2, 6.3
+    zf = SZ - 0.75
+    k.part(m, "Face", (x1 - x0, 4.2, 0.2), CF((xc, yc, zf)), "chalkboard", material="SmoothPlastic", grid=False)
+    w, h = x1 - x0 + 0.6, 4.8
     fr = G.Geo()
-    for (cx, cy, sx, sy) in ((0, 2.6, 7.6, 0.3), (0, -2.6, 7.6, 0.3), (-3.65, 0, 0.3, 5.5), (3.65, 0, 0.3, 5.5)):
+    for (cx, cy, sx, sy) in ((0, h / 2 - 0.15, w, 0.3), (0, -h / 2 + 0.15, w, 0.3), (-w / 2 + 0.15, 0, 0.3, h),
+                             (w / 2 - 0.15, 0, 0.3, h)):
         fr.add(bevel_box(sx, sy, 0.4, 0.06, c=(cx, cy, 0.0)))
-    k.mesh(m, "Frame", "RulesBoard__Frame", fr, CF((xc, yc, zf)), "wood_dark", solid=True)
-    for x in (x0 + 1.0, x1 - 1.0):
+    k.mesh(m, "Frame", "RulesBoard__Frame4", fr, CF((xc, yc, zf)), "wood_dark", solid=True)
+    for x in (x0 + 0.6, x1 - 0.6):
         k.mesh(m, "Cleat", "RulesBoard__Cleat", bevel_box(0.6, 3.0, 0.6, 0.05), CF((x, yc, SZ - 0.3)),
                "wood_dark", solid=True)
-    k.mesh(m, "Ledge", "RulesBoard__Ledge", bevel_box(6.0, 0.15, 0.4, 0.04), CF((xc, yc - 2.6, zf - 0.4)), "wood",
-           shadow=False)
+    k.mesh(m, "Ledge", "RulesBoard__Ledge4", bevel_box(x1 - x0 - 0.4, 0.15, 0.4, 0.04), CF((xc, yc - 2.4, zf - 0.4)),
+           "wood", shadow=False)
     chalk = G.Geo()
-    for i, (dx, c) in enumerate(((-1.5, 0), (-1.2, 1), (1.8, 2))):
+    for dx in (-1.2, -0.9, 1.3):
         chalk.add(ccyl(0.075, 0.4, 6, "x", (dx, 0, 0), 0.02))
-    k.mesh(m, "Chalk", "RulesBoard__Chalk", chalk, CF((xc, yc - 2.45, zf - 0.45)), "paper", shadow=False)
-    for x in (x0 + 0.4, x1 - 0.4):
-        k.part(m, "Pin", (0.4, 0.4, 0.4), CF((x, yc + 2.25, zf - 0.25)), "red", shape="Ball", grid=False)
-    st = np.array((11.2, L.FLOOR, 7.7))
+    k.mesh(m, "Chalk", "RulesBoard__Chalk", chalk, CF((xc, yc - 2.25, zf - 0.45)), "paper", shadow=False)
+    for x in (x0 + 0.3, x1 - 0.3):
+        k.part(m, "Pin", (0.4, 0.4, 0.4), CF((x, yc + 2.05, zf - 0.25)), "red", shape="Ball", grid=False)
+    st = np.array((xc + 0.4, L.FLOOR, 4.9))           # at the bay's mouth, not in it
     d = np.array((xc, L.FLOOR, zf)) - st
     k.sc.marker(m, "Stand", CF(st, G.facing(d / np.linalg.norm(d))))
     return m
@@ -80,14 +102,15 @@ def rules_board(k):
 # ---------------------------------------------------------------- register
 
 def register(k):
-    """The till: a compact 80s register (keys, display, the Drawer that slides out, cash
-    welded inside), the TipJar with coins in it, a card imprinter and the napkin box."""
+    """The till on its own short counter beside the box station: a compact 80s register (keys,
+    display, the Drawer that slides out, cash inside), the card imprinter in front of it; the
+    TipJar out on the ledge where the customers are."""
     m = station(k, "Register")
-    x0, x1 = 5.0, 10.0
-    _counter(k, m, x0, x1, fronts=[(2, "drawers3"), (3, "doors2")], end_left=False, end_right=True,
-             owner="Register")
-    tx0, tx1 = x0 + 0.5, x0 + 3.1
-    tz0, tz1 = FRONT + 1.0, FRONT + 3.0
+    _counter(k, m, REGISTER[0], REGISTER[1], fronts=[(1.5, "drawers3"), (1.5, "door")], end_left=False,
+             end_right=True, owner="Register")
+    x0, x1 = TILL
+    tx0, tx1 = x0, x1
+    tz0, tz1 = FRONT + 1.4, FRONT + 3.4
     txc = (tx0 + tx1) / 2
     W_ = WORK = L.WORK
     k.mesh(m, "TillBase", "Register__Base", bevel_box(tx1 - tx0, 0.9, tz1 - tz0, 0.08),
@@ -119,7 +142,7 @@ def register(k):
     moving(m, "Drawer", "slides straight out towards the player (-Z) by 1.2; the cash inside is welded to it")
     # the tip jar (a Model as batch 1) with coins and a curling TIPS label
     tj = k.sc.model(m, "TipJar")
-    c = (x1 - 0.85, W_, FRONT + 1.0)
+    c = (3.6, W_, L.OUT_Z1 + 1.6)                   # on the ledge outside
     jar = G.outward(G.lathe([(0, 0.0), (0.4, 0.0), (0.44, 0.9), (0.36, 1.0), (0.38, 1.1), (0, 1.1)], 10))
     k.mesh(tj, "Jar", "TipJar__Jar", jar, CF(c), "glass", material="Glass", transparency=0.45, shadow=False)
     coins = G.Geo()
@@ -129,8 +152,8 @@ def register(k):
     k.mesh(tj, "Coins", "TipJar__Coins", coins, CF(c), "mustard", shadow=False)
     board(k, tj, (0.6, 0.4, 0.15), CF((c[0], c[1] + 0.55, c[2] - 0.46), G.rx(8)), "paper", text="TIPS",
           text_color=(40, 40, 40), name="Board")
-    k.prop(m, "CardImprinter", CF((9.0, W_, FRONT + 2.5), G.ry(180)), name="CardMachine")
-    stand(k, m, (x0 + x1) / 2, STZ, S_)
+    k.prop(m, "CardImprinter", CF(((x0 + x1) / 2, W_, FRONT + 0.6), G.ry(180)), name="CardMachine")
+    stand(k, m, x0 + 0.4, STZ, S_)
     return m
 
 
@@ -142,9 +165,9 @@ def serving_window(k):
     the desk bell, napkins, a pen on a chain, the neon OPEN sign hanging in the window, the
     roll-down Shutter in its housing outside, and the invisible PlayerBlock in the opening."""
     m = station(k, "ServingWindow")
-    x0, x1 = L.WIN_X0, L.WIN_X1                   # -5..5
-    _counter(k, m, x0, x1, fronts=[(4, "doors2"), (2, "drawers"), (4, "doors2")], end_left=False, end_right=False,
-             owner="ServingWindow")
+    x0, x1 = L.WIN_X0, L.WIN_X1                   # -5..5, the opening
+    _counter(k, m, WIN_COUNTER[0], WIN_COUNTER[1], fronts=[(4, "doors2"), (2, "drawers")],
+             end_left=False, end_right=False, owner="ServingWindow")
     W_ = L.WORK
     # the hatch's steel lining: jambs and head line the opening right through the wall, a raised
     # sill plate runs from the counter out over the wall to the ledge
@@ -162,28 +185,28 @@ def serving_window(k):
         br = G.extrude([(0, 0), (1.9, 0), (0.25, -1.4), (0, -1.4)], 0.3, "x", (0, 0, 0))
         k.mesh(m, "LedgeBracket", "ServingWindow__Bracket", br, CF((x, W_ - 0.8, L.OUT_Z1 + 0.5)), "mustard",
                solid=True)
-    spot(k, m, "Handover", 0.0, W_, (FRONT + SZ) / 2, S_)
-    k.sc.marker(m, "Customer", CF((0.0, 0.0, L.QUEUE_Z), G.facing(N)))
+    spot(k, m, "Handover", HANDOVER_X, W_, (FRONT + SZ) / 2, S_)
+    k.sc.marker(m, "Customer", CF((0.0, 0.0, L.QUEUE_Z + 0.85), G.facing(N)))     # a whole body clear of the ledge
     # desk bell, napkins, the pen on its chain
-    bc = (x1 - 1.0, W_, FRONT + 1.0)
+    bc = (-4.4, W_, FRONT + 0.8)
     bell = G.outward(G.lathe([(0, 0.15), (0.42, 0.15), (0.4, 0.25), (0.3, 0.45), (0.12, 0.55), (0, 0.57)], 12))
     bell.add(ccyl(0.08, 0.2, 6, "y", (0, 0.65, 0), 0.02))
     k.mesh(m, "Bell", "ServingWindow__Bell", bell, CF(bc), "mustard", shadow=False)
     k.mesh(m, "BellBase", "ServingWindow__BellBase", ccyl(0.48, 0.15, 12, "y", (0, 0.075, 0), 0.03), CF(bc), "black",
            shadow=False)
-    k.prop(m, "NapkinBox", CF((x0 + 3.6, W_, FRONT + 1.0)), name="Napkins")
-    k.prop(m, "PenOnChain", CF((x1 - 2.4, W_, FRONT + 1.2)), name="PenOnChain")
-    # ticket printer (a Model, as batch 1)
+    k.prop(m, "NapkinBox", CF((-4.4, W_, FRONT + 2.1)), name="Napkins")
+    k.prop(m, "PenOnChain", CF((-4.4, W_, FRONT + 3.3)), name="PenOnChain")
+    # ticket printer (a Model, as batch 1): a narrow kitchen printer on the counter's east end, the
+    # cook's side of the handover, its paper curling towards the room
     tp = k.sc.model(m, "TicketPrinter")
-    px0, px1 = x0 + 0.6, x0 + 2.6
-    k.mesh(tp, "Body", "TicketPrinter__Body", bevel_box(2.0, 1.2, 2.0, 0.12), CF(((px0 + px1) / 2, W_ + 0.6, FRONT + 2.4)),
-           "grey_dark", solid=True)
-    k.mesh(tp, "Top", "TicketPrinter__Top", bevel_box(2.0, 0.4, 1.0, 0.08), CF(((px0 + px1) / 2, W_ + 1.4, FRONT + 2.9)),
-           "grey", solid=True)
-    paper = bevel_box(1.0, 0.15, 0.8, 0.03).xf(G.M(G.rx(-25)))
-    k.mesh(tp, "Paper", "TicketPrinter__Paper", paper, CF(((px0 + px1) / 2, W_ + 1.32, FRONT + 2.05)), "paper",
-           shadow=False)
-    k.part(tp, "Led", (0.4, 0.2, 0.15), CF((px1 - 0.4, W_ + 0.9, FRONT + 1.38)), (90, 255, 120), material="Neon",
+    px, pz = 0.45, FRONT + 1.0
+    k.mesh(tp, "Body", "TicketPrinter__Body", bevel_box(1.0, 0.9, 1.4, 0.1), CF((px, W_ + 0.45, pz)), "grey_dark",
+           solid=True)
+    k.mesh(tp, "Top", "TicketPrinter__Top", bevel_box(1.0, 0.3, 0.7, 0.06), CF((px, W_ + 1.05, pz + 0.35)), "grey",
+           solid=True)
+    paper = bevel_box(0.7, 0.15, 0.6, 0.03).xf(G.M(G.rx(-25)))
+    k.mesh(tp, "Paper", "TicketPrinter__Paper", paper, CF((px, W_ + 1.0, pz - 0.3)), "paper", shadow=False)
+    k.part(tp, "Led", (0.2, 0.2, 0.15), CF((px + 0.3, W_ + 0.6, pz - 0.72)), (90, 255, 120), material="Neon",
            grid=False, shadow=False)
     # ticket rail above the window, inside (Ticket1..5 hang from it)
     tr = k.sc.model(m, "TicketRail")
@@ -196,14 +219,14 @@ def serving_window(k):
         spot(k, tr, "Ticket%d" % (i + 1), -3.2 + 1.6 * i, 8.0, SZ - 1.05, N)
     # neon OPEN sign hanging in the window (always lit), chains to the frame head
     op = k.sc.model(m, "OpenSign")
-    bulb = k.part(op, "Bulb", (3.0, 1.0, 0.15), CF((2.6, 6.0, SZ + 0.35)), (255, 70, 60), material="Neon",
+    bulb = k.part(op, "Bulb", (3.0, 1.0, 0.15), CF((-3.0, 6.0, SZ + 0.35)), (255, 70, 60), material="Neon",
                   grid=False, shadow=False)
-    board(k, op, (3.4, 1.4, 0.15), CF((2.6, 6.0, SZ + 0.5), FACE["N"]), (30, 20, 24), text="OPEN",
+    board(k, op, (3.4, 1.4, 0.15), CF((-3.0, 6.0, SZ + 0.5), FACE["N"]), (30, 20, 24), text="OPEN",
           text_color=(255, 90, 80), name="Board")
     ch = G.Geo()
     for x in (-1.4, 1.4):
-        ch.add(rod((x, 0.7, 0), (x, 1.0, 0), 0.075, 4))
-    k.mesh(op, "Chains", "OpenSign__Chains", ch, CF((2.6, 6.0, SZ + 0.4)), "steel_dark", shadow=False)
+        ch.add(rod((x, 0.7, 0), (x, L.WIN_Y1 - 0.3 - 6.0, 0), 0.075, 4))      # up to the head lining
+    k.mesh(op, "Chains", "OpenSign__Chains", ch, CF((-3.0, 6.0, SZ + 0.4)), "steel_dark", shadow=False)
     k.lamp(op, bulb, "Always", "Point", 10.0, 0.8, (255, 70, 60), shadows=False, flicker=0.15)
     # the roll-down shutter (open: rolled up into the housing over the window, outside)
     sh = []
@@ -461,6 +484,53 @@ def extinguisher(k):
     return m
 
 
+# ---------------------------------------------------------------- cut table, box station, bin
+
+def box_station(k):
+    """A counter right in front of the window's east end, so the boxes go straight out: its open
+    bay stacked to the top with flat boxes and a folded one with the PAPA STUD'S print; the
+    Work at the middle of the top, and behind it only the window opening, so an open box's lid
+    stands up in clear air. The sticker roll on its little wall shelf by the till."""
+    m = station(k, "BoxStation")
+    x0, x1 = BOX
+    zc = (FRONT + SZ) / 2
+    _counter(k, m, x0, x1, top="wood_light", fronts=[(4, "open")], end_left=False, end_right=False,
+             owner="BoxStation", open_sides=False)
+    zb = SZ - 0.3 - 1.92                              # the stack's back against the bay's back
+    k.prop(m, "FlatBoxStack", CF(((x0 + x1) / 2, 0.9, zb), G.ry(90)), name="FlatBoxes", seed=5)     # 7 flat + 1 folded
+    board(k, m, (3.0, 0.45, 0.15), CF(((x0 + x1) / 2, 0.9 + 7 * 0.17 + 0.35, zb - 1.8 - 0.08), FACE["N"]), "cardboard",
+          text="PAPA STUD'S PIZZA", text_color=(170, 32, 26), name="BoxPrint")
+    spot(k, m, "Work", BOX_WORK_X, L.WORK, zc, S_)
+    k.prop(m, "StickerRoll", CF((REGISTER[0] + 0.4, L.WORK, FRONT + 0.45), G.ry(90)), name="StickerRoll")
+    stand(k, m, BOX_WORK_X, STZ, S_)
+    return m
+
+
+def kitchen_bin(k):
+    """Pedal bin standing in the back corner of the open bay, out of every way; its Lid is
+    hinged at the back (the wall side)."""
+    m = station(k, "Bin")
+    c = (BAY[0] + 0.85, L.FLOOR, SZ - 0.85)
+    body = G.outward(G.lathe([(0, 0.0), (0.62, 0.0), (0.7, 0.1), (0.76, 2.1), (0, 2.1)], 12))
+    k.mesh(m, "Body", "Bin__Body", body, CF(c), "steel_dark", solid=True)
+    k.mesh(m, "Band", "Bin__Band", G.ring(0.8, 0.7, 0.3, 12, c=(0, 1.95, 0)), CF(c), "red", shadow=False)
+    k.mesh(m, "Foot", "Bin__Foot", G.ring(0.7, 0.5, 0.15, 12, c=(0, 0.075, 0)), CF(c), "black", shadow=False)
+    lid = G.outward(G.lathe([(0, 0.0), (0.82, 0.0), (0.82, 0.15), (0.6, 0.35), (0, 0.42)], 12))
+    lid.add(bevel_box(0.3, 0.15, 0.4, 0.04, c=(0.82, 0.1, 0)))
+    lidp = k.mesh(m, "Lid", "Bin__Lid", lid, CF((c[0], c[1] + 2.1, c[2]), G.ry(-90)), "steel", solid=True)
+    pivot(lidp, CF((c[0], c[1] + 2.1, c[2] + 0.8), G.ry(-90)))
+    moving(m, "Lid", "hinged at the back (wall side); rotate the pivot -90 deg about its Z to flip it up")
+    ped = G.Geo()
+    ped.add(bevel_box(0.5, 0.15, 0.7, 0.04, c=(-0.95, 0.2, 0)))
+    ped.add(rod((-0.7, 0.2, 0), (-0.55, 0.35, 0), 0.08, 4))
+    k.mesh(m, "Pedal", "Bin__Pedal", ped, CF(c, G.ry(-90)), "black", shadow=False)
+    k.prop(m, "LitterFloor", CF((c[0] + 1.4, L.FLOOR, c[2] - 0.2)), name="Litter")
+    st = np.array((c[0], L.FLOOR, 4.9))                # at the bay's mouth
+    d = np.array((c[0], L.FLOOR, c[2])) - st
+    k.sc.marker(m, "Stand", CF(st, G.facing(d / np.linalg.norm(d))))
+    return m
+
+
 def build(k):
     return [plushie_shelf(k), rules_board(k), register(k), serving_window(k), shutter_button(k), cctv_desk(k),
-            sink(k), extinguisher(k)]
+            sink(k), extinguisher(k), box_station(k), kitchen_bin(k)]

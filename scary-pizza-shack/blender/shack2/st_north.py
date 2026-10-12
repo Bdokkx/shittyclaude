@@ -95,7 +95,7 @@ def back_door(k):
     k.lamp(m, ob, "Shack", "Spot", 18.0, 1.0, (255, 196, 132), angle=130.0, on_model=False)
     # door mat inside
     k.prop(m, "DoorMat", CF((xc, L.FLOOR, zi + 1.3)), name="DoorMat")
-    stand(k, m, xc + 0.6, zi + 1.6, N)
+    stand(k, m, xc + 1.0, zi + 1.6, N)
     return m
 
 
@@ -106,7 +106,7 @@ def fridge(k):
     edges and a red stripe, cool-white liner with shelf standards, four steel shelves with
     blue price strips, the red canopy (COLD badge, thermometer, air-curtain grille, the night
     blind rolled up under it, the cold strip light), a kick grille at the foot, and a slow
-    drip from the drain tray onto the floor. Aprons and a tea towel hang on its west side."""
+    drip from the drain tray onto the floor."""
     m = station(k, "Fridge")
     x0, x1 = -13.0, -9.0
     z0, z1 = NZ, NZ + 5.0                              # 5 deep: front at -5
@@ -184,12 +184,6 @@ def fridge(k):
                           (3.0, "CheeseLog", 0.6), (4.6, "MilkCrate", 0.0),
                           (6.2, "CheeseLog", -0.6), (6.2, "SauceTub", 0.9)):
         k.prop(m, kind, CF((xc + dx, y, z0 + 1.8)), name=kind)
-    # an apron and a tea towel on hooks on the fridge's west side (facing the back door),
-    # north of the extinguisher
-    hk = CF((x0, 6.2, z0 + 1.2), G.ry(90) @ G.ry(180))
-    k.prop(m, "CoatHooks", hk, name="CoatHooks")
-    k.prop(m, "Apron", hk * CF((-0.4, 0.15, 0.3)), name="Apron", seed=1)
-    k.prop(m, "TeaTowel", hk * CF((0.45, 0.15, 0.42)), name="TeaTowel")
     stand(k, m, xc - 0.3, z1 + IP.STAND_GAP, N)
     return m
 
@@ -217,7 +211,7 @@ def dough_station(k):
            "wood_light", solid=True)
     spot(k, m, "Work", wx, L.WORK + 0.4, WZ, N)
     k.prop(m, "FlourDust", CF((wx, L.WORK + 0.4, WZ), G.ry(20)), name="FlourDust", seed=3)
-    k.prop(m, "Scraper", CF((x1 - 0.6, L.WORK + 0.4, WZ - 1.3), G.ry(70)), name="Scraper")
+    k.prop(m, "Scraper", CF((x1 - 1.0, L.WORK, NZ + 0.75), G.ry(10)), name="Scraper")       # at the back, off the board
     k.prop(m, "Scale", CF((x0 + 0.95, L.WORK, NZ + 0.85)), name="Scale")
     # wall shelf with the dough trays, the pin's rack above
     k.prop(m, "WallShelf", C.wcf("N", xc, 5.8, 0.0), name="TrayShelf")
@@ -264,7 +258,7 @@ def sauce_station(k):
     xs, xch = x0 + 2.0, x0 + 6.0
     _counter(k, m, x0, x1, fronts=[(4, "doors2"), (4, "doors2")], end_left=False, end_right=False,
              owner="SauceStation")
-    spot(k, m, "WorkSauce", xs, L.WORK, WZ, N)
+    spot(k, m, "WorkSauce", xs, L.WORK, WZ + 0.3, N)     # a pizza here clears the burner behind
     spot(k, m, "WorkCheese", xch, L.WORK, WZ, N)
     bz = NZ + 1.05                                   # the back strip's centre line
     pc = (x0 + 1.0, L.WORK, bz + 0.15)
