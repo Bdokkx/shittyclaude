@@ -3915,7 +3915,7 @@ for line in string.gmatch(DATA, "[^\n]+") do
 		elseif t == "b" then
 			o:SetAttribute(f[3], v == "1")
 		else
-			o:SetAttribute(f[3], v)
+			o:SetAttribute(f[3], nm(v))
 		end
 	elseif k == "R" then
 		inst[tonumber(f[2])].PrimaryPart = inst[tonumber(f[3])]
@@ -3956,6 +3956,7 @@ for part in pairs(containers) do
 end
 
 pcall(function() ChangeHistoryService:SetWaypoint("Built the Pizza Shack") end)
-print(TAG .. string.format("built Workspace.%s: %d parts, %d mesh parts, %d markers%s", ROOT_NAME, counts.parts,
-	counts.meshes, counts.markers, fresh and (", removed " .. removed .. " import container(s)") or
+print(TAG .. string.format("built Workspace.%s: %d parts, %d mesh parts%s%s", ROOT_NAME, counts.parts,
+	counts.meshes, counts.markers > 0 and (", " .. counts.markers .. " markers") or "",
+	fresh and (", removed " .. removed .. " import container(s)") or
 	" (meshes from ServerStorage." .. CACHE_NAME .. ")"))

@@ -171,9 +171,7 @@ def main(src, dst, config="map"):
             elif isinstance(val, (int, float)):
                 lines.append("T %d %s n %s" % (me, key, num(val, 4)))
             else:
-                sval = str(val)
-                assert " " not in sval and "\n" not in sval, sval
-                lines.append("T %d %s s %s" % (me, key, sval))
+                lines.append("T %d %s s %s" % (me, key, lua_name(str(val))))
 
     colors = ", ".join("{%d, %d, %d}" % c for c in tb.colors)
     mats = ", ".join('"%s"' % m for m in tb.mats)
@@ -187,7 +185,8 @@ def main(src, dst, config="map"):
     body = body.replace("@@COLORS@@", colors).replace("@@MATS@@", mats).replace("@@ROTS@@", rots)
     body = body.replace("@@MESHES@@", meshes).replace("@@DATA@@", "\n".join(lines))
     body = body.replace("@@NPARTS@@", str(stats["Part"])).replace("@@NMESH@@", str(stats["MeshPart"]))
-    body = body.replace("@@NMARK@@", str(stats["Marker"])).replace("@@NUNIQUE@@", str(len(tb.meshes)))
+    marks = (", %d markers" % stats["Marker"]) if stats["Marker"] else ""
+    body = body.replace("@@MARKS@@", marks).replace("@@NUNIQUE@@", str(len(tb.meshes)))
     assert "]]" not in "\n".join(lines)
     assert "@@" not in body
     with open(dst, "w") as f:
@@ -210,7 +209,7 @@ this file with loadstring from the command-bar context. It:
   2. keeps a clean copy of every mesh in ServerStorage.@@CACHE@@, so the
      script can be run again later even without a fresh import;
   3. builds Workspace.@@ROOT@@ (@@FOLDERS@@):
-     @@NPARTS@@ Parts, @@NMESH@@ MeshParts (@@NUNIQUE@@ different meshes), @@NMARK@@ markers;
+     @@NPARTS@@ Parts, @@NMESH@@ MeshParts (@@NUNIQUE@@ different meshes)@@MARKS@@;
   4. replaces the @@ROOT@@ an earlier run built, and deletes the import
      container and the marker cubes.
 
@@ -552,7 +551,7 @@ for line in string.gmatch(DATA, "[^\n]+") do
 		elseif t == "b" then
 			o:SetAttribute(f[3], v == "1")
 		else
-			o:SetAttribute(f[3], v)
+			o:SetAttribute(f[3], nm(v))
 		end
 	elseif k == "R" then
 		inst[tonumber(f[2])].PrimaryPart = inst[tonumber(f[3])]
@@ -593,8 +592,9 @@ for part in pairs(containers) do
 end
 
 pcall(function() ChangeHistoryService:SetWaypoint("Built @@WHAT@@") end)
-print(TAG .. string.format("built Workspace.%s: %d parts, %d mesh parts, %d markers%s", ROOT_NAME, counts.parts,
-	counts.meshes, counts.markers, fresh and (", removed " .. removed .. " import container(s)") or
+print(TAG .. string.format("built Workspace.%s: %d parts, %d mesh parts%s%s", ROOT_NAME, counts.parts,
+	counts.meshes, counts.markers > 0 and (", " .. counts.markers .. " markers") or "",
+	fresh and (", removed " .. removed .. " import container(s)") or
 	" (meshes from ServerStorage." .. CACHE_NAME .. ")"))
 '''
 

@@ -206,9 +206,26 @@ class Builder:
         return objs
 
 
+def _special(n):
+    for c in n.children:
+        if c.kind == "SpecialMesh":
+            return c
+    return None
+
+
 def add_part(b, n, show_hidden=False):
     p = n.p
     if p["transparency"] >= 0.99 and not show_hidden:
+        return
+    sm = _special(n)
+    if sm is not None and sm.p["mesh_type"] == "Head":
+        # the classic head mesh, scaled with the part (preview stand-in)
+        import assets_r6
+        sx, sy, sz = p["size"]
+        k = sm.p["scale"]
+        g = assets_r6.head_geo(k[0] * sx / 2, k[1] * sy, k[2] * sz, 16)
+        W = (p["cf"].R @ np.array(g.v).T).T + p["cf"].p
+        b.add((p["color"], p["material"], p["transparency"]), W, g.f, smooth=True)
         return
     g = _prim(p["shape"], p["size"])
     V = np.array(g.v)
