@@ -509,11 +509,36 @@ def surface_under(scene, pt, geoms=True, depth=0.6):
         elif geoms:
             g = scene.geoms[p["mesh"]]
             V = (p["cf"].R @ np.array(g.v).T).T + p["cf"].p
-            near = V[(np.abs(V[:, 0] - x) < 0.6) & (np.abs(V[:, 2] - z) < 0.6) & (V[:, 1] <= y + 1e-3) &
-                     (V[:, 1] >= y - depth)]
-            if len(near):
-                top = near[:, 1].max()
+            if not (V[:, 0].min() - 0.6 <= x <= V[:, 0].max() + 0.6 and V[:, 2].min() - 0.6 <= z <= V[:, 2].max() + 0.6):
+                continue
+            top = _ray_down(V, g.f, x, z, y + 1e-3, y - depth)
+            if top is None:
+                near = V[(np.abs(V[:, 0] - x) < 0.6) & (np.abs(V[:, 2] - z) < 0.6) & (V[:, 1] <= y + 1e-3) &
+                         (V[:, 1] >= y - depth)]
+                top = near[:, 1].max() if len(near) else None
+            if top is not None:
                 best = top if best is None else max(best, top)
+    return best
+
+
+def _ray_down(V, faces, x, z, y_hi, y_lo):
+    """Highest point of the mesh's faces straight under (x, z) between y_lo and y_hi."""
+    best = None
+    for f in faces:
+        a = V[f[0]]
+        for k in range(1, len(f) - 1):
+            b, c = V[f[k]], V[f[k + 1]]
+            d = (b[2] - c[2]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[2] - c[2])
+            if abs(d) < 1e-12:
+                continue
+            l1 = ((b[2] - c[2]) * (x - c[0]) + (c[0] - b[0]) * (z - c[2])) / d
+            l2 = ((c[2] - a[2]) * (x - c[0]) + (a[0] - c[0]) * (z - c[2])) / d
+            l3 = 1.0 - l1 - l2
+            if min(l1, l2, l3) < -1e-9:
+                continue
+            yy = l1 * a[1] + l2 * b[1] + l3 * c[1]
+            if y_lo <= yy <= y_hi and (best is None or yy > best):
+                best = yy
     return best
 
 

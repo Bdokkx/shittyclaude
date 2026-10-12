@@ -1,0 +1,662 @@
+"""The remake's checks (brief sections 4, 7 and 9), run on a built Scene.
+
+    python -m shack2.checks [quick]          (from blender/; builds the map and prints the report)
+
+  planes      no unbroken single-colour plane larger than 6 x 6 inside or 12 x 12 outside
+  floating    every visible part touches something that leads down to the ground
+  pierce      nothing passes right through anything (a part crossing another's whole thickness)
+  clear       a clear box 3 wide and 3 high in front of every item marker towards its Stand,
+              and room to stand at every Stand
+  ceiling     rays straight up from all over the room hit the ceiling (closed everywhere)
+  window      the PlayerBlock fills the serving window
+  horizon     no world edge can be seen: something stands above it in every direction
+  contract    every batch-1 station, marker and moving part is still there under its name
+  props       80+ different prop models inside, 50+ outside
+  lights      no Light objects; every lamp is a Model with a Bulb and Lamp* attributes
+  budget      parts inside <= 6000, outside <= 12000
+"""
+import math
+import sys
+from collections import defaultdict
+
+import numpy as np
+
+import spslib
+from spsgeo import CF  # noqa: F401
+
+from . import layout as L
+
+ROOM = (-17.0, 17.0, 0.4, 9.4, -10.0, 10.0)        # the room's air (X0, X1, Y0, Y1, Z0, Z1)
+SHACK = (-18.6, 18.6, -1.0, 16.0, -11.6, 11.6)     # the building, walls and roof included
+
+
+def in_room(p, pad=0.0):
+    x0, x1, y0, y1, z0, z1 = ROOM
+    return x0 - pad <= p[0] <= x1 + pad and y0 - pad <= p[1] <= y1 + pad and z0 - pad <= p[2] <= z1 + pad
+
+
+def in_shack(p):
+    x0, x1, y0, y1, z0, z1 = SHACK
+    return x0 <= p[0] <= x1 and y0 <= p[1] <= y1 and z0 <= p[2] <= z1
+
+
+def where(n):
+    """'inside' or 'outside', by where the part's centre is."""
+    return "inside" if in_shack(n.p["cf"].p) else "outside"
+
+
+# ---------------------------------------------------------------- oriented boxes
+
+class Boxes:
+    """Every visible Part / MeshPart as an oriented box (centre, axes as columns, half sizes)."""
+
+    def __init__(self, sc, keep=lambda n: True, max_transp=0.99):
+        nodes, C, R, H = [], [], [], []
+        for n in sc.nodes(("Part", "MeshPart")):
+            p = n.p
+            if p["transparency"] >= max_transp or not keep(n):
+                continue
+            nodes.append(n)
+            C.append(p["cf"].p)
+            R.append(p["cf"].R)
+            H.append(np.asarray(p["size"], float) / 2)
+        self.sc = sc
+        self.nodes = nodes
+        self.index = {n: i for i, n in enumerate(nodes)}
+        self.C = np.array(C, float).reshape(-1, 3)
+        self.R = np.array(R, float).reshape(-1, 3, 3)
+        self.H = np.array(H, float).reshape(-1, 3)
+        ext = np.einsum("nij,nj->ni", np.abs(self.R), self.H)
+        self.lo, self.hi = self.C - ext, self.C + ext
+        self._grid = None
+
+    def grid(self, cell=6.0):
+        if self._grid is None:
+            g = defaultdict(list)
+            a = np.floor(self.lo / cell).astype(int)
+            b = np.floor(self.hi / cell).astype(int)
+            for i in range(len(self.nodes)):
+                for x in range(a[i, 0], b[i, 0] + 1):
+                    for y in range(a[i, 1], b[i, 1] + 1):
+                        for z in range(a[i, 2], b[i, 2] + 1):
+                            g[(x, y, z)].append(i)
+            self._grid = (cell, g)
+        return self._grid
+
+    def pairs(self, eps=0.06):
+        """Index pairs whose world AABBs overlap (grown by eps)."""
+        cell, g = self.grid()
+        out = set()
+        lo, hi = self.lo - eps, self.hi + eps
+        for lst in g.values():
+            if len(lst) < 2:
+                continue
+            arr = np.array(lst)
+            L0, H0 = lo[arr], hi[arr]
+            ov = np.all((L0[:, None, :] <= H0[None, :, :]) & (L0[None, :, :] <= H0[:, None, :]), -1)
+            ii, jj = np.nonzero(np.triu(ov, 1))
+            for a, b in zip(arr[ii], arr[jj]):
+                out.add((a, b) if a < b else (b, a))
+        if not out:
+            return np.zeros((0, 2), int)
+        return np.array(sorted(out))
+
+    def query(self, lo, hi):
+        """Indices of boxes whose AABB overlaps the world box lo..hi."""
+        cell, g = self.grid()
+        a = np.floor(np.asarray(lo) / cell).astype(int)
+        b = np.floor(np.asarray(hi) / cell).astype(int)
+        cand = set()
+        for x in range(a[0], b[0] + 1):
+            for y in range(a[1], b[1] + 1):
+                for z in range(a[2], b[2] + 1):
+                    cand.update(g.get((x, y, z), ()))
+        lo, hi = np.asarray(lo), np.asarray(hi)
+        return [i for i in cand if np.all(self.lo[i] <= hi) and np.all(lo <= self.hi[i])]
+
+    def overlap(self, I, J, eps=0.0):
+        """Separating-axis test for pairs: returns the smallest overlap depth over the 15 axes
+        (negative = apart by that much)."""
+        Ca, Cb, Ra, Rb, Ha, Hb = self.C[I], self.C[J], self.R[I], self.R[J], self.H[I], self.H[J]
+        T = Cb - Ca
+        best = np.full(len(I), np.inf)
+        axes = [Ra[:, :, k] for k in range(3)] + [Rb[:, :, k] for k in range(3)]
+        for i in range(3):
+            for j in range(3):
+                c = np.cross(Ra[:, :, i], Rb[:, :, j])
+                nrm = np.linalg.norm(c, axis=1)
+                ok = nrm > 1e-6
+                c[ok] /= nrm[ok, None]
+                c[~ok] = Ra[~ok, :, i]
+                axes.append(c)
+        for ax in axes:
+            ra = np.einsum("nk,nk->n", np.abs(np.einsum("nij,ni->nj", Ra, ax)), Ha)
+            rb = np.einsum("nk,nk->n", np.abs(np.einsum("nij,ni->nj", Rb, ax)), Hb)
+            d = np.abs(np.einsum("ni,ni->n", T, ax))
+            best = np.minimum(best, ra + rb - d)
+        return best + eps
+
+    def corners(self, i):
+        s = np.array([[sx, sy, sz] for sx in (-1, 1) for sy in (-1, 1) for sz in (-1, 1)], float)
+        return self.C[i] + (s * self.H[i]) @ self.R[i].T
+
+
+# ---------------------------------------------------------------- floating
+
+GROUNDED = ("/Outside/Ground/", "/Outside/Road/", "/Outside/RoadSide/", "/Outside/Forecourt/", "/Outside/Lot/",
+            "/Outside/YardGround/", "/Shack/Floor/", "/Shack/Walls/", "/Shack/Exterior/", "/Outside/Forest/Hills/",
+            "/Outside/Forest/FarGround/")
+
+
+def floating(sc, boxes=None, eps=0.06):
+    """Parts (grouped by Model) with no chain of contacts down to the ground or the building."""
+    b = boxes or Boxes(sc)
+    P = b.pairs(eps)
+    adj = defaultdict(list)
+    if len(P):
+        d = b.overlap(P[:, 0], P[:, 1], eps)
+        for (i, j), dd in zip(P, d):
+            if dd >= 0:
+                adj[i].append(j)
+                adj[j].append(i)
+    seen = set()
+    stack = [i for i, n in enumerate(b.nodes) if any(g in n.path() for g in GROUNDED) or b.lo[i, 1] < -0.3]
+    seen.update(stack)
+    while stack:
+        i = stack.pop()
+        for j in adj[i]:
+            if j not in seen:
+                seen.add(j)
+                stack.append(j)
+    loose = defaultdict(list)
+    for i, n in enumerate(b.nodes):
+        if i not in seen:
+            m = n.parent if n.parent.kind == "Model" else n
+            loose[m.path()].append(n.name)
+    return dict(loose)
+
+
+# ---------------------------------------------------------------- pierce
+
+PIERCE_OK = ("Flue", "Duct", "Conduit", "Cable", "Wire", "Pipe", "Cord", "Root", "Trunk", "Rope", "Gas")
+# structure that other things are set into: it never counts as passing through them
+STRUCT = ("TileBacking", "Paint", "AtticWall", "Siding", "BaseCourse", "Core", "Breast", "Ground", "Pilaster",
+          "Tiles", "TileHole", "Cornice",
+          "Parapet", "Roof", "Asphalt", "Shoulder", "Bank", "Verge", "Meadow", "DitchBed", "FarBank", "Slab",
+          "LotAsphalt", "YardGround", "FarGround", "Hill", "Tile", "Panel", "AtticLining", "AtticJoist")
+
+
+def pierce(sc, boxes=None, margin=0.1, ok=PIERCE_OK):
+    """Pairs where one part crosses the other's whole thickness and comes out on both sides,
+    inside the other's face (a blade through a block, a slab through a ceiling). Thin
+    things that are meant to go through (flue, conduit, cables, roots) are allowed by name."""
+    b = boxes or Boxes(sc)
+    P = b.pairs(0.0)
+    if not len(P):
+        return []
+    d = b.overlap(P[:, 0], P[:, 1])
+    P = P[d > 0.02]
+    out = []
+    for i, j in P:
+        for a, c in ((i, j), (j, i)):            # does a pass through c?
+            na, nc = b.nodes[a], b.nodes[c]
+            if any(w in na.name for w in ok) or any(w in nc.name for w in ok):
+                continue
+            if na.name in STRUCT or nc.name in ("Tiles", "TileHole"):
+                continue
+            if na.parent is nc.parent and na.parent.kind == "Model" and na.kind == "MeshPart":
+                continue                          # pieces of one mesh prop
+            k = int(np.argmin(b.H[c]))
+            if b.H[c][k] * 2 > 3.0:               # only thin things can be pierced
+                continue
+            q = (b.corners(a) - b.C[c]) @ b.R[c]   # a's corners in c's frame
+            hk = b.H[c][k]
+            if not (q[:, k].min() < -hk - margin and q[:, k].max() > hk + margin):
+                continue
+            inside = True
+            for u in range(3):
+                if u == k:
+                    continue
+                if q[:, u].max() < -b.H[c][u] + margin or q[:, u].min() > b.H[c][u] - margin:
+                    inside = False
+            # a's cross-section must not cover all of c's face (then c is just sunk into a)
+            covers = all(q[:, u].min() <= -b.H[c][u] and q[:, u].max() >= b.H[c][u] for u in range(3) if u != k)
+            if inside and not covers:
+                out.append((na.path(), nc.path()))
+    return out
+
+
+# ---------------------------------------------------------------- planes
+
+def _faces(n):
+    """Flat faces of a Block: (axis, sign, coord, 2-D corner polygon in the other two axes)."""
+    R, c = n.p["cf"].R, n.p["cf"].p
+    h = np.asarray(n.p["size"], float) / 2
+    out = []
+    for k in range(3):
+        for s in (-1, 1):
+            nrm = R[:, k] * s
+            ax = int(np.argmax(np.abs(nrm)))
+            if abs(nrm[ax]) < 0.999:
+                continue
+            sg = 1 if nrm[ax] > 0 else -1
+            u, v = [a for a in range(3) if a != k]
+            fc = c + nrm * h[k]
+            pts = []
+            for su, sv in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
+                p = fc + R[:, u] * h[u] * su + R[:, v] * h[v] * sv
+                pts.append(p)
+            pts = np.array(pts)
+            uu, vv = [a for a in range(3) if a != ax]
+            out.append((ax, sg, round(float(fc[ax]), 2), pts[:, [uu, vv]]))
+    return out
+
+
+def _poly_mask(mask, poly, ox, oy, res):
+    from PIL import Image, ImageDraw
+    img = Image.fromarray(mask.astype(np.uint8) * 255)
+    d = ImageDraw.Draw(img)
+    pts = [((p[0] - ox) / res, (p[1] - oy) / res) for p in poly]
+    d.polygon(pts, fill=255)
+    return np.array(img) > 0
+
+
+def _largest_square(mask):
+    """Side (in cells) of the largest all-True square in mask (integral image + bisection)."""
+    if not mask.any():
+        return 0
+    S = np.zeros((mask.shape[0] + 1, mask.shape[1] + 1), np.int64)
+    S[1:, 1:] = mask.astype(np.int64).cumsum(0).cumsum(1)
+
+    def fits(s):
+        if s > min(mask.shape):
+            return False
+        w = S[s:, s:] - S[:-s, s:] - S[s:, :-s] + S[:-s, :-s]
+        return bool((w == s * s).any())
+    lo, hi = 1, min(mask.shape)
+    while lo < hi:
+        mid = (lo + hi + 1) // 2
+        if fits(mid):
+            lo = mid
+        else:
+            hi = mid - 1
+    return lo
+
+
+def planes(sc, boxes=None, res=0.2, limit_in=6.0, limit_out=12.0, radius=110.0):
+    """Unbroken single-colour planes over the limit. A plane is the union of coplanar,
+    same-facing faces of one colour and material; anything else lying on it or within 0.4 in
+    front of it breaks it. Faces nobody sees (undersides near the ground, beyond `radius`)
+    are skipped."""
+    b = boxes or Boxes(sc)
+    groups = defaultdict(list)
+    for n in sc.nodes("Part"):
+        p = n.p
+        if p["shape"] != "Block" or p["transparency"] >= 0.5:
+            continue
+        c = p["cf"].p
+        if math.hypot(c[0], c[2]) > radius:
+            continue
+        for ax, sg, co, poly in _faces(n):
+            if ax == 1 and sg < 0 and co < 2.0:
+                continue
+            groups[(ax, sg, co, p["color"], p["material"])].append((poly, n))
+    bad = []
+    for (ax, sg, co, color, mat), lst in groups.items():
+        allp = np.concatenate([q for q, _ in lst])
+        u0, v0 = allp.min(0)
+        u1, v1 = allp.max(0)
+        # the room decides the limit: a point just in front of the plane
+        mid = np.zeros(3)
+        mid[ax] = co + sg * 0.3
+        uu, vv = [a for a in range(3) if a != ax]
+        mid[uu], mid[vv] = (u0 + u1) / 2, (v0 + v1) / 2
+        limit = limit_in if in_room(mid, 0.2) else limit_out
+        if (u1 - u0) <= limit or (v1 - v0) <= limit:
+            continue
+        area = sum(abs(0.5 * np.sum(q[:, 0] * np.roll(q[:, 1], -1) - np.roll(q[:, 0], -1) * q[:, 1])) for q, _ in lst)
+        if area <= limit * limit:
+            continue
+        W, H = int(math.ceil((u1 - u0) / res)) + 1, int(math.ceil((v1 - v0) / res)) + 1
+        mask = np.zeros((H, W), bool)
+        for q, _ in lst:
+            mask |= _poly_mask(np.zeros((H, W), bool), q, u0, v0, res)
+        # breakers: other parts touching or just in front of the plane
+        lo = np.zeros(3)
+        hi = np.zeros(3)
+        lo[uu], hi[uu], lo[vv], hi[vv] = u0, u1, v0, v1
+        lo[ax], hi[ax] = (co - 0.01, co + 0.4) if sg > 0 else (co - 0.4, co + 0.01)
+        own = {id(n) for _, n in lst}
+        for i in b.query(lo, hi):
+            n = b.nodes[i]
+            if id(n) in own:
+                continue
+            if n.kind == "Part" and n.p["color"] == color and n.p["material"] == mat:
+                continue
+            a0, a1 = b.lo[i][uu], b.hi[i][uu]
+            c0, c1 = b.lo[i][vv], b.hi[i][vv]
+            # only things that reach the plane's front (not buried behind it)
+            front = b.hi[i][ax] > co + 0.01 if sg > 0 else b.lo[i][ax] < co - 0.01
+            if not front:
+                continue
+            x0, x1 = int(max(0, (a0 - u0) / res)), int(min(W, math.ceil((a1 - u0) / res)))
+            y0, y1 = int(max(0, (c0 - v0) / res)), int(min(H, math.ceil((c1 - v0) / res)))
+            if x1 > x0 and y1 > y0:
+                mask[y0:y1, x0:x1] = False
+        side = _largest_square(mask) * res
+        if side > limit + 1e-6:
+            ys, xs = np.nonzero(mask)
+            centre = np.zeros(3)
+            centre[ax] = co
+            centre[uu], centre[vv] = u0 + xs.mean() * res, v0 + ys.mean() * res
+            bad.append(dict(axis="XYZ"[ax], sign=sg, coord=co, color=color, material=mat, side=round(side, 1),
+                            limit=limit, centre=tuple(np.round(centre, 1)), parts=len(lst),
+                            example=lst[0][1].path()))
+    bad.sort(key=lambda r: -r["side"] / r["limit"])
+    return bad
+
+
+# ---------------------------------------------------------------- clear boxes at markers
+
+def clear(sc, boxes=None, width=3.0, height=3.0, lift=0.3, depth=0.3, reach_top=8.0):
+    """For every item marker: the box from the marker to its station's Stand, `width` wide,
+    from `lift` to `height` above the marker's surface, must hold nothing but the marker's
+    own station (its shelves, tub walls, the slot's enclosure). For every Stand: a 1.6-wide
+    column 5 high above the floor (things lower than 0.3 -- mats -- don't count). An
+    overlap counts when it goes deeper than `depth` in every direction."""
+    b = boxes or Boxes(sc, keep=lambda n: n.p.get("collide") or n.p["transparency"] < 0.99)
+    out = []
+    st = sc.root.get("Stations")
+    for m in st.children:
+        stands = {c.name: c for c in m.children if c.kind == "Marker" and c.name.startswith("Stand")}
+        if not stands:
+            continue
+        own = {id(n) for n in m.walk()}
+        for c in m.walk():
+            if c.kind != "Marker" or c.name.startswith("Stand") or not spslib.is_item_marker(c.name):
+                continue
+            stand = stands.get("Stand" + c.name[4:]) if c.name.startswith("Work") and len(c.name) > 4 else None
+            stand = stand or stands.get("Stand")
+            p0 = c.p["cf"].p
+            p1 = stand.p["cf"].p
+            hit = _box_hits(b, p0, p1, width, p0[1] + lift, min(p0[1] + height, max(reach_top, p0[1] + 1.2)),
+                            skip=own, depth=depth)
+            if hit:
+                out.append((m.name + "." + c.name, hit[:4]))
+        for s_ in stands.values():
+            p = s_.p["cf"].p
+            hit = _box_hits(b, p, p + s_.p["cf"].look * 0.01, 1.6, p[1] + 0.3, p[1] + 5.0, length_pad=0.8, depth=depth)
+            if hit:
+                out.append((m.name + "." + s_.name, hit[:4]))
+    return out
+
+
+def _box_hits(b, p0, p1, width, y0, y1, skip=(), length_pad=0.0, depth=0.15):
+    d = np.array((p1[0] - p0[0], p1[2] - p0[2]))
+    ln = float(np.linalg.norm(d))
+    d = d / ln if ln > 1e-6 else np.array((0.0, 1.0))
+    nrm = np.array((-d[1], d[0]))
+    mid = np.array(((p0[0] + p1[0]) / 2, (p0[2] + p1[2]) / 2))
+    half = np.array((ln / 2 + length_pad, width / 2))
+    cs = np.array([mid + d * half[0] * a + nrm * half[1] * c for a in (-1, 1) for c in (-1, 1)])
+    lo = (cs[:, 0].min(), y0, cs[:, 1].min())
+    hi = (cs[:, 0].max(), y1, cs[:, 1].max())
+    hits = []
+    for i in b.query(lo, hi):
+        n = b.nodes[i]
+        if n.kind == "Marker" or id(n) in skip or n.top() == "Items" or n.name in STRUCT:
+            continue
+        Cb = np.array((mid[0], (y0 + y1) / 2, mid[1]))
+        Rb = np.column_stack(((d[0], 0.0, d[1]), (0.0, 1.0, 0.0), (nrm[0], 0.0, nrm[1])))
+        Hb = np.array((half[0], (y1 - y0) / 2, half[1]))
+        if sat_depth(b.C[i], b.R[i], b.H[i], Cb, Rb, Hb) > depth:
+            hits.append(n.path())
+    return hits
+
+
+def sat_depth(Ca, Ra, Ha, Cb, Rb, Hb):
+    """Smallest overlap of two oriented boxes over the 15 separating axes (< 0: apart)."""
+    axes = [Ra[:, k] for k in range(3)] + [Rb[:, k] for k in range(3)]
+    for i in range(3):
+        for j in range(3):
+            c = np.cross(Ra[:, i], Rb[:, j])
+            nn = np.linalg.norm(c)
+            if nn > 1e-6:
+                axes.append(c / nn)
+    T = Cb - Ca
+    best = np.inf
+    for ax in axes:
+        ra = np.sum(np.abs(Ra.T @ ax) * Ha)
+        rb = np.sum(np.abs(Rb.T @ ax) * Hb)
+        best = min(best, ra + rb - abs(T @ ax))
+    return best
+
+
+# ---------------------------------------------------------------- ceiling, window, horizon
+
+def ceiling(sc, boxes=None, step=0.5):
+    """Rays straight up from Y 5 all over the room: each must hit an opaque part below Y 10
+    (the ceiling) unless it is under the hatch, where it must hit the attic or the roof."""
+    from .interior import HATCH
+    b = boxes or Boxes(sc, max_transp=0.2)
+    x0, x1, _, _, z0, z1 = ROOM
+    open_ = []
+    xs = np.arange(x0 + step / 2, x1, step)
+    zs = np.arange(z0 + step / 2, z1, step)
+    up = [i for i in range(len(b.nodes)) if b.hi[i, 1] > 5.0 and b.lo[i, 1] < 16.0 and
+          b.lo[i, 0] < x1 and b.hi[i, 0] > x0 and b.lo[i, 2] < z1 and b.hi[i, 2] > z0]
+    hx0, hx1, hz0, hz1 = HATCH
+    for x in xs:
+        for z in zs:
+            top = 16.0 if (hx0 <= x <= hx1 and hz0 <= z <= hz1) else 10.0
+            hit = False
+            for i in up:
+                if not (b.lo[i, 0] <= x <= b.hi[i, 0] and b.lo[i, 2] <= z <= b.hi[i, 2]):
+                    continue
+                q = (np.array((x, 7.0, z)) - b.C[i]) @ b.R[i]
+                hx, _, hz = b.H[i]
+                R = b.R[i]
+                if abs(R[1, 1]) > 0.999:          # upright box: exact XZ footprint test
+                    if abs(q[0]) > hx or abs(q[2]) > hz:
+                        continue
+                if b.lo[i, 1] >= 5.0 and b.lo[i, 1] <= top:
+                    hit = True
+                    break
+            if not hit:
+                open_.append((round(float(x), 2), round(float(z), 2)))
+    return open_
+
+
+def window(sc):
+    """The PlayerBlock: invisible, collides, fills the serving window opening."""
+    n = next((x for x in sc.root.walk() if x.name == "PlayerBlock"), None)
+    if n is None:
+        return ["no PlayerBlock"]
+    p = n.p
+    probs = []
+    half = np.abs(p["cf"].R) @ (np.array(p["size"]) / 2)
+    lo, hi = p["cf"].p - half, p["cf"].p + half
+    want_lo = (L.WIN_X0, L.WIN_Y0, L.IN_Z1)
+    want_hi = (L.WIN_X1, L.WIN_Y1, L.OUT_Z1)
+    if not (np.all(lo <= np.array(want_lo) + 1e-3) and np.all(hi >= np.array(want_hi) - 1e-3)):
+        probs.append("PlayerBlock %s..%s does not cover %s..%s" % (tuple(lo), tuple(hi), want_lo, want_hi))
+    if p["transparency"] < 1.0 or not p["collide"]:
+        probs.append("PlayerBlock must be invisible and collide")
+    return probs
+
+
+def horizon(sc, boxes=None, eye=(0.0, 5.0, 20.0), r_min=40.0, bins=360):
+    """In every direction from the forecourt, something must stand higher (in angle) than
+    the ground's far edge."""
+    b = boxes or Boxes(sc)
+    x0, x1, z0, z1 = L.WORLD
+    best = np.full(bins, -90.0)
+    e = np.asarray(eye)
+    for i in range(len(b.nodes)):
+        c = b.C[i]
+        dx, dz = c[0] - e[0], c[2] - e[2]
+        r = math.hypot(dx, dz)
+        if r < r_min:
+            continue
+        top = b.hi[i, 1]
+        ang = math.degrees(math.atan2(top - e[1], r))
+        half = math.degrees(math.atan2(max(b.H[i][0], b.H[i][2]) * 1.0, r))
+        az = math.degrees(math.atan2(dx, dz))
+        for k in range(int((az - half) // (360 / bins)), int((az + half) // (360 / bins)) + 1):
+            best[k % bins] = max(best[k % bins], ang)
+    edge = math.degrees(math.atan2(-2.8 - e[1], min(x1 - abs(e[0]), z1 - abs(e[2]))))
+    gaps = [k * 360 / bins for k in range(bins) if best[k] <= edge + 0.5]
+    return gaps, float(best.min()), edge
+
+
+# ---------------------------------------------------------------- contract, lights, props, budget
+
+CONTRACT_NAMES = ("Door", "Door1", "Door2", "DoorHandle", "Lid", "Drawer", "TipJar", "Face", "Shutter",
+                  "TicketPrinter", "TicketRail", "Button", "Screen", "Monitor1", "Monitor2", "Phone", "Handset", "Dial",
+                  "SwitchBox", "Cradle", "Lever", "Cord", "FuelCap", "Handle", "Exhaust", "Gate", "Head",
+                  "Bulb", "WheelieBin1", "WheelieBin2", "Shade")
+
+
+def contract(sc, old):
+    """Paths (relative to Stations / Markers) of batch 1's markers, attachments, moving and
+    named parts that the remake must still have."""
+    def names(scene):
+        out = {}
+        st = scene.root.get("Stations")
+        for m in st.children:
+            out["Stations/" + m.name] = "Model"
+            for n in m.walk():
+                if n is m:
+                    continue
+                rel = n.path().split("/Stations/" + m.name + "/", 1)[-1]
+                if n.kind in ("Marker", "Attachment") or (n.kind in ("Part", "MeshPart") and (
+                        n.p.get("pivot") is not None or n.name in CONTRACT_NAMES or n.name.startswith("Glow")
+                        or n.name.startswith("Ticket"))):
+                    out["Stations/%s/%s" % (m.name, rel)] = n.kind
+                if n.kind == "Model" and n.name in CONTRACT_NAMES:
+                    out["Stations/%s/%s" % (m.name, rel)] = n.kind
+            for k, v in (m.p.get("attrs") or {}).items():
+                if k != "Lamp" and not k.startswith("Lamp"):
+                    out["Stations/%s@%s" % (m.name, k)] = "attr"
+        for n in scene.root.get("Markers").children:
+            out["Markers/" + n.name] = n.kind
+        return out
+    want = names(old)
+    have = names(sc)
+    missing = sorted(k for k in want if k not in have and not k.startswith("Markers/Car_Path"))
+    kind = sorted(k for k in want if k in have and have[k] != want[k] and
+                  {have[k], want[k]} != {"Part", "MeshPart"})
+    return missing, kind
+
+
+def lights(sc):
+    probs = []
+    for n in sc.nodes("Light"):
+        probs.append("Light object: " + n.path())
+    for n in sc.nodes(("Part", "MeshPart")):
+        a = dict(n.parent.p.get("attrs") or {})
+        a.update(n.p.get("attrs") or {})
+        if any(k.startswith("Lamp") for k in a) and n.name == "Bulb":
+            for k in ("LampGroup", "LampKind", "LampRange", "LampBrightness", "LampColor"):
+                if k not in a:
+                    probs.append("%s: no %s" % (n.path(), k))
+            if a.get("LampGroup") not in ("Shack", "Street", "Always"):
+                probs.append("%s: LampGroup %r" % (n.path(), a.get("LampGroup")))
+    return probs
+
+
+def budget(sc):
+    cnt = {"inside": 0, "outside": 0}
+    for n in sc.nodes(("Part", "MeshPart")):
+        if n.top() in ("Items",):
+            continue
+        cnt[where(n)] += 1
+    return cnt
+
+
+# ---------------------------------------------------------------- report
+
+def run(sc, old=None, quick=False):
+    rep = {}
+    b = Boxes(sc)
+    rep["budget"] = budget(sc)
+    rep["props"] = {k: len(v) for k, v in sc.kit.used.items()} if hasattr(sc, "kit") else {}
+    rep["lights"] = lights(sc)
+    rep["grid"] = spslib.check_grid(sc)
+    rep["window"] = window(sc)
+    rep["ceiling_open"] = ceiling(sc)
+    rep["floating"] = floating(sc, b)
+    rep["pierce"] = pierce(sc, b)
+    rep["clear"] = clear(sc)
+    if not quick:
+        rep["planes"] = planes(sc, b)
+        rep["horizon"] = horizon(sc, b)
+        rep["zfight"] = spslib.zfight(sc)
+        ok, badm = spslib.check_item_markers(sc)
+        rep["item_markers"] = (ok, badm)
+    if old is not None:
+        rep["contract"] = contract(sc, old)
+    return rep
+
+
+def show(rep, limit=25):
+    def head(t):
+        print("\n== " + t)
+    head("budget (<= 6000 inside, <= 12000 outside)")
+    print(rep["budget"])
+    head("prop models (80 inside, 50 outside)")
+    print(rep["props"])
+    head("lights")
+    print(len(rep["lights"]), rep["lights"][:limit])
+    head("grid")
+    print(len(rep["grid"]), rep["grid"][:limit])
+    head("PlayerBlock")
+    print(rep["window"])
+    head("ceiling: open spots")
+    print(len(rep["ceiling_open"]), rep["ceiling_open"][:limit])
+    head("floating (model: parts)")
+    fl = rep["floating"]
+    print(len(fl))
+    for k, v in list(fl.items())[:limit]:
+        print("  ", k, v[:6])
+    head("pierce (a passes through b)")
+    print(len(rep["pierce"]))
+    for a, c in rep["pierce"][:limit]:
+        print("  ", a, " -> ", c)
+    head("clear boxes at markers")
+    print(len(rep["clear"]))
+    for k, v in rep["clear"][:limit]:
+        print("  ", k, v)
+    if "planes" in rep:
+        head("planes over the limit")
+        print(len(rep["planes"]))
+        for r in rep["planes"][:limit]:
+            print("   %s%s %.2f %s %s side %.1f > %g at %s (%d parts, e.g. %s)" % (
+                "+" if r["sign"] > 0 else "-", r["axis"], r["coord"], r["color"], r["material"], r["side"],
+                r["limit"], r["centre"], r["parts"], r["example"]))
+        head("horizon (gaps in degrees, lowest angle, edge angle)")
+        g, lo, edge = rep["horizon"]
+        print(len(g), g[:20], round(lo, 2), round(edge, 2))
+        head("z-fighting")
+        print(len(rep["zfight"]), rep["zfight"][:limit])
+        head("item markers on their surfaces")
+        ok, bad = rep["item_markers"]
+        print(ok, "ok;", len(bad), "bad", bad[:limit])
+    if "contract" in rep:
+        head("contract: missing / kind changed")
+        miss, kind = rep["contract"]
+        print(len(miss), miss[:60])
+        print(len(kind), kind[:limit])
+
+
+if __name__ == "__main__":
+    import time
+    t = time.time()
+    from . import build as B
+    sc = B.build()
+    import scene_build
+    old = scene_build.build(items=False)
+    print("built in %.1fs" % (time.time() - t))
+    rep = run(sc, old, quick="quick" in sys.argv)
+    show(rep)
+    print("\nchecks in %.1fs" % (time.time() - t))
