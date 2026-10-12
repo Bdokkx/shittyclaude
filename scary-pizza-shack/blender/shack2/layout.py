@@ -151,14 +151,14 @@ POLE_H = 24.0
 BILLBOARD = dict(x=-56.0, z=62.0, face=(0.82, -0.57))
 
 ROAD_SIGNS = {
-    "SpeedSign": dict(x=62.0, z=21.5, face=(1.0, 0.0)),        # for westbound cars leaving the bend
-    "DeerSign": dict(x=-84.0, z=53.0, face=(-0.91, 0.42)),     # for eastbound cars on the west bend
-    "PapaSign": dict(x=81.0, z=17.0, face=(0.94, -0.34)),      # PAPA STUD'S PIZZA OPEN LATE, arrow
+    "SpeedSign": dict(x=62.0, z=18.5, face=(1.0, 0.0)),        # for westbound cars leaving the bend
+    "DeerSign": dict(x=-83.3, z=54.7, face=(-0.91, 0.42)),     # for eastbound cars on the west bend
+    "PapaSign": dict(x=79.2, z=12.3, face=(0.94, -0.34)),      # PAPA STUD'S PIZZA OPEN LATE, arrow
 }
 
 FORECOURT_PROPS = {
     "PicnicTable": (-23.0, 16.5), "LitterBin": (-18.6, 12.6), "Payphone": (-28.5, 12.6),
-    "NewsBox": (-8.2, 12.4), "IceChest": (10.6, 12.3), "Vending": (15.4, 12.4),
+    "NewsBox": (-6.9, 12.4), "IceChest": (10.6, 12.3), "Vending": (15.4, 12.4),
     "StringLightPole": (-28.6, 20.4), "BugZapper": (6.4, 12.2),
 }
 PICKUP = dict(x=39.0, z=4.0, face=(0.0, -1.0))               # bay B, nose in (north), one flat tyre
@@ -176,7 +176,7 @@ DRAIN = (-14.0, 5.0)              # floor drain by the sink (the middle of a flo
 HOOD = (12.6, 17.0, -6.4, 1.4)    # vent hood over the oven (X0, X1, Z0, Z1), duct up through the roof
 INSPECT_R = 4.0                   # new-tile circle at Inspector_Rise, kept clear of furniture
 MATS = ((-8.6, 2.6, -3.9, -2.1),  # rubber mats (X0, X1, Z0, Z1): the prep line,
-        (10.4, 12.6, -5.6, 0.6))  # and the oven front
+        (10.4, 12.6, -4.6, 0.6))  # and the oven front
 
 # far lights inside the moon's wedge
 MAST_H = 96.0

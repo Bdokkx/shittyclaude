@@ -47,14 +47,61 @@ def where(n):
 
 # ---------------------------------------------------------------- oriented boxes
 
+MAX_PIECES = 48
+_PIECES = {}
+
+
+def _pieces(sc, mesh_name):
+    """(centre, half size) in mesh space of each connected piece of a mesh, or None when it
+    is one piece or too many to be worth it."""
+    if mesh_name in _PIECES:
+        return _PIECES[mesh_name]
+    g = sc.geoms[mesh_name]
+    V = np.asarray(g.v, float)
+    parent = np.arange(len(V))
+
+    def find(a):
+        while parent[a] != a:
+            parent[a] = parent[parent[a]]
+            a = parent[a]
+        return a
+    for f in g.f:
+        r0 = find(f[0])
+        for v in f[1:]:
+            r = find(v)
+            if r != r0:
+                parent[r] = r0
+    roots = np.array([find(i) for i in range(len(V))])
+    keys = np.unique(roots)
+    out = None
+    if 1 < len(keys) <= MAX_PIECES:
+        out = []
+        for key in keys:
+            P = V[roots == key]
+            lo, hi = P.min(0), P.max(0)
+            out.append(((lo + hi) / 2, np.maximum((hi - lo) / 2, 0.01)))
+    _PIECES[mesh_name] = out
+    return out
+
+
 class Boxes:
     """Every visible Part / MeshPart as an oriented box (centre, axes as columns, half sizes)."""
 
-    def __init__(self, sc, keep=lambda n: True, max_transp=0.99):
+    def __init__(self, sc, keep=lambda n: True, max_transp=0.99, split=True):
+        """split: a MeshPart made of separate pieces (three downpipes, a row of posts) gives
+        one box per piece instead of one box round all of them (up to MAX_PIECES)."""
         nodes, C, R, H = [], [], [], []
         for n in sc.nodes(("Part", "MeshPart")):
             p = n.p
             if p["transparency"] >= max_transp or not keep(n):
+                continue
+            pieces = _pieces(sc, p["mesh"]) if (split and n.kind == "MeshPart") else None
+            if pieces:
+                for (c, h) in pieces:
+                    nodes.append(n)
+                    C.append(p["cf"].p + p["cf"].R @ c)
+                    R.append(p["cf"].R)
+                    H.append(h)
                 continue
             nodes.append(n)
             C.append(p["cf"].p)
@@ -159,6 +206,13 @@ def floating(sc, boxes=None, eps=0.06):
             if dd >= 0:
                 adj[i].append(j)
                 adj[j].append(i)
+    sibs = defaultdict(list)
+    for i, n in enumerate(b.nodes):
+        sibs[id(n)].append(i)
+    for lst in sibs.values():                      # the pieces of one part hold together
+        for i in lst[1:]:
+            adj[lst[0]].append(i)
+            adj[i].append(lst[0])
     seen = set()
     stack = [i for i, n in enumerate(b.nodes) if any(g in n.path() for g in GROUNDED) or b.lo[i, 1] < -0.3]
     seen.update(stack)
@@ -169,8 +223,10 @@ def floating(sc, boxes=None, eps=0.06):
                 seen.add(j)
                 stack.append(j)
     loose = defaultdict(list)
+    done = set()
     for i, n in enumerate(b.nodes):
-        if i not in seen:
+        if i not in seen and id(n) not in done:
+            done.add(id(n))
             m = n.parent if n.parent.kind == "Model" else n
             loose[m.path()].append(n.name)
     return dict(loose)
@@ -178,12 +234,16 @@ def floating(sc, boxes=None, eps=0.06):
 
 # ---------------------------------------------------------------- pierce
 
-PIERCE_OK = ("Flue", "Duct", "Conduit", "Cable", "Wire", "Pipe", "Cord", "Root", "Trunk", "Rope", "Gas")
+PIERCE_OK = ("Flue", "Duct", "Conduit", "Cable", "Wire", "Pipe", "Cord", "Root", "Trunk", "Rope", "Gas", "Stems")
+# ground a post, a pole or a footing is set into
+GROUNDLIKE = ("Path", "Ground", "Slab", "LotAsphalt", "YardGround", "Pad", "Asphalt", "Shoulder", "Verge", "Meadow",
+              "Bank", "FarGround", "Hill", "Ridge", "DitchBed", "FarBank", "Apron", "Track")
 # structure that other things are set into: it never counts as passing through them
 STRUCT = ("TileBacking", "Paint", "AtticWall", "Siding", "BaseCourse", "Core", "Breast", "Ground", "Pilaster",
           "Tiles", "TileHole", "Cornice",
           "Parapet", "Roof", "Asphalt", "Shoulder", "Bank", "Verge", "Meadow", "DitchBed", "FarBank", "Slab",
-          "LotAsphalt", "YardGround", "FarGround", "Hill", "Tile", "Panel", "AtticLining", "AtticJoist")
+          "LotAsphalt", "YardGround", "FarGround", "Hill", "Tile", "Panel", "AtticLining", "AtticJoist", "Stain",
+          "Ridge", "Footing", "Path")
 
 
 def pierce(sc, boxes=None, margin=0.1, ok=PIERCE_OK):
@@ -198,11 +258,15 @@ def pierce(sc, boxes=None, margin=0.1, ok=PIERCE_OK):
     P = P[d > 0.02]
     out = []
     for i, j in P:
+        if b.nodes[i] is b.nodes[j]:
+            continue
+        if "/Outside/Forest/" in b.nodes[i].path() and "/Outside/Forest/" in b.nodes[j].path():
+            continue                              # crowns of a forest wall grow into each other
         for a, c in ((i, j), (j, i)):            # does a pass through c?
             na, nc = b.nodes[a], b.nodes[c]
             if any(w in na.name for w in ok) or any(w in nc.name for w in ok):
                 continue
-            if na.name in STRUCT or nc.name in ("Tiles", "TileHole"):
+            if na.name in STRUCT or nc.name in ("Tiles", "TileHole") or nc.name in GROUNDLIKE:
                 continue
             if na.parent is nc.parent and na.parent.kind == "Model" and na.kind == "MeshPart":
                 continue                          # pieces of one mesh prop

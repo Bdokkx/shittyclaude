@@ -43,9 +43,13 @@ def weld_all(k, root, parts):
 
 
 def board(k, parent, size, cf_, color, text="", text_color=(30, 30, 30), name="Board", font="Arcade", **kw):
-    """A flat part for a piece of text (the game puts a SurfaceGui on its Front face). The text
-    it should carry is in the attributes BoardText / BoardTextColor / BoardFont."""
-    b = k.part(parent, name, size, cf_, color, material="SmoothPlastic", grid=False, shadow=False, **kw)
+    """A flat part named Board for a piece of text (the game puts a SurfaceGui on its Front
+    face, -Z). The text it should carry is in the attributes BoardText / BoardTextColor /
+    BoardFont. A name other than Board makes a small Model of that name holding the Board, so
+    every text part is called Board and a station's own work Board stays its only direct one."""
+    if name != "Board":
+        parent = k.sc.model(parent, name)
+    b = k.part(parent, "Board", size, cf_, color, material="SmoothPlastic", grid=False, shadow=False, **kw)
     if text:
         k.attr(b, "BoardText", text)
         k.attr(b, "BoardTextColor", "%d,%d,%d" % tuple(col(text_color)))

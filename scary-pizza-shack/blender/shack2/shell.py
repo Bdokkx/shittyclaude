@@ -44,7 +44,7 @@ def build(k, root, rng):
 # ---------------------------------------------------------------- floor
 
 CRACKED = ((-11, -4), (1, 4), (-15, -8), (7, 0))     # floor cells (x0, z0) with a cracked tile
-MISSING = (11, 4)                                    # one tile gone, the screed and its adhesive showing
+MISSING = (5, 2)                                     # one tile gone, the screed and its adhesive showing
 
 
 def _crack_halves(rng, gap=0.09):

@@ -198,7 +198,7 @@ def _normals(P):
     return N
 
 
-def ribbon(k, f, name, pts, section, color, group=4, keep=None, solid=True, material="SmoothPlastic", **kw):
+def ribbon(k, f, name, pts, section, color, group=4, keep=None, solid=True, material="Plastic", **kw):
     """Sweep a cross-section along a polyline: `section` is a convex polygon of (offset, y)
     (offset + to the right of travel). Consecutive pieces share their end faces exactly (no
     overlaps, no gaps), each piece a MeshPart over `group` segments; pieces with the same

@@ -20,6 +20,11 @@ def _lathe_loop(loop, n=12):
     return G.outward(g)
 
 
+def _cyl_z(r, z0, z1, n=8, b=0.02, x=0.0, y=0.0):
+    """A cylinder along Z from z0 to z1 at (x, y)."""
+    return ccyl(r, z1 - z0, n, "z", (x, y, (z0 + z1) / 2), b)
+
+
 def _cyl_y(r, y0, y1, n=10, b=0.05, x=0.0, z=0.0):
     return ccyl(r, y1 - y0, n, "y", (x, (y0 + y1) / 2, z), b)
 
@@ -36,7 +41,7 @@ def flour_bin(rng):
     tub = _lathe_loop([(0.0, 0.0), (0.62, 0.0), (0.68, 1.2), (0.76, 1.24), (0.76, 1.36), (0.6, 1.36),
                        (0.56, 0.1), (0.0, 0.1)], 12)
     flour = G.outward(G.lathe([(0.0, 0.9), (0.58, 0.9), (0.62, 1.05), (0.36, 1.22), (0.0, 1.3)], 12))
-    lid = ccyl(0.8, 0.15, 12, "z", (0, 1.95, -0.85), 0.04)
+    lid = ccyl(0.8, 0.15, 12, "y", (0, 0, 0.8), 0.04).xf(RX(-35)).xf(T(0, 1.38, -0.8))   # propped open
     hinge = rod((-0.3, 1.35, -0.8), (0.3, 1.35, -0.8), 0.08, 6)
     scoop = G.Geo()
     scoop.add(_lathe_loop([(0.0, -0.18), (0.24, -0.16), (0.27, 0.06), (0.2, 0.06), (0.19, -0.08), (0.0, -0.1)], 8))
@@ -292,8 +297,8 @@ def chop_board(rng):
 @prop("BoardUpright")
 def board_upright(rng):
     """A spare board stood on edge against the backsplash (origin on the counter at the wall)."""
-    b = bevel_box(2.8, 2.4, 0.3, 0.08).xf(T(0, 1.2, 0.0))
-    hole = ccyl(0.2, 0.32, 8, "z", (0.0, 2.0, 0.0), 0.02)
+    b = bevel_box(2.8, 2.0, 0.3, 0.08).xf(T(0, 1.0, 0.0))
+    hole = ccyl(0.2, 0.32, 8, "z", (0.0, 1.6, 0.0), 0.02)
     return [("Board", "wood", b.xf(RX(-5))), ("Hole", "cab_inside", hole.xf(RX(-5)))]
 
 
@@ -380,6 +385,36 @@ def sauce_tub(rng):
     cap = _cyl_y(0.5, 0.7, 0.85, 10)
     band = _lathe_loop([(0.4, 0.2), (0.43, 0.2), (0.45, 0.5), (0.42, 0.5)], 10)
     return [("Tub", "tub_white", tub), ("Lid", lid, cap), ("Label", "paper_old", band)]
+
+
+@prop("JarRow")
+def jar_row(rng):
+    """Three big glass jars in a row (pickles, olives, peppers) with coloured lids, along X."""
+    jars, lids, fills = G.Geo(), G.Geo(), {}
+    cols = ("pickle", "olive", "pepper_red")
+    for i, x in enumerate((-0.5, 0.0, 0.5)):
+        h = (0.62, 0.55, 0.66)[i]
+        jars.add(_lathe_loop([(0, 0), (0.2, 0), (0.22, 0.08), (0.22, h - 0.12), (0.16, h - 0.05), (0, h - 0.05)],
+                             10).xf(T(x, 0, 0)))
+        fills.setdefault(cols[i], G.Geo()).add(_cyl_y(0.17, 0.06, h - 0.2, 8, x=x))
+        lids.add(_cyl_y(0.18, h - 0.06, h + 0.06, 8, x=x))
+    out = [("Jars", "glass", jars, {"material": "Glass", "transparency": 0.45})]
+    for c, g in fills.items():
+        out.append(("Fill_" + c, c, g))
+    out.append(("Lids", "red_dark", lids))
+    return out
+
+
+@prop("SackPile")
+def sack_pile(rng):
+    """Two paper sacks of flour lying one on the other, tied necks, printed bands; along Z."""
+    sacks, bands, ties = G.Geo(), G.Geo(), G.Geo()
+    for i, (y, a) in enumerate(((0.0, 4.0), (0.48, -7.0))):
+        R = RY(a)
+        sacks.add(bevel_box(0.7, 0.5, 1.3, 0.16, c=(0, y + 0.25, 0)).xf(R))
+        bands.add(bevel_box(0.72, 0.18, 0.4, 0.04, c=(0, y + 0.3, -0.1)).xf(R))
+        ties.add(_cyl_y(0.12, 0.0, 0.3, 6).xf(RX(90)).xf(T(0, y + 0.25, 0.6)).xf(R))
+    return [("Sacks", "paper_old", sacks), ("Bands", "red", bands), ("Ties", "cardboard_dark", ties)]
 
 
 @prop("CheeseLog")
@@ -469,6 +504,18 @@ def socket(rng):
     for x in (-0.25, 0.25):
         holes.add(bevel_box(0.2, 0.2, 0.15, 0.02, c=(x, 0, 0.1)))
     return [("Plate", "cream", plate), ("Switches", "cream_dark", holes)]
+
+
+@prop("JunctionBox")
+def junction_box(rng):
+    """A square steel junction box where the conduit ends (origin on the wall, +Z out)."""
+    box = bevel_box(0.7, 0.7, 0.3, 0.05, c=(0, 0, 0.15))
+    lid = bevel_box(0.55, 0.55, 0.06, 0.02, c=(0, 0, 0.32))
+    screws = G.Geo()
+    for x in (-0.2, 0.2):
+        for y in (-0.2, 0.2):
+            screws.add(_cyl_z(0.075, 0.33, 0.38, 6, x=x, y=y))
+    return [("Box", "steel_dark", box), ("Lid", "grey", lid), ("Screws", "steel_light", screws)]
 
 
 @prop("LightSwitch")
@@ -617,7 +664,7 @@ def _flat_boxes(rng, n, assembled_top=0):
         g.add(bevel_box(4.0, 0.15, 4.0, 0.03, c=(dx, y + 0.075, dz)).xf(RY(a)))
         y += 0.17
     for i in range(assembled_top):
-        a = rng.uniform(-4, 4)
+        a = 0.0
         g.add(bevel_box(4.0, 0.7, 4.0, 0.08, c=(0, y + 0.35, 0)).xf(RY(a)))
         edges.add(bevel_box(4.04, 0.15, 4.04, 0.03, c=(0, y + 0.62, 0)).xf(RY(a)))
         prints.add(ccyl(1.2, 0.15, 12, "y", (0, y + 0.72, 0), 0.03).xf(RY(a)))
@@ -635,8 +682,9 @@ def flat_box_stack(rng):
 
 @prop("FlatBoxStackShort")
 def flat_box_stack_short(rng):
-    """Flat boxes with two assembled ones on top (the PAPA STUD'S print on their lids)."""
-    return _flat_boxes(rng, 3, assembled_top=1)
+    """A flat box with an assembled one on top (the PAPA STUD'S print on its lid; the
+    station puts the name on its side as a Board)."""
+    return _flat_boxes(rng, 1, assembled_top=1)
 
 
 @prop("StickerRoll")
@@ -800,7 +848,7 @@ def mop_bucket(rng):
     water = _cyl_y(0.66, 0.55, 0.6, 10).xf(S(1.2, 1.0, 1.0))
     wringer = bevel_box(0.6, 0.4, 0.9, 0.06, c=(0.6, 1.05, 0))
     mop = G.Geo()
-    mop.add(rod((-0.3, 0.6, 0.0), (-0.15, 2.0, -0.3), 0.08, 6))
+    mop.add(rod((-0.3, 0.6, 0.0), (0.25, 1.1, -0.85), 0.08, 6))
     mop.add(_blob(0.35, (1.0, 0.7, 1.0), 140, c=(-0.3, 0.55, 0.0)))
     return [("Bucket", "label_yellow", b), ("Water", (110, 120, 110), water), ("Wringer", "charcoal", wringer),
             ("Mop", "wood_pale", mop)]

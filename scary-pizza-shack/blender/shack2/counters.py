@@ -130,7 +130,7 @@ def counter(k, m, w, u0, u1, depth, top="steel", door="red", fronts=None, ajar=(
     assert abs(sum(wd for wd, _ in fronts) - (u1 - u0)) < 1e-6, (owner, fronts, u0, u1)
     if plinth:
         wbox(k, m, "Plinth", w, u0, u1, 0.2, 0.6, 0.0, D - 1.0, "black", solid=True)
-    tmat = "Metal" if top.startswith("steel") else "Plastic"      # stainless tops read as brushed steel
+    tmat = "SmoothPlastic" if top.startswith("steel") else "Plastic"   # flat colour only: no Metal texture
     if top_hole is None:
         t = wbox(k, m, top_name, w, u0, u1, top_y - 0.4, top_y, 0.0, D, top, solid=True, material=tmat)
     else:
@@ -142,7 +142,7 @@ def counter(k, m, w, u0, u1, depth, top="steel", door="red", fronts=None, ajar=(
             t = t or p_
     ln = u1 - u0
     k.mesh(m, "TopEdge", "Counter__Edge%d" % int(round(ln * 10)), edge_geo(ln),
-           wcf(w, (u0 + u1) / 2, top_y - 0.2, D), "steel_dark", shadow=False, material="Metal")
+           wcf(w, (u0 + u1) / 2, top_y - 0.2, D), "steel_dark", shadow=False)
     u = u0
     di = 0
     fy0, fy1 = 0.7, y_body - 0.1

@@ -38,6 +38,12 @@ def storage_shelf(k):
         for z in (z1 - 1.4, z0 + 1.3):              # clear of the sink counter and the cooler
             spot(k, m, "Slot%d" % kk, x0 + 1.0, y, z, W)
             kk += 1
+    # more stock at the backs of the shelves, behind the slots (out of their clear boxes)
+    xb = x0 + 0.4
+    k.prop(m, "SackPile", CF((xb, 1.2, (z0 + z1) / 2 + 0.2), G.ry(3)), name="Sacks")
+    k.prop(m, "JarRow", CF((xb + 0.05, 4.0, z0 + 1.0), G.ry(90)), name="Jars")
+    k.prop(m, "TinPair", CF((xb + 0.05, 4.0, z1 - 1.3), G.ry(90)), name="BackTins")
+    k.prop(m, "JarRow", CF((xb + 0.05, 6.8, (z0 + z1) / 2), G.ry(90)), name="Jars", seed=2)
     # stock on the top board
     k.prop(m, "TinRow", CF((xc, 8.2, z1 - 1.0), G.ry(90)), name="Tins")
     k.prop(m, "HairnetBox", CF((xc, 8.2, z0 + 1.1), G.ry(90)), name="Hairnets")

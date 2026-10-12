@@ -18,7 +18,7 @@ import numpy as np  # noqa: E402
 import spslib  # noqa: E402
 from spsgeo import CF  # noqa: E402
 
-from . import forest, layout as L, props_in, shell, terrain  # noqa: E402,F401
+from . import forest, layout as L, props_in, props_out, shell, terrain  # noqa: E402,F401
 from .kit import Kit  # noqa: E402
 
 BLOCKOUT_GREY = (176, 176, 172)
@@ -53,10 +53,8 @@ def _copy_tree(src, dst_parent, dst_sc, src_sc, recolor=None, keep=lambda n: Tru
     return mapping.get(src)
 
 
-def old_stations(sc, skip=()):
+def old_stations(sc, old, skip=()):
     """Batch 1's stations not rebuilt yet (and the Markers folder) in blockout grey; no Lights."""
-    import scene_build
-    old = scene_build.build(items=False)
     st = sc.folder(sc.root, "Stations")
     shift = {"BusStop": (L.BUS_STOP_X[0] - 37.0, 0.0, 0.0)}
     for m in old.root.get("Stations").children:
@@ -124,21 +122,66 @@ def inside_markers(sc):
         sc.marker(mk, nm, CF((x, L.FLOOR, z), spslib.G.facing(d / np.linalg.norm(d))))
 
 
+def outside_markers(sc):
+    """Markers that moved with the remade outside: the bus stop's spawn (the shelter moved
+    east past the lot) and the road ends (the road now bends away into the trees)."""
+    mk = sc.root.get("Markers")
+
+    def put(name, pos, look):
+        n = mk.find(name)
+        if n is not None:
+            mk.children.remove(n)
+        d = np.array((look[0], 0.0, look[1]), float)
+        sc.marker(mk, name, CF(pos, spslib.G.facing(d / np.linalg.norm(d))))
+    put("Spawn_BusStop", (53.0, sc.kit_ground.y(53.0, 22.4), 22.4), (-1.0, 0.0))
+
+    def cam(name, pos, tgt):
+        n = mk.find(name)
+        if n is not None:
+            mk.children.remove(n)
+        d = np.asarray(tgt, float) - np.asarray(pos, float)
+        sc.marker(mk, name, CF(pos, spslib.G.facing(d / np.linalg.norm(d))))
+    # Cam_Front comes out from the new shutter box to hang under the awning; Cam_Road moves to
+    # the east end of the road sign's box (the mascot is in the old spot now)
+    cam("Cam_Front", (5.6, 8.8, 14.8), (0.0, 1.5, 13.5))
+    cam("Cam_Road", (32.8, 13.0, 21.6), (90.0, 3.0, 30.0))
+    cam("Cam_Yard", (0.0, 9.6, -13.1), (0.0, 1.5, -33.0))
+    cam("Cam_Back", (-7.8, 10.2, 20.2), (3.0, 4.0, 11.5))
+    # walkers come along the north verge from where the road leaves the trees at both ends
+    put("Spawn_RoadWest", (-92.0, sc.kit_ground.y(-92.0, 22.0), 22.0), (1.0, 0.0))
+    put("Spawn_RoadEast", (92.0, sc.kit_ground.y(92.0, 14.0), 14.0), (-1.0, 0.1))
+
+
 def build(items=False, seed=2026):
+    import scene_build
     sc = spslib.Scene()
     for name in ("Shack", "Outside", "Stations", "Items", "Markers"):
         sc.folder(sc.root, name)
     k = Kit(sc)
     rng = np.random.default_rng(seed)
+    old = scene_build.build(items=False)
     shell.build(k, sc.root, rng)
     out = sc.root.get("Outside")
     terrain.build(k, out, rng)
     forest.build(k, out, rng)
-    from . import st_ceiling, st_east, st_north, st_south, st_west
+    from . import outkit
+    gr = outkit.Ground(sc)
+    sc.kit_ground = gr
+    from . import st_ceiling, st_east, st_north, st_out, st_out2, st_south, st_west
     built = {m.name for mod in (st_north, st_east, st_south, st_west, st_ceiling) for m in mod.build(k)}
-    old_stations(sc, skip=built)
+    built |= {m.name for m in st_out.build(k, old, gr)}
+    built |= {m.name for m in st_out2.build(k, gr)}
+    from . import dressing
+    dressing.build(k)
+    from . import ext_shack, road_dress, site
+    ext_shack.build(k, sc)
+    site.build(k, sc)
+    road_dress.build(k, sc)
+    old_stations(sc, old, skip=built)
     road_markers(sc)
     inside_markers(sc)
+    outside_markers(sc)
+    st_out2.cameras(k, sc)
     if items:
         from . import items2
         items2.build_items(k)

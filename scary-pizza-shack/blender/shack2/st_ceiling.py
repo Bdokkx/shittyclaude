@@ -55,7 +55,7 @@ def hatch(k):
     ring.add(bevel_box(0.2, 0.15, 0.2, 0.03, c=(0, -0.075, 0)))
     rp = k.mesh(m, "PullRing", "Hatch__Ring", ring, CF(((hx0 + hx1) / 2, CY, hz1 - 0.6)), "steel_dark", shadow=False)
     cord = rod((0, -0.5, 0), (0, -2.6, 0), 0.075, 4)
-    cp = k.mesh(m, "PullCord", "Hatch__Cord", cord, CF(((hx0 + hx1) / 2, CY, hz1 - 0.6)), "cream", shadow=False)
+    cp = k.mesh(m, "PullCord", "Hatch__Cord", cord, CF(((hx0 + hx1) / 2, CY, hz1 - 0.6)), "jute", shadow=False)
     tog = k.mesh(m, "Toggle", "Hatch__Toggle", ccyl(0.16, 0.6, 8, "y", (0, 0, 0), 0.05),
                  CF(((hx0 + hx1) / 2, CY - 2.9, hz1 - 0.6)), "wood", shadow=False)
     weld_all(k, door, [rp, cp, tog])
@@ -92,7 +92,7 @@ def fan(k, parent):
     blades = k.mesh(m, "Blades", "Fan__Blades", bl, CF((x, CY - 1.55, z)), "wood", solid=False)
     weld_all(k, hub, [blades])
     pivot(hub, CF((x, CY - 1.35, z)))
-    k.attr(m, "Spin", 0.35)                      # turns a second, slowly
+    k.attr(hub, "Spin", 120.0)                   # degrees a second about the Hub's own Y (up): slow
     k.mark_used("CeilingFan")
     return m
 

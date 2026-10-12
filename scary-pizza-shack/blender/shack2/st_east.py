@@ -17,7 +17,7 @@ from spsgeo import CF
 
 from . import counters as C, interior as IP, items2, layout as L
 from .kit import bevel_box, ccyl, col, rod
-from .st_common import E, N, S_, W, board, moving, pivot, spot, stand, station, weld_all
+from .st_common import E, FACE, N, S_, W, board, moving, pivot, spot, stand, station, weld_all
 
 X0 = L.E_FRONT            # 13, the oven's front face
 X1 = L.IN_X1              # 17, the east wall
@@ -405,9 +405,9 @@ def peel_rack(k):
         arm.add(bevel_box(0.2, 0.3, 1.0, 0.05, c=(dx, 0, 0)))
     k.mesh(m, "Arm", "PeelRack__Arm", arm, CF((X1 - 0.3, 5.0, zc)), "wood", solid=True)
     rail = G.Geo()
-    rail.add(bevel_box(3.8, 0.3, 1.0, 0.05, c=(0, 0.15, 0)))
+    rail.add(bevel_box(3.5, 0.3, 1.0, 0.05, c=(-0.15, 0.15, 0)))
     for dz in (-0.45, 0.45):
-        rail.add(bevel_box(3.8, 0.3, 0.15, 0.04, c=(0, 0.45, dz)))
+        rail.add(bevel_box(3.5, 0.3, 0.15, 0.04, c=(-0.15, 0.45, dz)))
     k.mesh(m, "FloorRail", "PeelRack__Rail", rail, CF((xp, L.FLOOR, zc)), "steel_dark", solid=True)
     R_down = np.column_stack(((-1, 0, 0), (0, 0, 1), (0, 1, 0)))     # head down, pole up, flat to the oven
     peel = items2.get("PizzaPeel")
@@ -431,9 +431,9 @@ def cut_table(k):
               end_right=False, owner="CutTable")
     k.prop(m, "RoundBoard", CF((15.0, L.WORK, zc), G.ry(90)), name="Board")
     spot(k, m, "Work", 15.0, L.WORK + 0.4, zc, E)
-    k.prop(m, "ToolRail", C.wcf("E", zc, 6.6, 0.0), name="ToolRail")
+    k.prop(m, "ToolRail", C.wcf("E", zc, 7.1, 0.0), name="ToolRail")
     R = np.column_stack(((1, 0, 0), (0, 0, -1), (0, 1, 0)))     # hanging wheel-down, flat to the wall
-    items2.place(k, m, "PizzaCutter", CF((X1 - 0.4, 6.6 - 0.5, zc + 0.9), R))
+    items2.place(k, m, "PizzaCutter", CF((X1 - 0.4, 7.1 - 0.5, zc + 0.9), R))
     k.prop(m, "SliceGuide", C.wcf("E", zc - 0.8, 5.2, 0.0), name="SliceGuide")
     stand(k, m, X0 - IP.STAND_GAP, zc, E)
     return m
@@ -478,6 +478,8 @@ def box_station(k):
               owner="BoxStation", shelf={0: 2.0}, open_sides=False)
     k.prop(m, "FlatBoxStack", CF((15.0, 0.9, zc)), name="FlatBoxes", seed=5)
     k.prop(m, "FlatBoxStackShort", CF((15.0, 2.0, zc)), name="FlatBoxes", seed=6)
+    board(k, m, (3.2, 0.45, 0.15), CF((13.0 - 0.08, 2.0 + 0.17 + 0.35, zc), FACE["E"]), "cardboard",
+          text="PAPA STUD'S PIZZA", text_color=(170, 32, 26), name="BoxPrint")
     spot(k, m, "Work", 15.0, L.WORK, zc, E)
     k.prop(m, "StickerRoll", CF((16.0, L.WORK, z1 - 1.3)), name="StickerRoll")
     stand(k, m, X0 - IP.STAND_GAP, zc, E)

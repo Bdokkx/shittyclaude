@@ -18,7 +18,7 @@ IN_X0, IN_X1, IN_Z0, IN_Z1 = L.IN_X0, L.IN_X1, L.IN_Z0, L.IN_Z1
 # ---------------------------------------------------------------- counters (floor to the 3.4 worktop)
 # (wall, u0, u1, depth from the wall face)
 COUNTERS = [
-    ("N", -9.0, 13.0, 6.0),        # dough, sauce + cheese, chop, topping rail (6 deep: pots and crates
+    ("N", -9.0, 12.0, 6.0),        # dough, sauce + cheese, chop, topping rail (6 deep: pots and crates
                                    # at the back, a whole pizza in front of them)
     ("E", 2.0, 10.0, 4.0),         # cut table, box station
     ("S", -17.0, -13.0, 4.0),      # sink

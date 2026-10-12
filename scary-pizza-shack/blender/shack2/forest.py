@@ -27,7 +27,8 @@ PINES = ("pine", "pine2", "pine3")
 
 def _trunk(k, m, x, y, z, h, d, color="trunk", lean=None):
     R = np.eye(3) if lean is None else lean
-    t = k.part(m, "Trunk", (h, d, d), CF((x, y + h / 2, z), R @ G.rz(90)), color, shape="Cylinder", solid=True)
+    c = np.array((x, y, z)) + R @ np.array((0.0, h / 2, 0.0))       # a leaning trunk leans from its foot
+    t = k.part(m, "Trunk", (h, d, d), CF(c, R @ G.rz(90)), color, shape="Cylinder", solid=True)
     return t
 
 
@@ -46,7 +47,7 @@ def pine(k, parent, x, y, z, h, rng, kind="PineTall", name="Pine"):
     w0 = {"PineTall": 15, "PineMid": 13, "PineYoung": 8}[kind] * (0.8 + 0.25 * h / 40)
     d = 2.2 if h > 30 else (1.6 if h > 18 else 1.0)
     clear = h * (0.22 if kind != "PineYoung" else 0.16)          # bare trunk below the first tier
-    _trunk(k, m, x, y - 0.4, z, h * 0.93, d)
+    _trunk(k, m, x, y - 0.4, z, h - 0.4, d)                      # up into the top tuft
     if h > 18:
         _roots(k, m, x, y, z, d, rng)
     span = h - clear - 1.6
@@ -125,7 +126,7 @@ def bush(k, parent, x, y, z, s, rng, name="Bush"):
         r = rng.uniform(0.4, 1.4) * s
         w = max(1, round(s * rng.uniform(1.6, 2.6)))
         hh = max(0.8, round(s * rng.uniform(1.2, 2.0) / 0.4) * 0.4)
-        k.boxr(m, "Leaves", (w, hh, w), (x + r * math.cos(a), y + hh / 2 - 0.2 + 0.4 * (j % 2), z + r * math.sin(a)),
+        k.boxr(m, "Leaves", (w, hh, w), (x + r * math.cos(a), y + hh / 2 - 0.2, z + r * math.sin(a)),
                G.ry(rng.uniform(0, 90)), ("leaf", "pine3", "leaf2", "grass2")[j % 4], studs=True,
                shadow=(s > 1.2))
     k.mark_used("Bush", "outside")
@@ -301,8 +302,28 @@ def hill_geo(rng, r, h, steps):
 
 # ---------------------------------------------------------------- placement
 
+def _discs():
+    """Things standing in the forest's edge that trees must keep their crowns off: the
+    billboard, the roadside signs, the telegraph poles, the road lamps (x, z, radius)."""
+    d = [(L.BILLBOARD["x"], L.BILLBOARD["z"], 21.0)]
+    for s in L.ROAD_SIGNS.values():
+        d.append((s["x"], s["z"], 11.0))
+    for x in L.POLE_X:
+        d.append((x, L.POLE_Z, 10.0))
+    d += [(-46.0, 20.0, 9.0), (68.0, 17.0, 9.0), (L.CULVERT_X + 4.2, 58.5, 6.0), (10.0, -47.5, 10.0)]
+    return d
+
+
+DISCS = None
+
+
 def keep_out(x, z):
     """Where trees may not stand."""
+    global DISCS
+    if DISCS is None:
+        DISCS = _discs()
+    if any((x - a) ** 2 + (z - b) ** 2 < r * r for (a, b, r) in DISCS):
+        return True
     if abs(x) < 34 and -14 < z < 25:                 # shack, forecourt
         return True
     if L.YARD_X[0] - 4 < x < L.YARD_X[1] + 4 and L.YARD_Z[0] - 5 < z < L.YARD_Z[1]:
@@ -311,7 +332,7 @@ def keep_out(x, z):
         return True
     if L.BUS_STOP_X[0] - 6 < x < L.BUS_STOP_X[1] + 6 and 8 < z < 24:
         return True
-    if -46 < x < -18 and 56 < z < 70:                 # billboard
+    if -68 < x < -44 and 54 < z < 72:                 # billboard
         return True
     if L.CULVERT_X - 5 < x < L.CULVERT_X + 5 and 40 < z < 140:   # the farm track into the meadow
         return True
@@ -389,7 +410,7 @@ def build(k, out, rng):
             bush(k, near, x, y, z, float(rng.uniform(1.4, 2.4)), rng)
     # undergrowth at the forest's foot and through it
     def ok_under(x, z):
-        return not keep_out(x, z) and road_d(x, z) > 15.0
+        return not keep_out(x, z) and road_d(x, z) > 18.5
     for (x, z) in poisson(rng, 6000, 46, 96, lambda x, z: 4.5, ok_under, existing=trees):
         y = ground_y(x, z)
         u = rng.random()
@@ -447,6 +468,10 @@ def build(k, out, rng):
             b = rng.uniform(0, math.tau)
             rr = rng.uniform(0, 30)
             jj = int(rng.integers(0, len(geos)))
+            tx, tz = x + rr * math.cos(b), z + rr * math.sin(b)
+            if min(math.hypot(tx - L.MAST[0], tz - L.MAST[1]), math.hypot(tx - L.HILL_WINDOW[0],
+                                                                           tz - L.HILL_WINDOW[1])) < 22.0:
+                continue                          # the mast and the lit house stand clear
             k.mesh(hills, "HillTree", "FarTree%d__Mass" % jj, geos[jj],
                    CF((x + rr * math.cos(b), h * 0.55, z + rr * math.sin(b))), "far_trees", shadow=False)
     k.mark_used("Hill", "outside")

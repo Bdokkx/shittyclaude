@@ -53,15 +53,15 @@ def rules_board(k):
     standing off the wall on two cleats over the box station's corner, with a chalk ledge."""
     m = station(k, "RulesBoard")
     x0, x1 = 9.5, 16.5                               # the frame stays clear of the east dado rail
-    xc, yc = (x0 + x1) / 2, 5.9
-    zf = SZ - 0.5                                   # the face, 0.5 off the wall (clear of the dado)
+    xc, yc = (x0 + x1) / 2, 6.25                    # its frame clear above the worktops, under the ceiling
+    zf = SZ - 0.75                                  # the face, 0.75 off the wall (clear of dado and cornice)
     k.part(m, "Face", (7.0, 5.0, 0.2), CF((xc, yc, zf)), "chalkboard", material="SmoothPlastic", grid=False)
     fr = G.Geo()
     for (cx, cy, sx, sy) in ((0, 2.6, 7.6, 0.3), (0, -2.6, 7.6, 0.3), (-3.65, 0, 0.3, 5.5), (3.65, 0, 0.3, 5.5)):
         fr.add(bevel_box(sx, sy, 0.4, 0.06, c=(cx, cy, 0.0)))
     k.mesh(m, "Frame", "RulesBoard__Frame", fr, CF((xc, yc, zf)), "wood_dark", solid=True)
     for x in (x0 + 1.0, x1 - 1.0):
-        k.mesh(m, "Cleat", "RulesBoard__Cleat", bevel_box(0.6, 3.0, 0.35, 0.05), CF((x, yc, SZ - 0.175)),
+        k.mesh(m, "Cleat", "RulesBoard__Cleat", bevel_box(0.6, 3.0, 0.6, 0.05), CF((x, yc, SZ - 0.3)),
                "wood_dark", solid=True)
     k.mesh(m, "Ledge", "RulesBoard__Ledge", bevel_box(6.0, 0.15, 0.4, 0.04), CF((xc, yc - 2.6, zf - 0.4)), "wood",
            shadow=False)
@@ -129,7 +129,7 @@ def register(k):
     k.mesh(tj, "Coins", "TipJar__Coins", coins, CF(c), "mustard", shadow=False)
     board(k, tj, (0.6, 0.4, 0.15), CF((c[0], c[1] + 0.55, c[2] - 0.46), G.rx(8)), "paper", text="TIPS",
           text_color=(40, 40, 40), name="Board")
-    k.prop(m, "CardImprinter", CF((x1 - 1.9, W_, FRONT + 2.6), G.ry(180)), name="CardMachine")
+    k.prop(m, "CardImprinter", CF((x1 - 3.3, W_, FRONT + 3.0), G.ry(180)), name="CardMachine")
     stand(k, m, (x0 + x1) / 2, STZ, S_)
     return m
 
@@ -238,7 +238,7 @@ def _housing():
     g.add(bevel_box(11.0, 3.9, 0.2, 0.05, c=(0, 2.05, 1.65)))          # front
     g.add(G.extrude([(0, 0), (1.75, 0), (1.75, 0.3), (0, 0.9)], 11.0, "x", (0, 3.9, 0)).xf(G.M(np.eye(3))))
     for sx in (-1, 1):
-        g.add(bevel_box(0.3, 4.2, 1.8, 0.05, c=(sx * 5.5, 2.1, 0.85)))
+        g.add(bevel_box(0.5, 4.2, 1.8, 0.05, c=(sx * 5.25, 2.1, 0.85)))
     return g
 
 
@@ -251,9 +251,10 @@ def shutter_button(k):
     y = 5.6
     base = k.mesh(m, "Base", "ShutterButton__Base", bevel_box(2.0, 2.0, 0.6, 0.1), CF((x, y, SZ - 0.3)), "mustard",
                   solid=True)
-    stripes = G.Geo()
-    for i in range(4):
-        stripes.add(bevel_box(0.3, 2.6, 0.15, 0.03, c=(-0.75 + 0.5 * i, 0, 0)).xf(G.M(G.rz(40))))
+    stripes = G.Geo()                                   # diagonal hazard stripes kept inside the plate
+    for c in (-1.4, -0.7, 0.0, 0.7, 1.4):
+        ln = (2.0 - abs(c)) * 1.414 - 0.35
+        stripes.add(bevel_box(0.3, ln, 0.15, 0.03).xf(G.M(G.rz(45))).xf(G.T(c / 2, c / 2, 0)))
     k.mesh(m, "Stripes", "ShutterButton__Stripes", stripes, CF((x, y, SZ - 0.62)), "black", shadow=False)
     k.mesh(m, "Collar", "ShutterButton__Collar", G.ring(0.62, 0.48, 0.2, 12, "z", (0, 0, 0)), CF((x, y, SZ - 0.72)),
            "grey_dark", shadow=False)
@@ -313,8 +314,8 @@ def cctv_desk(k):
     k.mesh(sb, "Buttons", "SwitchBox__Buttons", btns, CF((x0 + 3.1, W_ + 0.4, FRONT + 0.8)), "red", shadow=False)
     k.part(sb, "Lamp", (0.4, 0.2, 0.2), CF((x0 + 2.25, W_ + 0.5, FRONT + 0.55)), (120, 255, 120), material="Neon",
            grid=False, shadow=False)
-    k.prop(m, "Keyboard", CF((x1 - 1.6, W_, FRONT + 0.75)), name="Keyboard")
-    k.prop(m, "Mug", CF((x0 + 4.75, W_, FRONT + 1.3)), name="Mug")
+    k.prop(m, "Keyboard", CF((x1 - 1.9, W_, FRONT + 0.75)), name="Keyboard")
+    k.prop(m, "Mug", CF((x1 - 0.45, W_, FRONT + 0.55)), name="Mug")
     cables = G.Geo()
     for xs in (x0 + 1.6, x1 - 1.6):
         cables.add(G.tube([(xs, W_ + 0.6, FRONT + 3.6), (xs + 0.2, W_ + 0.2, SZ - 0.25), (xs + 0.3, W_ - 0.6, SZ - 0.2),
@@ -322,10 +323,11 @@ def cctv_desk(k):
     k.mesh(m, "Cables", "CCTVDesk__Cables", cables, CF(), "black", shadow=False)
     k.prop(m, "Socket", C.wcf("S", -10.0, 0.9, 0.0), name="Socket")
     # the wall over the desk: radio shelf + Radio, cork board, calendar, the phone
-    k.prop(m, "WallShelfSmall", C.wcf("S", x0 + 1.0, 5.4, 0.0), name="RadioShelf")
-    radio(k, m, (x0 + 1.0, 5.55, SZ - 0.6))
+    # the radio's shelf at head height on the west wall, just round the corner from the desk
+    k.prop(m, "WallShelfSmall", C.wcf("W", 8.0, 5.4, 0.0), name="RadioShelf")
+    radio(k, m, C.wcf("W", 8.0, 5.4, 0.6) * CF((0, 0, 0), G.ry(180)))
     k.prop(m, "CorkBoard", C.wcf("S", -9.7, 6.2, 0.0), name="CorkBoard")
-    k.prop(m, "Calendar", C.wcf("S", x0 + 1.0, 7.4, 0.0), name="Calendar")
+    k.prop(m, "Calendar", C.wcf("S", -12.0, 7.6, 0.0), name="Calendar")
     ph = k.sc.model(m, "Phone")
     px = -7.8
     k.mesh(ph, "Base", "Phone__Base", bevel_box(1.0, 1.6, 0.6, 0.12), CF((px, 6.2, SZ - 0.3)), "red", solid=True)
@@ -362,18 +364,18 @@ def _crt():
     return g
 
 
-def radio(k, m, pos):
-    """The Radio (a Model with parts Speaker and Dial): an 80s radio-cassette on its shelf."""
+def radio(k, m, base):
+    """The Radio (a Model with parts Speaker and Dial): an 80s radio-cassette on its shelf.
+    base: a frame on the shelf top, -Z towards the room (the speaker side)."""
     r = k.sc.model(m, "Radio")
-    x, y, z = pos
-    k.mesh(r, "Body", "Radio__Body", bevel_box(1.6, 0.9, 0.6, 0.12), CF((x, y + 0.45, z)), "charcoal", solid=True)
-    k.mesh(r, "Speaker", "Radio__Speaker", ccyl(0.3, 0.15, 10, "z", (0, 0, 0), 0.03), CF((x - 0.4, y + 0.42, z - 0.33)),
+    k.mesh(r, "Body", "Radio__Body", bevel_box(1.6, 0.9, 0.6, 0.12), base * CF((0, 0.45, 0)), "charcoal", solid=True)
+    k.mesh(r, "Speaker", "Radio__Speaker", ccyl(0.3, 0.15, 10, "z", (0, 0, 0), 0.03), base * CF((-0.4, 0.42, -0.33)),
            "black", shadow=False)
-    k.mesh(r, "Dial", "Radio__Dial", bevel_box(0.6, 0.3, 0.15, 0.03), CF((x + 0.35, y + 0.55, z - 0.33)), "cream",
+    k.mesh(r, "Dial", "Radio__Dial", bevel_box(0.6, 0.3, 0.15, 0.03), base * CF((0.35, 0.55, -0.33)), "cream",
            shadow=False)
     k.mesh(r, "Handle", "Radio__Handle", G.tube([(-0.6, 0.9, 0), (-0.5, 1.15, 0), (0.5, 1.15, 0), (0.6, 0.9, 0)],
-                                                 0.075, 4), CF((x, y, z)), "steel_dark", shadow=False)
-    k.mesh(r, "Aerial", "Radio__Aerial", rod((0.6, 0.9, 0), (1.2, 2.2, -0.1), 0.075, 4), CF((x, y, z)), "steel_light",
+                                                 0.075, 4), base, "steel_dark", shadow=False)
+    k.mesh(r, "Aerial", "Radio__Aerial", rod((0.6, 0.9, 0), (1.2, 2.2, -0.1), 0.075, 4), base, "steel_light",
            shadow=False)
     k.mark_used("Radio")
     return r
