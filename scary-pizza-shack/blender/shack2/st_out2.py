@@ -209,32 +209,62 @@ def road_sign(k, gr):
 
 # ---------------------------------------------------------------- cameras
 
+# the CCTV cameras: (where the bracket is fixed, the mount's outward normal -- None for the
+# lamp pole, whose clamp faces the target -- and the spot the camera watches)
+CAMS = {
+    "Cam_Front": ((4.6, 8.4, 13.25), (0.0, 0.0, 1.0), (-1.0, 3.6, 17.0)),           # shutter box front: the queue
+    "Cam_Back": ((-9.0, 10.2, 21.6), None, (1.0, 4.0, 11.5)),                       # street lamp: the shack's front
+    "Cam_Yard": ((0.0, 9.6, L.OUT_Z0 - 0.5), (0.0, 0.0, -1.0), (0.0, 0.5, -33.0)),  # back wall: the yard and gate
+    "Cam_Road": ((31.2, 12.6, 21.0), (1.0, 0.0, 0.0), (90.0, 3.0, 30.0)),           # road sign's end: oncoming cars
+}
+POLE_R = 0.3
+
+
+def _look(d):
+    """Rotation whose -Z points along d (any pitch), +Y as near up as it goes."""
+    d = np.asarray(d, float) / np.linalg.norm(d)
+    Z = -d
+    X = np.cross((0.0, 1.0, 0.0), Z)
+    X /= np.linalg.norm(X)
+    return np.column_stack((X, np.cross(Z, X), Z))
+
+
 def cameras(k, sc):
-    """A CCTV camera just behind each Cam_ marker, looking the marker's way."""
+    """A CCTV camera on each mount, its body swung round to its target; the Cam_ marker sits
+    just in front of the lens, looking where the camera looks (so the game's view starts at
+    the glass, clear of the camera's own body)."""
     f = sc.folder(sc.root.get("Outside"), "Cameras")
     mk = sc.root.get("Markers")
-    geo = O.cctv_geo()
-    for c in mk.children:
-        if not c.name.startswith("Cam_"):
-            continue
-        cf = c.p["cf"]
-        look = -cf.R[:, 2]
-        flat = np.array((look[0], 0.0, look[2]))
-        flat /= np.linalg.norm(flat)
-        R = G.facing(-flat)                           # local +Z = the look direction (the lens)
-        base = CF(cf.p - flat * 1.6 + np.array((0, 0.25, 0)), R)
-        m = k.sc.model(f, "Camera_" + c.name[4:])
-        k.mesh(m, "Camera", "Cam__Body", geo, base, "grey_light", shadow=False)
-        k.part(m, "Led", (0.15, 0.15, 0.15), base * CF((0.2, 0.55, 1.6)), (255, 40, 30), material="Neon", grid=False,
+    for name, (mp, nrm, tgt) in CAMS.items():
+        mp, tgt = np.array(mp, float), np.array(tgt, float)
+        pole = None
+        if nrm is None:
+            pole = mp.copy()
+            d = tgt - mp
+            d[1] = 0.0
+            nrm = d / np.linalg.norm(d)
+            mp = mp + nrm * POLE_R
+        nrm = np.asarray(nrm, float)
+        R = G.facing(-nrm)                               # local +Z out of the mount
+        loc = R.T @ (tgt - (mp + R @ np.array((0.0, 0.45, 1.6))))
+        yaw = math.degrees(math.atan2(loc[0], loc[2]))
+        tilt = math.degrees(math.atan2(-loc[1], math.hypot(loc[0], loc[2])))
+        geo, lens, led = O.cctv_geo(yaw, tilt)
+        base = CF(mp, R)
+        m = k.sc.model(f, "Camera_" + name[4:])
+        k.mesh(m, "Camera", "Cam__Body_" + name[4:], geo, base, "grey_light", shadow=False)
+        k.part(m, "Led", (0.15, 0.15, 0.15), CF(base * led, R), (255, 40, 30), material="Neon", grid=False,
                shadow=False)
-        plate = base.p + base.R @ np.array((0.0, 0.0, 0.1))
-        if c.name == "Cam_Front":                      # hangs on a rod from the awning
-            top = 11.95 - (plate[2] - (L.OUT_Z1 + 0.5 + 1.8)) / 3.4 * 1.45 - 0.13
-            k.mesh(m, "Hanger", "Cam__Hanger", rod(plate + (0, 0.45, 0), (plate[0], top, plate[2]), 0.1, 6), CF(),
-                   "charcoal", shadow=False)
-        elif c.name == "Cam_Back":                     # a clamp arm round the street lamp's pole
-            pole = np.array((-9.0, plate[1], 21.6))
-            k.mesh(m, "PipeClamp", "Cam__Clamp", rod(plate, pole, 0.12, 6), CF(), "charcoal", shadow=False)
+        if pole is not None:                             # a band round the pole behind the plate
+            k.mesh(m, "PipeClamp", "Cam__Clamp", G.torus(POLE_R + 0.04, 0.08, 10, 4, "y", (0, 0, 0)),
+                   CF((pole[0], mp[1], pole[2])), "charcoal", shadow=False)
+        eye = base * lens
+        look = tgt - eye
+        look /= np.linalg.norm(look)
+        old = mk.find(name)
+        if old is not None:
+            mk.children.remove(old)
+        sc.marker(mk, name, CF(eye + look * 0.15, _look(look)))
     k.mark_used("CCTVCamera", "outside")
 
 

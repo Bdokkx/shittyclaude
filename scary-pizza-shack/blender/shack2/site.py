@@ -231,7 +231,7 @@ def yard(k, f, gr, rng):
     _fence_run(k, m, (g1 + 0.3, zf), (x1 - 0.4, zf), gr, skip=("start",))
     _fence_run(k, m, (x0 + 0.4, zf), (x0 + 0.4, z1 - 4.0), gr, sag_panel=2)
     _fence_run(k, m, (x1 - 0.4, zf), (x1 - 0.4, z1 - 4.0), gr)
-    _fence_run(k, m, (x0 + 0.4, z1 - 4.0), (-24.5, z1 - 4.0), gr)  # side returns (a walk-round gap by the shack)
+    _fence_run(k, m, (x0 + 0.4, z1 - 4.0), (-26.6, z1 - 4.0), gr)  # side returns (a walk-round gap by the shack)
     _fence_run(k, m, (24.5, z1 - 4.0), (x1 - 0.4, z1 - 4.0), gr)
     shed(k, m, gr)
     yp = L.YARD_PROPS
@@ -267,6 +267,12 @@ def yard(k, f, gr, rng):
             continue
         k.prop(m, "Weeds", CF((p[0], 0.0, p[1]), G.ry(rng.uniform(0, 360))), where="outside", name="Weeds", seed=i)
     paths(k, m, rng)
+    ruts(k, m, rng)
+    for i, (x, z) in enumerate(((7.9, -27.5), (12.1, -39.0))):
+        k.prop(m, "Puddle", CF((x, 0.03, z), G.ry(90 + 8 * i)), where="outside", name="Puddle", seed=40 + i)
+    for i, (x, z) in enumerate(((-8.5, -31.0), (-2.0, -40.5), (1.5, -34.0), (-12.5, -44.0), (-22.0, -33.5),
+                                (19.5, -27.0), (24.0, -22.5), (-5.5, -22.5))):
+        k.prop(m, "Stones", CF((x, 0.0, z), G.ry(37 * i)), where="outside", name="Stones", seed=60 + i)
     lead(k, m)
     k.mark_used("ChainLinkFence", "outside")
 
@@ -312,7 +318,7 @@ def paths(k, m, rng):
     """Worn dirt paths: back door to the shed, back door to the gate. Each is one ragged
     strip, wider where people stop, worn into the gravel (a plate let in, 0.03 proud)."""
     for i, pts in enumerate(([(-15.0, -12.8), (-15.6, -17.0), (-17.2, -22.5), (-17.0, -27.0)],
-                             [(-12.0, -13.2), (-6.0, -19.0), (0.5, -26.0), (5.5, -33.5), (8.5, -40.0), (10.0, -45.5)])):
+                             [(-12.0, -13.2), (-6.0, -19.0), (-1.0, -24.0), (2.8, -27.2)])):   # to the drive
         P = np.asarray(pts, float)
         left, right = [], []
         for j in range(len(P) - 1):
@@ -327,6 +333,24 @@ def paths(k, m, rng):
         outline = [tuple(p) for p in left] + [tuple(p) for p in right[::-1]]
         g = chamfer_slab(outline, 0.15, 0.05).xf(G.T(0, -0.12, 0))
         k.mesh(m, "Path", "Yard__Path%d" % i, g, CF(), ("mud", "dirt")[i % 2], shadow=False)
+
+
+def ruts(k, m, rng):
+    """Two wheel ruts worn into the drive from the gate up to the apron, mud in the bottom."""
+    from .terrain import YARD_APRON, YARD_DRIVE
+    xc = (YARD_DRIVE[0] + YARD_DRIVE[1]) / 2
+    za, zb = L.YARD_Z[0] + 0.6, L.YARD_Z[1] - YARD_APRON - 0.4
+    for i, dx in enumerate((-2.1, 2.1)):
+        zs = np.linspace(za, zb, 12)
+        left, right = [], []
+        for j, z in enumerate(zs):
+            x = xc + dx + 0.25 * math.sin(z * 0.21 + i)
+            w = 0.45 + 0.08 * math.sin(z * 0.5 + 2 * i) + float(rng.uniform(-0.04, 0.04))
+            left.append((x - w, z))
+            right.append((x + w, z))
+        outline = left + right[::-1]
+        g = chamfer_slab(outline, 0.15, 0.05).xf(G.T(0, -0.12, 0))
+        k.mesh(m, "Rut", "Yard__Rut%d" % i, g, CF(), "mud", shadow=False)
 
 
 def lead(k, m):

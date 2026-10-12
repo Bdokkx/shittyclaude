@@ -195,7 +195,7 @@ def rainwater(k, f):
     every 2.4, a shoe at the foot): two on the back wall, one at the front west corner."""
     m = k.sc.model(f, "Rainwater")
     pipes, heads = G.Geo(), G.Geo()
-    for (x, z, sgn) in ((-12.0, SZ0, -1), (12.0, SZ0, -1), (-17.0, SZ1, 1)):
+    for (x, z, sgn) in ((-12.0, SZ0, -1), (12.0, SZ0, -1), (SX0 + 1.5, SZ1, 1)):
         zo = z + sgn * 0.45
         heads.add(bevel_box(1.0, 1.0, 0.8, 0.08, c=(x, ROOF - 0.2, zo)))
         heads.add(bevel_box(0.5, 0.4, 0.8, 0.05, c=(x, ROOF + 0.4, z + sgn * 0.2)))            # scupper spout
@@ -268,6 +268,46 @@ def rooftop(k, f, rng):
     k.mark_used("Rooftop", "outside")
 
 
+# ---------------------------------------------------------------- the east wall
+
+def east_wall(k, f):
+    """The wall the lot and the bus stop see: an old painted advert, faded and lit from above
+    by two gooseneck lamps, and the air conditioner's outdoor unit humming on its pad."""
+    m = k.sc.model(f, "EastWall")
+    gs = k.sc.model(m, "GhostSign")
+    x = SX1
+    k.part(gs, "Paint", (0.15, 3.4, 15.0), CF((x + 0.075, 8.9, 0.0)), (226, 216, 194), material="SmoothPlastic",
+           grid=False, shadow=False)
+    k.mesh(gs, "Border", "East__SignBorder", O_frame(15.0, 3.4, 0.25, 0.15), CF((x + 0.225, 8.9, 0.0), G.ry(90)),
+           (176, 84, 70), shadow=False)
+    board(k, gs, (12.6, 1.6, 0.15), CF((x + 0.225, 9.55, 0.0), FACE["W"]), (226, 216, 194), text="PAPA STUD'S",
+          text_color=(176, 84, 70), name="Name", font="LuckiestGuy")
+    board(k, gs, (10.0, 0.8, 0.15), CF((x + 0.225, 8.0, 0.0), FACE["W"]), (226, 216, 194),
+          text="HOT PIZZA - OPEN LATE", text_color=(92, 122, 96), name="Strap", font="LuckiestGuy")
+    neck = G.tube([(0, 0, 0.1), (0, 0.6, 0.6), (0, 0.7, 1.3), (0, 0.4, 1.7)], 0.1, 6)
+    shade = G.outward(G.lathe([(0.0, 0.25), (0.25, 0.25), (0.6, -0.2), (0.0, -0.1)], 10))
+    for i, z in enumerate((-4.5, 4.5)):
+        lm = k.sc.model(m, "SignLamp%d" % (i + 1))
+        base = CF((x, 11.3, z), G.ry(90))
+        k.mesh(lm, "Neck", "MenuBoard__Neck", neck, base, "charcoal", shadow=False)
+        k.mesh(lm, "Shade", "MenuBoard__Shade", shade.xf(G.M(G.rx(30))), base * CF((0, 0.25, 1.85)), "trim_green",
+               shadow=False)
+        bulb = k.part(lm, "Bulb", (0.4, 0.4, 0.4), CF(base * np.array((0.0, -0.05, 2.0)), G.rz(-33.5)), (255, 226, 170),
+                      material="Neon", shape="Ball", grid=False, shadow=False)
+        k.lamp(lm, bulb, "Shack", "Spot", 14.0, 1.2, (255, 206, 150), angle=110.0, shadows=False)
+    # the air conditioner: unit on its pad, fan turning behind its guard (Spin about its own Y)
+    px, pz = x + 1.4, -6.8
+    k.prop(m, "ACCondenser", CF((px, 0.0, pz), G.ry(90)), where="outside", name="AirConditioner")
+    fan = G.Geo()
+    for a in (0, 120, 240):
+        fan.add(bevel_box(0.6, 0.15, 0.3, 0.04, c=(0.35, 0, 0)).xf(G.M(G.ry(a))))
+    fan.add(ccyl(0.18, 0.2, 8, "y", (0, 0, 0), 0.04))
+    fp = k.mesh(m.get("AirConditioner"), "Fan", "East__ACFan", fan, CF((px + 0.68, 1.55, pz + 0.3), G.rz(-90)),
+                "charcoal", shadow=False)
+    k.attr(fp, "Spin", 300.0)
+    k.mark_used("GhostSign", "outside")
+
+
 # ---------------------------------------------------------------- back, front
 
 def back_door(k, f):
@@ -330,4 +370,5 @@ def build(k, sc):
     rooftop(k, f, rng)
     back_door(k, f)
     front(k, f)
+    east_wall(k, f)
     return f

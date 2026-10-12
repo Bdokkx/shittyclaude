@@ -208,9 +208,9 @@ def dough_station(k):
     m = station(k, "DoughStation")
     x0, x1 = -9.0, -5.0
     xc = (x0 + x1) / 2
-    _counter(k, m, x0, x1, fronts=[(2, "open"), (2, "drawers3")], end_left=True, end_right=False,
+    _counter(k, m, x0, x1, fronts=[(2.4, "open"), (1.6, "drawers3")], end_left=True, end_right=False,
              owner="DoughStation")
-    k.prop(m, "FlourBin", C.wcf("N", x0 + 1.2, 0.9, 3.4), name="FlourBin")
+    k.prop(m, "FlourBin", C.wcf("N", x0 + 1.25, 0.9, 3.4), name="FlourBin")
     # dough board on the bench
     wx = xc + 0.2
     k.mesh(m, "Board", "DoughStation__Board", bevel_box(3.6, 0.4, 3.6, 0.08), CF((wx, L.WORK + 0.2, WZ)),
@@ -222,14 +222,37 @@ def dough_station(k):
     # wall shelf with the dough trays, the pin's rack above
     k.prop(m, "WallShelf", C.wcf("N", xc, 5.8, 0.0), name="TrayShelf")
     k.prop(m, "DoughTray", CF((xc, 5.8 + 0.15, NZ + 0.95)), name="DoughTrays")
-    rack = C.wcf("N", xc, 7.95, 0.0)
+    rack = C.wcf("N", xc, 7.6, 0.0)
     k.prop(m, "PinRack", rack, name="PinRack")
-    items2.place(k, m, "RollingPin", CF((xc + 0.9, 7.95 + 0.15 + 0.32, NZ + 0.5), G.facing(E)))
+    items2.place(k, m, "RollingPin", CF((xc + 0.9, 7.6 + 0.15 + 0.32, NZ + 0.5), G.facing(E)))
     stand(k, m, xc, SZ, N)
     return m
 
 
 # ---------------------------------------------------------------- sauce + cheese
+
+def _leaning(it, bowl, r, foot, wall_z):
+    """Handle frame for a long-handled item standing in a dish and leaning on the north wall:
+    the bowl (item-space centre `bowl`, radius r) over foot's X and Z with its lowest point at
+    foot's Y, opening towards the room, the handle tipped back until its end is at wall_z."""
+    V = np.vstack([g.arr() for *_, g in it.parts])
+    B = np.array(bowl)
+    near = np.linalg.norm(V - B, axis=1) <= r + 0.05
+    flip = np.diag((-1.0, -1.0, 1.0))                        # opening towards the room
+    best = None
+    for deg in range(91, 170):
+        a = math.radians(-deg)
+        c, s_ = math.cos(a), math.sin(a)
+        R = np.array(((1.0, 0.0, 0.0), (0.0, c, -s_), (0.0, s_, c))) @ flip
+        W_ = V @ R.T
+        b = R @ B
+        t = np.array((foot[0] - b[0], foot[1] - W_[near, 1].min(), foot[2] - b[2]))
+        back = (W_[:, 2] + t[2]).min()
+        if best is None or abs(back - wall_z) < best[0]:
+            best = (abs(back - wall_z), R, t)
+    return CF(best[2], best[1])
+
+
 
 def sauce_station(k):
     """Sauce on the left (stock pot on a gas ring with its gas pipe, the ladle in its rest
@@ -251,22 +274,13 @@ def sauce_station(k):
     gas.add(rod((pc[0] - 0.7, L.WORK + 0.15, NZ + 0.25), (pc[0] - 0.7, L.WORK + 0.15, pc[2] - 0.6), 0.09, 6))
     gas.add(rod((pc[0] - 0.7, L.WORK + 0.15, NZ + 0.25), (pc[0] - 0.7, 0.2, NZ + 0.25), 0.09, 6))
     k.mesh(m, "GasPipe", "SauceStation__Gas", gas, CF(), "mustard_dark", shadow=False)
-    # the ladle: bowl in its rest, handle leaning back against the dado rail
+    # the ladle: bowl down in its rest, handle leaning back against the wall
     rest = (x0 + 2.45, L.WORK, bz)
     k.prop(m, "LadleRest", CF(rest, G.ry(90)), name="LadleRest")
-    bowl = np.array((rest[0], L.WORK + 0.4, rest[2] + 0.15))
-    top = np.array((rest[0], 5.0, NZ + 0.8))            # the handle's end, just off the rail
-    fwd = bowl - top
-    fwd /= np.linalg.norm(fwd)
-    side = np.cross(fwd, (0, 1, 0))
-    side /= np.linalg.norm(side)
-    up = np.cross(side, fwd)
-    R = np.column_stack((side, up, -fwd))
-    lad = items2.get("Ladle")
-    lo, hi = lad.bbox()
-    items2.place(k, m, "Ladle", CF(top + fwd * hi[2], R))
-    k.prop(m, "TomatoCanOpen", CF((x0 + 3.1, L.WORK, bz)), name="OpenCan")
-    k.prop(m, "CanPair", CF((x0 + 4.15, L.WORK, bz), G.ry(15)), name="Cans")
+    items2.place(k, m, "Ladle", _leaning(items2.get("Ladle"), (0.0, -0.45, -1.1), 0.39,
+                                         (rest[0], L.WORK + 0.07, rest[2]), NZ + 0.3))
+    k.prop(m, "TomatoCanOpen", CF((x0 + 3.3, L.WORK, bz)), name="OpenCan")
+    k.prop(m, "TomatoCan", CF((x0 + 4.5, L.WORK, bz), G.ry(15)), name="Cans")
     k.prop(m, "SpiceRack", C.wcf("N", x0 + 2.0, 5.75, 0.0), name="SpiceRack")
     # cheese: the grater on its tray, the CheeseBlock item, the wheel up on a shelf
     k.prop(m, "GraterTray", CF((x0 + 6.1, L.WORK, bz)), name="GraterTray")
@@ -274,7 +288,6 @@ def sauce_station(k):
     items2.place_on(k, m, "CheeseBlock", CF((x0 + 7.4, L.WORK, bz), G.ry(90)))
     k.prop(m, "WallShelf3", C.wcf("N", 1.5, 5.6, 0.0), name="CheeseShelf")
     k.prop(m, "CheeseWheel", CF((1.1, 5.6 + 0.15, NZ + 0.85), G.ry(200)), name="CheeseWheel")
-    k.prop(m, "TinPair", CF((2.62, 5.75, NZ + 0.75)), name="Tins")
     stand(k, m, (x0 + x1) / 2, SZ, N)
     stand(k, m, xs, SZ, N, name="StandSauce")
     stand(k, m, xch, SZ, N, name="StandCheese")

@@ -12,8 +12,13 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from layout import *  # noqa: F401,F403,E402  (the batch-1 numbers: room, counters, station spans)
 import layout as _L1  # noqa: E402
 
-# ---------------------------------------------------------------- the room (unchanged footprint)
-#   outer X -18..18, Z -11..11; inside X -17..17, Z -10..10; floor top 0.4; ceiling 9.4
+# ---------------------------------------------------------------- the room
+#   widened 4 studs to the west (the drinks cooler's side) so the way in from the back door has
+#   room round it: outer X -22..18, Z -11..11; inside X -21..17, Z -10..10 (38 x 20); floor top
+#   0.4; ceiling 9.4. The back door stays at X -17..-13; the west wall's stations move with the wall.
+WIDEN = 4.0
+OUT_X0 = _L1.OUT_X0 - WIDEN
+IN_X0 = _L1.IN_X0 - WIDEN
 
 # (the bands, beams, hatch, fan and work lamps inside are in interior.py and shell.py)
 
@@ -176,7 +181,7 @@ DRAIN = (-14.0, 5.0)              # floor drain by the sink (the middle of a flo
 HOOD = (12.6, 17.0, -6.4, 1.4)    # vent hood over the oven (X0, X1, Z0, Z1), duct up through the roof
 INSPECT_R = 4.0                   # new-tile circle at Inspector_Rise, kept clear of furniture
 MATS = ((-8.6, 2.6, -3.9, -2.1),  # rubber mats (X0, X1, Z0, Z1): the prep line,
-        (10.4, 12.6, -4.6, 0.6))  # and the oven front
+        (10.4, 12.6, -4.2, 0.4))  # and the oven front
 
 # far lights inside the moon's wedge
 MAST_H = 96.0

@@ -298,6 +298,30 @@ def roof_ac(rng):
             ("Grille", "charcoal", grille)]
 
 
+@prop("ACCondenser")
+def ac_condenser(rng):
+    """A split air conditioner's outdoor unit on its pad by the wall (origin on the ground, +Z
+    away from the wall): a grey box with louvres down one side, the round fan guard on its
+    front (the station adds the spinning fan behind it), two pipes back into the wall."""
+    pad = bevel_box(3.2, 0.4, 1.6, 0.06, c=(0, 0.2, 0.1))
+    body = bevel_box(2.8, 2.2, 1.2, 0.12, c=(0, 1.5, 0))
+    louv = G.Geo()
+    for i in range(6):
+        louv.add(bevel_box(0.7, 0.15, 0.15, 0.03, c=(0.95, 0.85 + 0.27 * i, 0.62)))
+    guard = G.Geo()
+    guard.add(G.torus(0.75, 0.09, 14, 4, "z", (-0.3, 1.55, 0.86)))
+    for a in (0, 60, 120):
+        guard.add(bevel_box(1.5, 0.15, 0.15, 0.03, c=(0, 0, 0)).xf(RZ(a)).xf(T(-0.3, 1.55, 0.86)))
+    for a in (45, 135, 225, 315):
+        c, s = math.cos(math.radians(a)) * 0.75, math.sin(math.radians(a)) * 0.75
+        guard.add(rod((-0.3 + c, 1.55 + s, 0.6), (-0.3 + c, 1.55 + s, 0.86), 0.075, 4))
+    pipes = G.Geo()
+    for x in (0.6, 0.95):
+        pipes.add(rod((x, 1.0, -0.6), (x, 1.0, -1.05), 0.1, 6))
+    return [("Pad", "concrete_dark", pad), ("Body", "grey_light", body), ("Louvres", "grey", louv),
+            ("Guard", "charcoal", guard), ("Pipes", "brass", pipes)]
+
+
 @prop("RoofVent")
 def roof_vent(rng):
     """A mushroom vent on its upstand."""
@@ -530,13 +554,35 @@ def cone(rng):
 
 @prop("Tarp")
 def tarp(rng):
-    """A blue tarp thrown over a lumpy stack, tied down with rope, a corner flapping up."""
-    g = G.Geo()
-    g.add(G.blob(1.0, 9, 5, (1.6, 0.9, 1.2), 0.12, int(rng.integers(0, 100)), (0, 0.85, 0), 0.0))
+    """A blue tarp pulled over a stack of something, tied down with two ropes, an old tyre on
+    top to keep the wind out of it, one corner of the skirt kicked up."""
+    secs = []
+    for y, w, d, r in ((0.0, 3.5, 2.7, 0.35), (0.25, 3.4, 2.6, 0.4), (1.3, 3.1, 2.3, 0.5), (1.72, 2.7, 1.9, 0.6),
+                       (1.86, 1.7, 1.0, 0.45)):
+        ring = []
+        for k, (x, z) in enumerate(G.rounded_rect_pts(w, d, r, 2)):
+            j = 0.0 if y > 1.8 else float(rng.uniform(-0.05, 0.05))
+            ring.append((x * (1 + j), y + (0.0 if y < 0.1 else float(rng.uniform(-0.03, 0.03))), z * (1 + j)))
+        secs.append(ring)
+    g = G.outward(G.loft(secs))
+    flap = G.extrude([(0.0, 0.0), (0.7, 0.0), (0.0, 0.6)], 0.15, "y", (0, 0, 0)).xf(T(1.6, 0.0, 1.2) @ RX(-28))
     rope = G.Geo()
-    for z in (-0.5, 0.5):
-        rope.add(G.tube([(-1.65, 0.0, z), (-1.2, 1.15, z), (0.0, 1.62, z), (1.2, 1.15, z), (1.65, 0.0, z)], 0.075, 4))
-    return [("Tarp", "tarp_blue", g), ("Rope", "jute", rope)]
+    for z in (-0.55, 0.45):
+        rope.add(G.tube([(-1.86, 0.08, z), (-1.65, 1.3, z), (-1.42, 1.8, z), (-0.85, 1.97, z), (0.85, 1.97, z),
+                         (1.42, 1.8, z), (1.65, 1.3, z), (1.86, 0.08, z)], 0.075, 4))
+    tyre = G.torus(0.55, 0.22, 12, 6, "y", (0.3, 1.86 + 0.22, 0.05))
+    return [("Tarp", "tarp_blue", g), ("Flap", "tarp_blue", flap), ("Rope", "jute", rope), ("Tyre", "tyre", tyre)]
+
+
+@prop("Stones")
+def stones(rng):
+    """A few loose stones kicked to the side, half sunk in the dirt."""
+    g = G.Geo()
+    for i in range(int(rng.integers(3, 6))):
+        r = float(rng.uniform(0.2, 0.34))
+        x, z = float(rng.uniform(-0.9, 0.9)), float(rng.uniform(-0.6, 0.6))
+        g.add(G.blob(r, 6, 4, (1.3, 0.7, 1.0), 0.15, int(rng.integers(0, 999)), (x, 0.0, z), flat_bottom=-0.05))
+    return [("Stones", ("rock", "rock_dark")[int(rng.integers(0, 2))], g)]
 
 
 @prop("MileMarker")

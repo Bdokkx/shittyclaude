@@ -135,21 +135,39 @@ def outside_markers(sc):
         sc.marker(mk, name, CF(pos, spslib.G.facing(d / np.linalg.norm(d))))
     put("Spawn_BusStop", (53.0, sc.kit_ground.y(53.0, 22.4), 22.4), (-1.0, 0.0))
 
-    def cam(name, pos, tgt):
-        n = mk.find(name)
-        if n is not None:
-            mk.children.remove(n)
-        d = np.asarray(tgt, float) - np.asarray(pos, float)
-        sc.marker(mk, name, CF(pos, spslib.G.facing(d / np.linalg.norm(d))))
-    # Cam_Front comes out from the new shutter box to hang under the awning; Cam_Road moves to
-    # the east end of the road sign's box (the mascot is in the old spot now)
-    cam("Cam_Front", (5.6, 8.8, 14.8), (0.0, 1.5, 13.5))
-    cam("Cam_Road", (32.8, 13.0, 21.6), (90.0, 3.0, 30.0))
-    cam("Cam_Yard", (0.0, 9.6, -13.1), (0.0, 1.5, -33.0))
-    cam("Cam_Back", (-7.8, 10.2, 20.2), (3.0, 4.0, 11.5))
+    # (the Cam_ markers are set with their cameras: st_out2.cameras)
     # walkers come along the north verge from where the road leaves the trees at both ends
     put("Spawn_RoadWest", (-92.0, sc.kit_ground.y(-92.0, 22.0), 22.0), (1.0, 0.0))
     put("Spawn_RoadEast", (92.0, sc.kit_ground.y(92.0, 14.0), 14.0), (-1.0, 0.1))
+    # batch-1 markers that stand on the ground keep their X and Z and step onto the new ground
+    # (the land north of the yard and in the forest rises a plate or two)
+    gr = sc.kit_ground
+    for name in ("Truck_Stop", "Spawn_ForestSouth", "Spawn_ForestNorth") + tuple("TreeLine%d" % i for i in range(1, 7)):
+        n = mk.find(name)
+        if n is not None:
+            q = n.p["cf"].p
+            n.p["cf"] = CF((q[0], gr.y(q[0], q[2]), q[2]), n.p["cf"].R)
+    # Queue3 stays 4 behind Queue2, up on the road's gravel shoulder; the forest spawn south of
+    # the road moves 2 east, off a step in the ground
+    n = mk.find("Queue3")
+    if n is not None:
+        n.p["cf"] = CF((0.0, gr.y(0.0, 21.5), 21.5), n.p["cf"].R)
+    n = mk.find("Spawn_ForestSouth")
+    if n is not None:
+        n.p["cf"] = CF((-6.0, gr.y(-6.0, 69.0), 69.0), n.p["cf"].R)
+    # the Watcher's spot outside the side window moves out with the widened west wall
+    n = mk.find("Watcher_Window")
+    if n is not None:
+        q = n.p["cf"].p
+        x = q[0] - L.WIDEN
+        n.p["cf"] = CF((x, gr.y(x, q[2]), q[2]), n.p["cf"].R)
+    # the yard's drop spot stays where it was, down on the new yard ground
+    n = mk.find("Delivery_Drop")
+    if n is not None:
+        q = n.p["cf"].p
+        y = spslib.surface_under(sc, (q[0], q[1] + 0.3, q[2]), depth=1.0)
+        if y is not None:
+            n.p["cf"] = CF((q[0], y, q[2]), n.p["cf"].R)
 
 
 def build(items=False, seed=2026):
@@ -163,7 +181,8 @@ def build(items=False, seed=2026):
     shell.build(k, sc.root, rng)
     out = sc.root.get("Outside")
     terrain.build(k, out, rng)
-    forest.build(k, out, rng)
+    # the forest draws from its own stream, so changes inside the shack never move a tree
+    forest.build(k, out, np.random.default_rng(seed + 101))
     from . import outkit
     gr = outkit.Ground(sc)
     sc.kit_ground = gr

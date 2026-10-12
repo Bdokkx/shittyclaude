@@ -43,12 +43,31 @@ class Ground:
         for i in hit:
             lo, hi, n, mesh = self.items[i]
             if mesh is None:
-                top = hi[1]
+                top = self._box_top(n, x, z, hi[1])
             else:
                 top = self._ray(mesh[0], mesh[1], x, z, hi[1] + 1.0, lo[1] - 1.0)
             if top is not None and (best is None or top > best):
                 best = top
         return float(default if best is None else best)
+
+    @staticmethod
+    def _box_top(n, x, z, y_hi):
+        """Where a ray straight down at (x, z) enters the (maybe turned) block, or None."""
+        R, c = n.p["cf"].R, n.p["cf"].p
+        h = np.asarray(n.p["size"], float) / 2
+        o = R.T @ (np.array((x, y_hi + 1.0, z)) - c)
+        d = R.T @ np.array((0.0, -1.0, 0.0))
+        t0, t1 = -np.inf, np.inf
+        for i in range(3):
+            if abs(d[i]) < 1e-9:
+                if abs(o[i]) > h[i] + 1e-6:
+                    return None
+                continue
+            a, b = (-h[i] - o[i]) / d[i], (h[i] - o[i]) / d[i]
+            t0, t1 = max(t0, min(a, b)), min(t1, max(a, b))
+        if t0 > t1 + 1e-9:
+            return None
+        return y_hi + 1.0 - t0
 
     def lowest(self, pts, default=0.0):
         return min(self.y(x, z, default) for (x, z) in pts)
@@ -106,15 +125,20 @@ def flat_pole(h, r0, r1, n=8):
     return G.outward(G.lathe(prof, n, phase=math.pi / n))
 
 
-def cctv_geo():
-    """A CCTV camera on a wall bracket (origin on the wall, +Z out, the lens looking along +Z,
-    tilted down)."""
+def cctv_geo(yaw=0.0, tilt=18.0):
+    """A CCTV camera on a wall bracket (origin on the mount, +Z out of it): the body swivels
+    `yaw` degrees about Y on the arm's knuckle (+ towards +X) and tilts `tilt` degrees down.
+    Returns (geo, lens front, LED spot), the points in the same space."""
     g = G.Geo()
     g.add(bevel_box(0.7, 0.9, 0.2, 0.05, c=(0, 0, 0.1)))                         # wall plate
     g.add(rod((0, 0, 0.2), (0, 0.15, 0.9), 0.1, 6))                            # arm
+    g.add(G.sphere(0.17, 8, 4, c=(0, 0.15, 0.9)))                             # knuckle
     body = G.Geo()
     body.add(bevel_box(0.6, 0.55, 1.4, 0.08, c=(0, 0, 0)))
     body.add(bevel_box(0.75, 0.15, 1.6, 0.04, c=(0, 0.35, 0.1)))               # sun hood
     body.add(ccyl(0.18, 0.15, 8, "z", (0, -0.02, 0.75), 0.03))                 # lens ring
-    g.add(body.xf(G.M(G.rx(18))).xf(G.T(0, 0.3, 1.2)))
-    return g
+    Mb = G.T(0, 0.15, 0.9) @ G.RY(yaw) @ G.RX(tilt) @ G.T(0, 0.3, 0.45)
+    g.add(body.xf(Mb))
+    lens = (Mb @ np.array((0.0, -0.02, 0.83, 1.0)))[:3]
+    led = (Mb @ np.array((0.3, 0.05, 0.4, 1.0)))[:3]
+    return g, lens, led

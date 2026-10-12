@@ -71,7 +71,7 @@ def drinks_cooler(k):
     wall_board(k, m, "W", zc, 7.8, (3.2, 0.6), "label_white", d=x1 - x0 + 0.075, text="ICE COLD SODA",
                text_color=(170, 30, 24), name="Band")
     lm = k.sc.model(m, "CoolerLight")
-    bulb = k.part(lm, "Bulb", (2.0, 0.2, 3.2), CF((x0 + 1.9, 7.3, zc)), (220, 240, 255), material="Neon", grid=False,
+    bulb = k.part(lm, "Bulb", (2.0, 0.2, 3.2), CF((x0 + 2.0, 7.3, zc)), (220, 240, 255), material="Neon", grid=False,
                   shadow=False)
     k.lamp(lm, bulb, "Shack", "Surface", 6.0, 0.8, (210, 232, 255), shadows=False)
     for y in (6.0, 4.4, 2.8):
@@ -112,31 +112,33 @@ def _grille(w):
 # ---------------------------------------------------------------- lockers + side window
 
 def lockers(k, parent):
-    """Two staff lockers under the side window, louvred doors, name-tape labels, a padded
-    cushion on top so they double as the break bench; one door not quite shut."""
+    """Two narrow staff lockers under the south half of the side window (the north half stays
+    open: the way in from the back door keeps the door's full width), louvred doors, name-tape
+    labels, a padded cushion on top so they double as the break bench; one door not quite shut."""
     m = k.sc.model(parent, "Lockers")
     z0, z1 = -6.0, -2.0
     x0, x1 = WX, WX + 1.6
-    k.mesh(m, "Body", "Lockers__Body", bevel_box(1.6, 3.2, 4.0, 0.06), CF(((x0 + x1) / 2, L.FLOOR + 1.6, (z0 + z1) / 2)),
-           "locker_grey", solid=True)
-    for i, (za, zb) in enumerate(((z0, z0 + 2), (z0 + 2, z1))):
+    lw = (z1 - z0) / 2                                   # 1.2 a locker
+    k.mesh(m, "Body", "Lockers__Body", bevel_box(x1 - x0, 3.2, z1 - z0, 0.06),
+           CF(((x0 + x1) / 2, L.FLOOR + 1.6, (z0 + z1) / 2)), "locker_grey", solid=True)
+    for i, (za, zb) in enumerate(((z0, z0 + lw), (z0 + lw, z1))):
         zc = (za + zb) / 2
         dg = G.Geo()
-        dg.add(bevel_box(0.2, 3.0, 1.9, 0.06, c=(0, 0, 0)))
+        dg.add(bevel_box(0.2, 3.0, lw - 0.1, 0.06, c=(0, 0, 0)))
         for j in range(4):
-            dg.add(bevel_box(0.15, 0.15, 1.2, 0.03, c=(0.12, 1.1 - 0.18 * j, 0)))
+            dg.add(bevel_box(0.15, 0.15, lw - 0.5, 0.03, c=(0.12, 1.1 - 0.18 * j, 0)))
         if i == 1:
             R = G.ry(14)
-            cf = CF((x1 + 0.1, L.FLOOR + 1.6, zb - 0.05)) * CF(R=R) * CF((0, 0, -0.95))
+            cf = CF((x1 + 0.1, L.FLOOR + 1.6, zb - 0.05)) * CF(R=R) * CF((0, 0, -(lw - 0.1) / 2))
         else:
             cf = CF((x1 + 0.1, L.FLOOR + 1.6, zc))
         k.mesh(m, "LockerDoor", "Lockers__Door", dg, cf, "locker_door", solid=True)
-        k.mesh(m, "Handle", "Lockers__Handle", bevel_box(0.2, 0.5, 0.2, 0.05), cf * CF((0.2, 0.1, -0.7)), "steel_dark",
-               shadow=False)
-        board(k, m, (1.0, 0.3, 0.15), cf * CF((0.18, 0.75, 0.0), G.ry(-90)), "paper",
+        k.mesh(m, "Handle", "Lockers__Handle", bevel_box(0.2, 0.5, 0.2, 0.05), cf * CF((0.2, 0.1, -(lw / 2 - 0.3))),
+               "steel_dark", shadow=False)
+        board(k, m, (0.8, 0.3, 0.15), cf * CF((0.18, 1.15, 0.0), G.ry(-90)), "paper",
               text=("DEB", "MARCO")[i], text_color=(30, 30, 30), name="NameTape")
-    k.mesh(m, "Cushion", "Lockers__Cushion", bevel_box(1.6, 0.4, 4.0, 0.15), CF(((x0 + x1) / 2, L.FLOOR + 3.4, -4.0)),
-           "red_dark", solid=True)
+    k.mesh(m, "Cushion", "Lockers__Cushion", bevel_box(x1 - x0, 0.4, z1 - z0, 0.15),
+           CF(((x0 + x1) / 2, L.FLOOR + 3.4, (z0 + z1) / 2)), "red_dark", solid=True)
     k.prop(m, "Newspaper", CF(((x0 + x1) / 2 + 0.1, L.FLOOR + 3.6, -4.9), G.ry(20)), name="Newspaper")
     k.mark_used("Lockers")
     return m
@@ -170,21 +172,21 @@ def fuse_box(k):
     m = station(k, "FuseBox")
     z = -8.4
     x0 = WX
-    k.mesh(m, "Box", "FuseBox__Box", bevel_box(1.0, 2.2, 2.0, 0.1), CF((x0 + 0.5, 5.7, z)), "grey", solid=True)
-    k.mesh(m, "Door", "FuseBox__Door", bevel_box(0.15, 1.8, 1.6, 0.05), CF((x0 + 1.05, 5.7, z - 0.1)), "grey_light",
+    k.mesh(m, "Box", "FuseBox__Box6", bevel_box(0.6, 2.2, 2.0, 0.1), CF((x0 + 0.3, 5.7, z)), "grey", solid=True)
+    k.mesh(m, "Door", "FuseBox__Door", bevel_box(0.15, 1.8, 1.6, 0.05), CF((x0 + 0.65, 5.7, z - 0.1)), "grey_light",
            shadow=False)
-    wall_board(k, m, "W", z - 0.5, 6.25, (0.6, 0.6), "mustard", d=1.18, text="DANGER", text_color=(20, 20, 20),
+    wall_board(k, m, "W", z - 0.5, 6.25, (0.6, 0.6), "mustard", d=0.78, text="DANGER", text_color=(20, 20, 20),
                name="Sticker")
-    k.part(m, "Hub", (0.4, 0.8, 0.8), CF((x0 + 1.2, 5.4, z + 0.5)), "black", shape="Cylinder", grid=False)
+    k.part(m, "Hub", (0.4, 0.8, 0.8), CF((x0 + 0.8, 5.4, z + 0.5)), "black", shape="Cylinder", grid=False)
     lev = G.Geo()
     lev.add(bevel_box(0.2, 1.2, 0.2, 0.05, c=(0, 0.6, 0)))
     lev.add(G.sphere(0.22, 8, 4, c=(0, 1.25, 0)))
-    lv = k.mesh(m, "Lever", "FuseBox__Lever", lev, CF((x0 + 1.5, 5.4, z + 0.5)), "red", solid=True)
-    pivot(lv, CF((x0 + 1.5, 5.4, z + 0.5)))
+    lv = k.mesh(m, "Lever", "FuseBox__Lever", lev, CF((x0 + 1.1, 5.4, z + 0.5)), "red", solid=True)
+    pivot(lv, CF((x0 + 1.1, 5.4, z + 0.5)))
     moving(m, "Lever", "pointing up = ON. Rotate the pivot about X (the wall's normal): +120 deg swings it down = OFF")
     cond = G.Geo()
     for dz in (-0.5, 0.0, 0.5):
-        cond.add(rod((x0 + 0.55, 6.8, z + dz), (x0 + 0.55, L.CEIL, z + dz), 0.1, 6))
+        cond.add(rod((x0 + 0.3, 6.8, z + dz), (x0 + 0.3, L.CEIL, z + dz), 0.1, 6))
     k.mesh(m, "Conduit", "FuseBox__Conduit", cond, CF(), "steel_dark", shadow=False)
     k.prop(m, "LightSwitch", C.wcf("W", -6.9, 4.9, 0.0), name="LightSwitch")
     stand(k, m, x0 + 2.4, z, W)
@@ -196,5 +198,6 @@ def build(k):
     dress = k.sc.folder(k.sc.root.get("Shack"), "Dressing")
     lockers(k, dress)
     side_window(k, dress)
-    k.prop(dress, "Broom", CF((-14.6, L.FLOOR, -3.1), G.ry(-90)), name="Broom")
+    # the broom leans on the cooler's side by the lockers, out of the way in
+    k.prop(dress, "Broom", CF((WX + 2.55, L.FLOOR, -2.75), G.ry(-90)), name="Broom")
     return st

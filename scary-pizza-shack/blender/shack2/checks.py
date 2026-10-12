@@ -26,8 +26,8 @@ from spsgeo import CF  # noqa: F401
 
 from . import layout as L
 
-ROOM = (-17.0, 17.0, 0.4, 9.4, -10.0, 10.0)        # the room's air (X0, X1, Y0, Y1, Z0, Z1)
-SHACK = (-18.6, 18.6, -1.0, 16.0, -11.6, 11.6)     # the building, walls and roof included
+ROOM = (L.IN_X0, L.IN_X1, 0.4, 9.4, -10.0, 10.0)   # the room's air (X0, X1, Y0, Y1, Z0, Z1)
+SHACK = (L.OUT_X0 - 0.6, 18.6, -1.0, 16.0, -11.6, 11.6)   # the building, walls and roof included
 
 
 def in_room(p, pad=0.0):
@@ -364,18 +364,19 @@ def planes(sc, boxes=None, res=0.2, limit_in=6.0, limit_out=12.0, radius=110.0):
         for ax, sg, co, poly in _faces(n):
             if ax == 1 and sg < 0 and co < 2.0:
                 continue
-            groups[(ax, sg, co, p["color"], p["material"])].append((poly, n))
+            # the room decides the limit: a point just in front of the face
+            mid = np.zeros(3)
+            mid[ax] = co + sg * 0.3
+            uu, vv = [a for a in range(3) if a != ax]
+            mid[uu], mid[vv] = poly.mean(0)
+            groups[(ax, sg, co, p["color"], p["material"], in_room(mid, 0.2))].append((poly, n))
     bad = []
-    for (ax, sg, co, color, mat), lst in groups.items():
+    for (ax, sg, co, color, mat, inside), lst in groups.items():
         allp = np.concatenate([q for q, _ in lst])
         u0, v0 = allp.min(0)
         u1, v1 = allp.max(0)
-        # the room decides the limit: a point just in front of the plane
-        mid = np.zeros(3)
-        mid[ax] = co + sg * 0.3
         uu, vv = [a for a in range(3) if a != ax]
-        mid[uu], mid[vv] = (u0 + u1) / 2, (v0 + v1) / 2
-        limit = limit_in if in_room(mid, 0.2) else limit_out
+        limit = limit_in if inside else limit_out
         if (u1 - u0) <= limit or (v1 - v0) <= limit:
             continue
         area = sum(abs(0.5 * np.sum(q[:, 0] * np.roll(q[:, 1], -1) - np.roll(q[:, 0], -1) * q[:, 1])) for q, _ in lst)
@@ -638,6 +639,57 @@ def budget(sc):
     return cnt
 
 
+# ---------------------------------------------------------------- z-fighting
+
+def zfight(sc, boxes=None):
+    """spslib's coplanar-face test, then each hit re-sampled against the mesh pieces too (a
+    sill lining or a trim mesh lying on the shared plane hides it): only the ones still seen."""
+    b = boxes or Boxes(sc)
+    hits = spslib.zfight(sc)
+    if not hits:
+        return hits
+    by_path = defaultdict(list)
+    for n in sc.nodes("Part"):
+        by_path[n.path()].append(n)
+    meshes = np.array([n.kind == "MeshPart" for n in b.nodes])
+    idx = spslib.BoxIndex(sc)
+
+    def covered(pt):
+        for i in b.query(pt - 1e-3, pt + 1e-3):
+            if not meshes[i]:
+                continue
+            loc = b.R[i].T @ (pt - b.C[i])
+            if np.all(np.abs(loc) < b.H[i] - 1e-4):
+                return True
+        return False
+
+    out = []
+    for pa, pb, (ax, sg, co), area in hits:
+        seen = False
+        for na in by_path[pa]:
+            for nb in by_path[pb]:
+                ra = [r for (a_, s_, c_, r) in spslib._faces_aa(na) if a_ == ax and s_ == sg and abs(c_ - co) < 1e-3]
+                rb = [r for (a_, s_, c_, r) in spslib._faces_aa(nb) if a_ == ax and s_ == sg and abs(c_ - co) < 1e-3]
+                if not ra or not rb:
+                    continue
+                (a0, a1, b0, b1), (c0, c1, d0, d1) = ra[0], rb[0]
+                u0, u1, v0, v1 = max(a0, c0), min(a1, c1), max(b0, d0), min(b1, d1)
+                if u1 - u0 <= 1e-6 or v1 - v0 <= 1e-6:
+                    continue
+                u, v = [k for k in range(3) if k != ax]
+                for fu in (0.137, 0.512, 0.883):
+                    for fv in (0.141, 0.527, 0.871):
+                        pt = np.zeros(3)
+                        pt[ax] = co + sg * 0.02
+                        pt[u] = u0 + (u1 - u0) * fu
+                        pt[v] = v0 + (v1 - v0) * fv
+                        if not idx.inside(pt, exclude=(na, nb)) and not covered(pt):
+                            seen = True
+        if seen:
+            out.append((pa, pb, (ax, sg, co), area))
+    return out
+
+
 # ---------------------------------------------------------------- report
 
 def run(sc, old=None, quick=False):
@@ -655,7 +707,7 @@ def run(sc, old=None, quick=False):
     if not quick:
         rep["planes"] = planes(sc, b)
         rep["horizon"] = horizon(sc, b)
-        rep["zfight"] = spslib.zfight(sc)
+        rep["zfight"] = zfight(sc, b)
         ok, badm = spslib.check_item_markers(sc)
         rep["item_markers"] = (ok, badm)
     if old is not None:

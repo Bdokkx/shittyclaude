@@ -381,15 +381,33 @@ def lot(k, f, rng):
                   ("asphalt", "asphalt_patch")[int(rng.integers(0, 2))], solid=True)
 
 
+YARD_DRIVE = (4.0, 16.0)          # X of the gravel drive from the gate up to the apron
+YARD_APRON = 8.0                   # depth of the gravel apron along the back of the shack
+
+
 def yard_ground(k, f, rng):
+    """The yard in 4 x 4 plates: a studded gravel apron along the back of the shack and a
+    gravel drive from the gate up to it; beaten dirt round the rest, darker mud where the
+    water sits, dry leaf litter blown against the fences."""
     x0, x1 = L.YARD_X
     z0, z1 = L.YARD_Z
+    rng = np.random.default_rng(77)                 # its own stream: the forest's stays as it was
     for x in np.arange(x0, x1, 4.0):
         for z in np.arange(z0, z1, 4.0):
+            cx, cz = x + 2.0, z + 2.0
             n = fbm(x * 2.0, z * 2.0, 21)
-            c = ("gravel", "gravel2", "dirt", "gravel")[min(3, int(n * 4))]
+            hard = cz > z1 - YARD_APRON or YARD_DRIVE[0] < cx < YARD_DRIVE[1]
+            edge = min(cx - x0, x1 - cx, cz - z0) < 4.0
+            if hard:
+                c = ("gravel", "gravel2")[int(rng.integers(0, 2))]
+            elif edge and n > 0.42:
+                c = "litter"
+            elif n < 0.4:
+                c = "mud"
+            else:
+                c = "dirt"
             k.box(f, "YardGround", (x, -0.8, z), (min(x + 4, x1), 0.0, min(z + 4, z1)), c, solid=True,
-                  studs=(c != "dirt"))
+                  studs=c.startswith("gravel"))
 
 
 def build(k, out, rng):

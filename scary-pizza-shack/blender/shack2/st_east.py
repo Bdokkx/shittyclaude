@@ -182,7 +182,7 @@ def oven(k):
     k.prop(m, "OvenBrush", CF((bf, 6.6, -6.55), G.ry(-90)), name="OvenBrush")
     for dz, seed in ((-8.9, 1), (-9.55, 2)):
         k.prop(m, "OvenMitt", CF((bf, 7.4, dz), G.ry(-90)), name="OvenMitt", seed=seed)
-    k.prop(m, "AshBucket", CF((X0 - 0.85, L.FLOOR, -5.4)), name="AshBucket")
+    k.prop(m, "AshBucket", CF((12.35, L.FLOOR, -0.5)), name="AshBucket")     # between the stands' clear boxes
     # ---- the old brick chimney on the roof (batch 1's Smoke attachment) and the steel flue
     ch = k.box(m, "Chimney", (X0 + 0.5, L.ROOF_TOP - 0.4, BZ[0] + 0.5), (X1 - 0.5, 18.6, BZ[1] - 0.5), "brick2",
                studs=False, solid=True)
@@ -387,9 +387,9 @@ def flue(k, m):
 # ---------------------------------------------------------------- peel rack
 
 def peel_rack(k):
-    """Peels standing on their poles between the oven and the cut table, heads up, held by a
-    wooden rack on the wall and a steel cup rail on the floor: the PizzaPeel item and two
-    old ones with wide heads (one burnt along its edge)."""
+    """Peels standing on their poles between the oven and the cut table, heads down, held by a
+    wooden rack on the wall and a steel cup rail on the floor: the PizzaPeel item and an old
+    one with a wide head, burnt along its edge."""
     m = station(k, "PeelRack")
     z0, z1 = 1.0, 2.0
     zc = (z0 + z1) / 2
@@ -412,9 +412,9 @@ def peel_rack(k):
     R_down = np.column_stack(((-1, 0, 0), (0, 0, 1), (0, 1, 0)))     # head down, pole up, flat to the oven
     peel = items2.get("PizzaPeel")
     lo, hi = peel.bbox()
-    items2.place(k, m, "PizzaPeel", CF((xp, L.FLOOR + 0.3 - lo[2], zc), R_down))
-    for dz, kind in ((-0.33, "OldPeel"), (0.33, "OldPeelSteel")):
-        k.prop(m, kind, CF((xp, L.FLOOR + 0.3, zc + dz)), name=kind)
+    # the two poles side by side in the arm's opening (Z 1.16..1.84)
+    items2.place(k, m, "PizzaPeel", CF((xp, L.FLOOR + 0.3 - lo[2], z0 + 0.35), R_down))
+    k.prop(m, "OldPeel", CF((xp, L.FLOOR + 0.3, z1 - 0.3)), name="OldPeel")
     stand(k, m, X0 - IP.STAND_GAP, zc, E)
     return m
 
@@ -433,7 +433,7 @@ def cut_table(k):
     spot(k, m, "Work", 15.0, L.WORK + 0.4, zc, E)
     k.prop(m, "ToolRail", C.wcf("E", zc, 7.1, 0.0), name="ToolRail")
     R = np.column_stack(((1, 0, 0), (0, 0, -1), (0, 1, 0)))     # hanging wheel-down, flat to the wall
-    items2.place(k, m, "PizzaCutter", CF((X1 - 0.4, 7.1 - 0.5, zc + 0.9), R))
+    items2.place(k, m, "PizzaCutter", CF((X1 - 0.4, 7.1 - 0.9, zc + 0.9), R))     # grip in the hook
     k.prop(m, "SliceGuide", C.wcf("E", zc - 0.8, 5.2, 0.0), name="SliceGuide")
     stand(k, m, X0 - IP.STAND_GAP, zc, E)
     return m
@@ -469,20 +469,20 @@ def kitchen_bin(k):
 # ---------------------------------------------------------------- box station
 
 def box_station(k):
-    """Counter with open shelves of flat boxes, a tall stack of flat boxes against the wall,
-    a few folded boxes with the PAPA STUD'S print on top, and the roll of stickers."""
+    """Counter with its open bay stacked to the top with flat boxes, a folded box with the
+    PAPA STUD'S print on top of the pile, and the roll of stickers on the worktop."""
     m = station(k, "BoxStation")
     z0, z1 = 6.0, 10.0
     zc = (z0 + z1) / 2
     C.counter(k, m, "E", z0, z1, 4.0, top="wood_light", fronts=[(4, "open")], end_left=False, end_right=False,
-              owner="BoxStation", shelf={0: 2.0}, open_sides=False)
-    k.prop(m, "FlatBoxStack", CF((15.0, 0.9, zc)), name="FlatBoxes", seed=5)
-    k.prop(m, "FlatBoxStackShort", CF((15.0, 2.0, zc)), name="FlatBoxes", seed=6)
-    board(k, m, (3.2, 0.45, 0.15), CF((13.0 - 0.08, 2.0 + 0.17 + 0.35, zc), FACE["E"]), "cardboard",
+              owner="BoxStation", open_sides=False)
+    k.prop(m, "FlatBoxStack", CF((14.85, 0.9, zc)), name="FlatBoxes", seed=5)     # 7 flat + 1 folded: 0.9 .. 2.9
+    board(k, m, (3.0, 0.45, 0.15), CF((13.05 - 0.08, 0.9 + 7 * 0.17 + 0.35, zc), FACE["E"]), "cardboard",
           text="PAPA STUD'S PIZZA", text_color=(170, 32, 26), name="BoxPrint")
-    spot(k, m, "Work", 15.0, L.WORK, zc, E)
-    k.prop(m, "StickerRoll", CF((16.0, L.WORK, z1 - 1.3)), name="StickerRoll")
-    stand(k, m, X0 - IP.STAND_GAP, zc, E)
+    zw = zc - 0.6                       # the work spot clear of the rules board in the corner
+    spot(k, m, "Work", 15.0, L.WORK, zw, E)
+    k.prop(m, "StickerRoll", CF((16.1, L.WORK, z1 - 1.6)), name="StickerRoll")
+    stand(k, m, X0 - IP.STAND_GAP, zw, E)
     return m
 
 

@@ -385,7 +385,8 @@ def outside_walls(k, f, rng):
             base = c == "brick1"
             proud = 0.6 if base else 0.0
             t = 2.0 if base else 1.0                  # the base course reaches back into the core
-            for ua, ub, ya, yb, cc in mk.wall_pieces(u0 - o, u1 + o, [(y0, y1, c)], op):
+            # each run stops at the corner pilasters (2 x 2 on the corners) so no faces share a plane
+            for ua, ub, ya, yb, cc in mk.wall_pieces(u0 - o + 1, u1 + o - 1, [(y0, y1, c)], op):
                 if w == "S":
                     lo, hi = (ua, ya, L.OUT_Z1 + o - t + proud), (ub, yb, L.OUT_Z1 + o + proud)
                 elif w == "N":
@@ -405,14 +406,11 @@ def outside_walls(k, f, rng):
 
 def roof(k, f, rng):
     o = OUT_OFF
-    k.box(f, "Roof", (L.OUT_X0 - o, L.WALL_TOP, L.OUT_Z0 - o), (L.OUT_X1 + o, L.ROOF_TOP, L.OUT_Z1 + o), "charcoal",
-          studs=True, solid=True)
-    p0, p1 = L.ROOF_TOP, L.PARAPET_TOP
+    # the slab sits inside the outer skin, whose top course (to 14.6) is the parapet
+    k.box(f, "Roof", (L.OUT_X0 - o + 1, L.WALL_TOP, L.OUT_Z0 - o + 1), (L.OUT_X1 + o - 1, L.ROOF_TOP, L.OUT_Z1 + o - 1),
+          "charcoal", studs=True, solid=True)
     c0, c1 = L.PARAPET_TOP, L.COPING_TOP
     X0, X1, Z0, Z1 = L.OUT_X0 - o, L.OUT_X1 + o, L.OUT_Z0 - o, L.OUT_Z1 + o
-    for (a, b, c, d) in ((X0, X1, Z1 - 1, Z1), (X0, X1, Z0, Z0 + 1), (X0, X0 + 1, Z0 + 1, Z1 - 1),
-                         (X1 - 1, X1, Z0 + 1, Z1 - 1)):
-        k.box(f, "Parapet", (a, p0, c), (b, p1, d), "siding", solid=True)
     for (a, b, c, d) in ((X0 - 0.5, X1 + 0.5, Z1 - 1.5, Z1 + 0.5), (X0 - 0.5, X1 + 0.5, Z0 - 0.5, Z0 + 1.5),
                          (X0 - 0.5, X0 + 1.5, Z0 + 1.5, Z1 - 1.5), (X1 - 1.5, X1 + 0.5, Z0 + 1.5, Z1 - 1.5)):
         k.box(f, "Coping", (a, c0, c), (b, c1, d), "trim_green", studs=True, solid=True)

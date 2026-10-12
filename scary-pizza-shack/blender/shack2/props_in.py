@@ -41,7 +41,7 @@ def flour_bin(rng):
     tub = _lathe_loop([(0.0, 0.0), (0.62, 0.0), (0.68, 1.2), (0.76, 1.24), (0.76, 1.36), (0.6, 1.36),
                        (0.56, 0.1), (0.0, 0.1)], 12)
     flour = G.outward(G.lathe([(0.0, 0.9), (0.58, 0.9), (0.62, 1.05), (0.36, 1.22), (0.0, 1.3)], 12))
-    lid = ccyl(0.8, 0.15, 12, "y", (0, 0, 0.8), 0.04).xf(RX(-35)).xf(T(0, 1.38, -0.8))   # propped open
+    lid = ccyl(0.8, 0.15, 12, "y", (0, 0, 0.8), 0.04).xf(RX(-22)).xf(T(0, 1.38, -0.8))   # propped open
     hinge = rod((-0.3, 1.35, -0.8), (0.3, 1.35, -0.8), 0.08, 6)
     scoop = G.Geo()
     scoop.add(_lathe_loop([(0.0, -0.18), (0.24, -0.16), (0.27, 0.06), (0.2, 0.06), (0.19, -0.08), (0.0, -0.1)], 8))
@@ -65,16 +65,16 @@ def kitchen_scale(rng):
 
 @prop("DoughTray")
 def dough_tray(rng):
-    """A stack of three blue proofing trays, dough balls in the top one."""
+    """A stack of two blue proofing trays, dough balls in the top one."""
     g = G.Geo()
-    for k in range(3):
+    for k in range(2):
         y = k * 0.5
         g.add(bevel_box(3.0, 0.5, 2.0, 0.08, c=(0, y + 0.25, 0)))
     balls = G.Geo()
     for i, (x, z) in enumerate(((-0.95, -0.45), (0.0, -0.45), (0.95, -0.45), (-0.95, 0.45), (0.0, 0.45))):
-        balls.add(_blob(0.42, (1.0, 0.62, 1.0), i + 3, c=(x, 1.5, z), flat=-0.05))
+        balls.add(_blob(0.42, (1.0, 0.62, 1.0), i + 3, c=(x, 1.0, z), flat=-0.05))
     rim = G.Geo()
-    for k in range(3):
+    for k in range(2):
         rim.add(bevel_box(3.1, 0.15, 2.1, 0.04, c=(0, k * 0.5 + 0.5 - 0.075, 0)))
     return [("Trays", "label_blue", g), ("Rims", (40, 72, 120), rim), ("Dough", "dough", balls)]
 
@@ -118,7 +118,7 @@ def pin_rack(rng):
     """Wall shelf for the rolling pin: a board on two brackets (origin at the wall, +Z out)."""
     board = bevel_box(3.6, 0.3, 1.0, 0.06, c=(0, 0, 0.5))
     br = G.Geo()
-    for x in (-1.4, 1.4):
+    for x in (-1.68, 1.68):                                  # outside the tray stack under it
         br.add(G.extrude([(0, 0), (0.8, 0), (0, -0.8)], 0.2, "x", (x, -0.15, 0)).xf(T(0, 0, 0)))
     lip = bevel_box(3.6, 0.3, 0.15, 0.04, c=(0, 0.25, 0.92))
     return [("Board", "wood", board), ("Brackets", "wood_dark", br), ("Lip", "wood", lip)]
@@ -569,13 +569,14 @@ def oven_mitt(rng):
 
 @prop("AshBucket")
 def ash_bucket(rng):
-    """Galvanised bucket of ash with a shovel stood in it."""
-    b = _lathe_loop([(0.0, 0.0), (0.5, 0.0), (0.62, 1.2), (0.68, 1.25), (0.56, 1.25), (0.48, 0.1), (0.0, 0.1)], 12)
-    ash = G.outward(G.lathe([(0, 0.9), (0.56, 0.9), (0.4, 1.05), (0, 1.12)], 12))
-    handle = G.tube([(-0.62, 1.15, 0), (-0.45, 1.6, 0), (0, 1.75, 0), (0.45, 1.6, 0), (0.62, 1.15, 0)], 0.075, 4)
+    """Small galvanised bucket of ash (a rolled rim, a wire handle) with a hand shovel in it."""
+    b = _lathe_loop([(0.0, 0.0), (0.34, 0.0), (0.41, 0.8), (0.48, 0.84), (0.48, 0.95), (0.32, 0.95),
+                     (0.28, 0.12), (0.0, 0.12)], 12)
+    ash = G.outward(G.lathe([(0, 0.66), (0.36, 0.66), (0.26, 0.78), (0, 0.84)], 12))
+    handle = G.tube([(-0.48, 0.88, 0), (-0.34, 1.2, 0), (0, 1.32, 0), (0.34, 1.2, 0), (0.48, 0.88, 0)], 0.075, 4)
     shovel = G.Geo()
-    shovel.add(bevel_box(0.5, 0.15, 0.6, 0.04, c=(0, 0, 0)).xf(T(0.1, 1.0, 0.1) @ RX(70)))
-    shovel.add(rod((0.1, 1.2, 0.0), (0.25, 2.6, -0.5), 0.08, 6))
+    shovel.add(bevel_box(0.4, 0.15, 0.45, 0.04, c=(0, 0, 0)).xf(T(0.08, 0.72, 0.06) @ RX(70)))
+    shovel.add(rod((0.08, 0.85, 0.0), (0.2, 1.95, -0.32), 0.08, 6))
     return [("Bucket", "steel", b), ("Ash", "ash", ash), ("Handle", "steel_dark", handle),
             ("Shovel", "charcoal", shovel)]
 
@@ -661,12 +662,12 @@ def _flat_boxes(rng, n, assembled_top=0):
     for i in range(n):
         a = rng.uniform(-3, 3)
         dx, dz = rng.uniform(-0.1, 0.1), rng.uniform(-0.1, 0.1)
-        g.add(bevel_box(4.0, 0.15, 4.0, 0.03, c=(dx, y + 0.075, dz)).xf(RY(a)))
+        g.add(bevel_box(3.6, 0.15, 3.6, 0.03, c=(dx, y + 0.075, dz)).xf(RY(a)))
         y += 0.17
     for i in range(assembled_top):
         a = 0.0
-        g.add(bevel_box(4.0, 0.7, 4.0, 0.08, c=(0, y + 0.35, 0)).xf(RY(a)))
-        edges.add(bevel_box(4.04, 0.15, 4.04, 0.03, c=(0, y + 0.62, 0)).xf(RY(a)))
+        g.add(bevel_box(3.6, 0.7, 3.6, 0.08, c=(0, y + 0.35, 0)).xf(RY(a)))
+        edges.add(bevel_box(3.64, 0.15, 3.64, 0.03, c=(0, y + 0.62, 0)).xf(RY(a)))
         prints.add(ccyl(1.2, 0.15, 12, "y", (0, y + 0.72, 0), 0.03).xf(RY(a)))
         y += 0.72
     out = [("Boxes", "cardboard", g)]
@@ -677,14 +678,9 @@ def _flat_boxes(rng, n, assembled_top=0):
 
 @prop("FlatBoxStack")
 def flat_box_stack(rng):
-    return _flat_boxes(rng, 6)
-
-
-@prop("FlatBoxStackShort")
-def flat_box_stack_short(rng):
-    """A flat box with an assembled one on top (the PAPA STUD'S print on its lid; the
+    """Seven flat boxes and a folded one on top (the PAPA STUD'S print on its lid; the
     station puts the name on its side as a Board)."""
-    return _flat_boxes(rng, 1, assembled_top=1)
+    return _flat_boxes(rng, 7, assembled_top=1)
 
 
 @prop("StickerRoll")
@@ -948,8 +944,8 @@ def newspaper(rng):
 
 @prop("Broom")
 def broom(rng):
-    """A broom leaning back against the fridge's side: bristles on the floor, handle up."""
-    lean = math.radians(12)
+    """A broom leaning back into a corner: bristles on the floor, handle up."""
+    lean = math.radians(7)
     top = (5.2 * math.sin(lean), 5.2 * math.cos(lean), 0.0)
     head = bevel_box(0.5, 0.4, 1.4, 0.06, c=(0, 0.75, 0))
     bristles = G.Geo()

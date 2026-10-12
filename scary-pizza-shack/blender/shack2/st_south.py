@@ -129,7 +129,7 @@ def register(k):
     k.mesh(tj, "Coins", "TipJar__Coins", coins, CF(c), "mustard", shadow=False)
     board(k, tj, (0.6, 0.4, 0.15), CF((c[0], c[1] + 0.55, c[2] - 0.46), G.rx(8)), "paper", text="TIPS",
           text_color=(40, 40, 40), name="Board")
-    k.prop(m, "CardImprinter", CF((x1 - 3.3, W_, FRONT + 3.0), G.ry(180)), name="CardMachine")
+    k.prop(m, "CardImprinter", CF((9.0, W_, FRONT + 2.5), G.ry(180)), name="CardMachine")
     stand(k, m, (x0 + x1) / 2, STZ, S_)
     return m
 
@@ -324,8 +324,8 @@ def cctv_desk(k):
     k.prop(m, "Socket", C.wcf("S", -10.0, 0.9, 0.0), name="Socket")
     # the wall over the desk: radio shelf + Radio, cork board, calendar, the phone
     # the radio's shelf at head height on the west wall, just round the corner from the desk
-    k.prop(m, "WallShelfSmall", C.wcf("W", 8.0, 5.4, 0.0), name="RadioShelf")
-    radio(k, m, C.wcf("W", 8.0, 5.4, 0.6) * CF((0, 0, 0), G.ry(180)))
+    k.prop(m, "WallShelfSmall", C.wcf("W", 8.0, 5.75, 0.0), name="RadioShelf")
+    radio(k, m, C.wcf("W", 8.0, 5.75, 0.6) * CF((0, 0, 0), G.ry(180)))
     k.prop(m, "CorkBoard", C.wcf("S", -9.7, 6.2, 0.0), name="CorkBoard")
     k.prop(m, "Calendar", C.wcf("S", -12.0, 7.6, 0.0), name="Calendar")
     ph = k.sc.model(m, "Phone")
@@ -402,10 +402,10 @@ def sink(k):
     the tap, a drying rack with plates, soap dispenser, paper towels, the hand-wash notice,
     the first-aid box and a caged lamp over it."""
     m = station(k, "Sink")
-    x0, x1 = -17.0, -13.0
+    x0, x1 = -17.0, -13.0                             # the sink's own bay; a cupboard runs on into the corner
     hx0, hx1, hz0, hz1 = x0 + 1.0, x1 - 1.0, FRONT + 1.0, SZ - 1.0
-    _counter(k, m, x0, x1, fronts=[(4, "open")], end_left=False, end_right=True, owner="Sink", top_name="Top",
-             top_hole=(hx0, hx1, SZ - hz1, SZ - hz0))
+    _counter(k, m, L.IN_X0, x1, fronts=[(x0 - L.IN_X0, "doors2"), (4, "open")], end_left=False, end_right=True,
+             owner="Sink", top_name="Top", top_hole=(hx0, hx1, SZ - hz1, SZ - hz0))
     k.mesh(m, "Basin", "Sink__Basin", _basin(hx1 - hx0, hz1 - hz0), CF(((hx0 + hx1) / 2, L.WORK + 0.02, (hz0 + hz1) / 2)),
            "steel_light", solid=True)
     tap = G.Geo()

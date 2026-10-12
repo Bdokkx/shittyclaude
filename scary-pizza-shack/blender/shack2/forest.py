@@ -439,6 +439,8 @@ def build(k, out, rng):
     # far trees: one mesh each, dark, no shadows
     geos = [far_tree_geo(h, w, t, s) for (h, w, t, s) in FAR_KINDS]
     def ok_far(x, z):
+        if any(math.hypot(x - px, z - L.POLE_Z) < 16.0 for px in L.POLE_X):     # wide crowns: keep off the poles
+            return False
         return not keep_out(x, z) and road_d(x, z) > 16.0 and not (L.in_meadow(x, z) and math.hypot(x, z) < 180)
     for (x, z) in poisson(rng, 7000, L.FOREST_R[1] + 8, L.FAR_R[1], lambda x, z: 10.0, ok_far, existing=trees):
         j = int(rng.integers(0, len(geos)))

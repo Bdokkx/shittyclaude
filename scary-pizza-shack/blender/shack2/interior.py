@@ -1,4 +1,4 @@
-"""Where everything goes inside the room (X -17..17, Z -10..10, floor top 0.4, ceiling 9.4).
+"""Where everything goes inside the room (X -21..17, Z -10..10, floor top 0.4, ceiling 9.4).
 
 Walls are named by the side of the room they close: N (Z -10, faces south), S (Z 10, faces
 north), W (X -17, faces east), E (X 17, faces west). Along a wall, u is X on N / S and Z on
@@ -21,7 +21,7 @@ COUNTERS = [
     ("N", -9.0, 12.0, 6.0),        # dough, sauce + cheese, chop, topping rail (6 deep: pots and crates
                                    # at the back, a whole pizza in front of them)
     ("E", 2.0, 10.0, 4.0),         # cut table, box station
-    ("S", -17.0, -13.0, 4.0),      # sink
+    ("S", L.IN_X0, -13.0, 4.0),    # sink, a cupboard west of it into the corner
     ("S", -5.0, 10.0, 4.0),        # serving window counter, till
 ]
 DESK = ("S", -13.0, -7.0, 4.0, 2.6)       # the camera desk: lower, a stool fits under it
@@ -41,7 +41,7 @@ LOW = [
 ]
 
 # ---------------------------------------------------------------- ceiling
-BEAMS = (-12.5, -6.5, -0.5, 5.5, 11.5)       # N-S beams, 1 wide, wall to wall: bays 4 + 5 x 5 wide
+BEAMS = (-16.5, -12.5, -6.5, -0.5, 5.5)      # N-S beams, 1 wide, wall to wall: bays 4, 3, 3 x 5, 11
 BEAM_Y = (8.6, 9.4)
 HATCH = (1.0, 4.0, -3.0, 0.0)                # the hole into the attic (X0, X1, Z0, Z1)
 FAN = (-3.5, 3.0)                            # slow fan in the bay between beams -6.5 and -0.5
@@ -63,7 +63,7 @@ WORK_LAMPS = {
     "WindowLamp1": (-3.5, 7.4, "tube"), "WindowLamp2": (2.5, 7.4, "tube"),
     "TillLamp": (8.5, 7.0, "tube"),
     "CutLamp": (14.5, 4.0, "pendant"),
-    "SinkLamp": (-15.0, 7.6, "cage"),
+    "SinkLamp": (-15.0, 7.6, "cage"),         # over the basin (X -16..-14)
     "DoorLamp": (-15.0, -7.6, "cage"),
 }
 
