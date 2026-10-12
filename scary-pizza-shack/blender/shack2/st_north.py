@@ -27,7 +27,7 @@ def _counter(k, m, x0, x1, **kw):
 
 def back_door(k):
     m = station(k, "BackDoor")
-    x0, x1, y0, y1 = L.DOOR_X0, L.DOOR_X1, L.DOOR_Y0, L.DOOR_Y1        # -17..-13, 0.6..7.0
+    x0, x1, y0, y1 = L.DOOR_X0, L.DOOR_X1, L.DOOR_Y0, L.DOOR_Y1        # -19..-15, 0.6..7.0
     zi = NZ                                                             # door's room face
     zd = zi - 0.4                                                       # its outer face
     xc = (x0 + x1) / 2

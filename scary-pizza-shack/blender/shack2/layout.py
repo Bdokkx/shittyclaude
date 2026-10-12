@@ -15,10 +15,12 @@ import layout as _L1  # noqa: E402
 # ---------------------------------------------------------------- the room
 #   widened 4 studs to the west (the drinks cooler's side) so the way in from the back door has
 #   room round it: outer X -22..18, Z -11..11; inside X -21..17, Z -10..10 (38 x 20); floor top
-#   0.4; ceiling 9.4. The back door stays at X -17..-13; the west wall's stations move with the wall.
+#   0.4; ceiling 9.4. The west wall's stations move with the wall; the back door moves 2 west to
+#   X -19..-15, a stretch of wall between it and the fridge.
 WIDEN = 4.0
 OUT_X0 = _L1.OUT_X0 - WIDEN
 IN_X0 = _L1.IN_X0 - WIDEN
+DOOR_X0, DOOR_X1 = _L1.DOOR_X0 - 2.0, _L1.DOOR_X1 - 2.0
 
 # (the bands, beams, hatch, fan and work lamps inside are in interior.py and shell.py)
 

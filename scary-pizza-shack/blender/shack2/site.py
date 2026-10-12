@@ -317,8 +317,8 @@ def shed(k, parent, gr):
 def paths(k, m, rng):
     """Worn dirt paths: back door to the shed, back door to the gate. Each is one ragged
     strip, wider where people stop, worn into the gravel (a plate let in, 0.03 proud)."""
-    for i, pts in enumerate(([(-15.0, -12.8), (-15.6, -17.0), (-17.2, -22.5), (-17.0, -27.0)],
-                             [(-12.0, -13.2), (-6.0, -19.0), (-1.0, -24.0), (2.8, -27.2)])):   # to the drive
+    for i, pts in enumerate(([(-17.0, -12.8), (-17.4, -17.0), (-18.0, -22.5), (-17.0, -27.0)],
+                             [(-14.0, -13.2), (-7.0, -19.0), (-1.0, -24.0), (2.8, -27.2)])):   # to the drive
         P = np.asarray(pts, float)
         left, right = [], []
         for j in range(len(P) - 1):

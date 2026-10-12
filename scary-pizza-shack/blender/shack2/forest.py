@@ -40,28 +40,53 @@ def _roots(k, m, x, y, z, d, rng, color="trunk2"):
         k.wedge(m, "Root", (1, 1.2, 1), (x + off[0], y + 0.4, z + off[2]), R, color)
 
 
+def _rect_d(x, z, x0, x1, z0, z1):
+    dx = max(x0 - x, 0.0, x - x1)
+    dz = max(z0 - z, 0.0, z - z1)
+    return math.hypot(dx, dz)
+
+
+def crown_room(x, z):
+    """How far a crown at (x, z) may reach before it meets something built: the yard fence,
+    the lot, the bus stop, the telegraph poles and the roadside signs."""
+    d = [_rect_d(x, z, L.YARD_X[0] - 0.6, L.YARD_X[1] + 0.6, L.YARD_Z[0] - 0.6, L.YARD_Z[1]),
+         _rect_d(x, z, L.LOT[0], L.LOT[1], L.LOT[2], L.LOT[3]),
+         _rect_d(x, z, L.BUS_STOP_X[0] - 2, L.BUS_STOP_X[1] + 2, 17.0, 24.0)]
+    d += [math.hypot(x - px, z - L.POLE_Z) - 0.8 for px in L.POLE_X]
+    d += [math.hypot(x - s["x"], z - s["z"]) - 3.0 for s in L.ROAD_SIGNS.values()]
+    return max(1.5, min(d) - 0.3)
+
+
 def pine(k, parent, x, y, z, h, rng, kind="PineTall", name="Pine"):
-    """Studded tiers on a real trunk. h = overall height (12..46)."""
+    """A brick-built pine on a real trunk: a dense stepped cone of studded branch tiers, each a
+    wide plate with a smaller step plate on top (dark under, lighter on top), every other tier
+    turned 45 degrees so the outline reads as a star of branches; a two-step spike at the top.
+    h = overall height (12..46)."""
     m = k.sc.model(parent, name)
-    tiers = {"PineTall": 6, "PineMid": 6, "PineYoung": 4}[kind]
-    w0 = {"PineTall": 15, "PineMid": 13, "PineYoung": 8}[kind] * (0.8 + 0.25 * h / 40)
+    tiers = {"PineTall": 9, "PineMid": 7, "PineYoung": 5}[kind]
+    w0 = {"PineTall": 14, "PineMid": 12, "PineYoung": 7}[kind] * (0.8 + 0.25 * h / 40)
+    wmax = max(3, int(2 * crown_room(x, z) / math.sqrt(2)))      # turned tiers reach w / sqrt(2)
     d = 2.2 if h > 30 else (1.6 if h > 18 else 1.0)
-    clear = h * (0.22 if kind != "PineYoung" else 0.16)          # bare trunk below the first tier
-    _trunk(k, m, x, y - 0.4, z, h - 0.4, d)                      # up into the top tuft
+    clear = h * (0.18 if kind != "PineYoung" else 0.12)          # bare trunk below the first tier
+    _trunk(k, m, x, y - 0.4, z, h - 2.0, d)                      # up into the top tiers
     if h > 18:
         _roots(k, m, x, y, z, d, rng)
-    span = h - clear - 1.6
+    top_y = y + h - 2.8                                          # the spike sits on the last tier
+    span = top_y - (y + clear) - 2.0
     yaw0 = rng.uniform(0, 90)
-    c0 = int(rng.integers(0, 3))
+    dark = ("pine_dark", "pine2")[int(rng.integers(0, 2))]
     for i in range(tiers):
         t = i / (tiers - 1)
-        w = max(2.0, round(w0 * (1 - 0.82 * t) + rng.uniform(-0.6, 0.6)))
-        th = 2.4 if w > 6 else 1.6
+        w = min(wmax, max(3, int(round(w0 * (1 - t) ** 0.9 + 2.5 + rng.uniform(-0.5, 0.5)))))
         yb = y + clear + span * t
-        R = G.ry(yaw0 + (45.0 if i % 2 else 0.0) + rng.uniform(-8, 8))
-        c = PINES[(c0 + i) % 3]
-        k.boxr(m, "Needles", (w, th, w), (x, yb + th / 2, z), R, c, studs=True, shadow=True)
-    k.boxr(m, "Top", (1, 1.6, 1), (x, y + h - 0.8, z), G.ry(yaw0), PINES[c0], studs=True)
+        R = G.ry(yaw0 + (45.0 if i % 2 else 0.0) + rng.uniform(-6, 6))
+        k.boxr(m, "Needles", (w, 1.2, w), (x, yb + 0.6, z), R, dark if i % 2 else "pine", studs=True,
+               shadow=w > 5)
+        ws = max(2, w - 2 - (1 if w > 9 else 0))
+        k.boxr(m, "Needles", (ws, 0.8, ws), (x, yb + 1.6, z), R, "pine3" if i % 2 else "pine", studs=True,
+               shadow=False)
+    k.boxr(m, "Top", (2, 1.2, 2), (x, top_y + 0.6, z), G.ry(yaw0 + 45.0), "pine", studs=True, shadow=False)
+    k.boxr(m, "Top", (1, 1.6, 1), (x, top_y + 2.0, z), G.ry(yaw0), "pine3", studs=True, shadow=False)
     k.mark_used(kind, "outside")
     return m
 

@@ -41,7 +41,7 @@ LOW = [
 ]
 
 # ---------------------------------------------------------------- ceiling
-BEAMS = (-16.5, -12.5, -6.5, -0.5, 5.5)      # N-S beams, 1 wide, wall to wall: bays 4, 3, 3 x 5, 11
+BEAMS = (-17.5, -12.5, -6.5, -0.5, 5.5)      # N-S beams, 1 wide, wall to wall: bays 3, 4, 3 x 5, 11
 BEAM_Y = (8.6, 9.4)
 HATCH = (1.0, 4.0, -3.0, 0.0)                # the hole into the attic (X0, X1, Z0, Z1)
 FAN = (-3.5, 3.0)                            # slow fan in the bay between beams -6.5 and -0.5
@@ -64,7 +64,7 @@ WORK_LAMPS = {
     "TillLamp": (8.5, 7.0, "tube"),
     "CutLamp": (14.5, 4.0, "pendant"),
     "SinkLamp": (-15.0, 7.6, "cage"),         # over the basin (X -16..-14)
-    "DoorLamp": (-15.0, -7.6, "cage"),
+    "DoorLamp": (-16.0, -7.6, "cage"),
 }
 
 

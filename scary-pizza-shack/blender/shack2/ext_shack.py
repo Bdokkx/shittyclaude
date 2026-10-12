@@ -314,7 +314,7 @@ def back_door(k, f):
     """Outside the back door: a concrete step, the sand bucket, the log pile for the oven,
     gas bottles in their cage, the hose reel and the ladder up to the roof."""
     m = k.sc.model(f, "BackYardWall")
-    k.mesh(m, "Step", "Back__Step", bevel_box(5.0, 0.6, 1.6, 0.08), CF((-15.0, 0.3, SZ0 - 0.8)), "concrete", solid=True)
+    k.mesh(m, "Step", "Back__Step", bevel_box(5.0, 0.6, 1.6, 0.08), CF(((L.DOOR_X0 + L.DOOR_X1) / 2, 0.3, SZ0 - 0.8)), "concrete", solid=True)
     k.prop(m, "SandBucket", CF((-10.9, 0.0, SZ0 - 0.75)), where="outside", name="SandBucket")
     k.prop(m, "LogPile", CF((-7.5, 0.0, SZ0 - 1.6), G.ry(180)), where="outside", name="LogPile")
     k.prop(m, "GasBottles", CF((-1.2, 0.0, SZ0 - 0.75), G.ry(180)), where="outside", name="GasBottles")
