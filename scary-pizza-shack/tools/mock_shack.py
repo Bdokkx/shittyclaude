@@ -1,6 +1,7 @@
-"""Dry-run out/BuildPizzaShack.lua outside Roblox and check what it builds.
+"""Dry-run a generated build script outside Roblox and check what it builds.
 
-    python tools/mock_shack.py out/map.json out/BuildPizzaShack.lua
+    python tools/mock_shack.py out/map.json out/BuildPizzaShack.lua                  # batch 1
+    python tools/mock_shack.py out/assets.json out/BuildPizzaShackAssets.lua assets  # batch 2
 
 A strict Studio mock (tools/mock_studio.lua) stands in for the engine. Each case
 puts a LoadAsset-like container of MeshParts under Workspace (optionally scaled,
@@ -20,6 +21,10 @@ import numpy as np
 from lupa import LuaRuntime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+from gen_build import CONFIGS  # noqa: E402
+
+CFG = CONFIGS["map"]
 FLAG_KEYS = ("anchored", "collide", "touch", "query", "shadow", "massless")
 LUA_FLAG = {"anchored": "Anchored", "collide": "CanCollide", "touch": "CanTouch", "query": "CanQuery",
             "shadow": "CastShadow", "massless": "Massless"}
@@ -55,8 +60,9 @@ class Mock:
     def import_container(self, meshes, scale=1.0, R_imp=np.eye(3), mode="cframe", offset=(37.0, 5.0, -80.0)):
         """A LoadAsset-like Model with a nested model of MeshParts named like the FBX meshes."""
         new = self.g.mock_new
-        outer = new("Model", self.lua.table_from({"Name": "ScaryPizzaShack_Batch1"}))
-        inner = new("Model", self.lua.table_from({"Name": "ScaryPizzaShack_Batch1"}))
+        stem = CFG["fbx"].rsplit(".", 1)[0]
+        outer = new("Model", self.lua.table_from({"Name": stem}))
+        inner = new("Model", self.lua.table_from({"Name": stem}))
         inner.Parent = outer
         k = 0
         off = np.array(offset)
@@ -75,7 +81,8 @@ class Mock:
             extra = new("SurfaceAppearance", None)
             extra.Parent = mp
             mp.Parent = inner
-        for name, d in (("FV_AxisO", (0, 0, 0)), ("FV_AxisX", (4, 0, 0)), ("FV_AxisY", (0, 4, 0)), ("FV_AxisZ", (0, 0, 4))):
+        ax = CFG["axis"]
+        for name, d in ((ax + "O", (0, 0, 0)), (ax + "X", (4, 0, 0)), (ax + "Y", (0, 4, 0)), (ax + "Z", (0, 0, 4))):
             mp = new("MeshPart", self.lua.table_from({"Name": name}))
             mp.Size = self.g.Vector3.new(0.25 * scale, 0.25 * scale, 0.25 * scale)
             mp.CFrame = self.cf(off + R_imp @ ((np.array((-30.0, 0, 0)) + np.array(d)) * scale),
@@ -85,7 +92,7 @@ class Mock:
         return outer
 
     def run(self, script):
-        fn = self.lua.eval("function(src) local f, err = load(src, 'BuildPizzaShack') "
+        fn = self.lua.eval("function(src) local f, err = load(src, 'BuildScript') "
                            "if not f then error(err) end return f() end")
         fn(script)
 
@@ -99,10 +106,10 @@ def check(m, data, R_geom=np.eye(3), size_map=None, tag=""):
     inside the MeshPart's own frame (baked import turn)."""
     g = m.g
     ws = g.workspace
-    roots = [c for c in children(ws) if c.Name == "PizzaShack"]
+    roots = [c for c in children(ws) if c.Name == CFG["root"]]
     errs = []
     if len(roots) != 1:
-        return ["%d PizzaShack roots in Workspace" % len(roots)]
+        return ["%d %s roots in Workspace" % (len(roots), CFG["root"])]
     root = roots[0]
     nodes = data["nodes"]
     kids = {}
@@ -114,31 +121,30 @@ def check(m, data, R_geom=np.eye(3), size_map=None, tag=""):
         return np.allclose(np.asarray(a, float), np.asarray(b, float), atol=tol)
 
     def walk(jn, lo):
-        jk = [c for c in kids.get(jn["i"], []) if c["kind"] not in ("Weld", "Motor", "Light", "Attachment")]
-        jother = [c for c in kids.get(jn["i"], []) if c["kind"] in ("Weld", "Motor", "Light", "Attachment")]
+        # the script makes every instance in data order, except welds and motors, which come
+        # last (once every part exists): so a parent's children are its other children in
+        # order, then its joints in order
+        jk = kids.get(jn["i"], [])
+        jk = [c for c in jk if c["kind"] not in ("Weld", "Motor")] + [c for c in jk if c["kind"] in ("Weld", "Motor")]
         lk = children(lo)
-        lparts = [c for c in lk if c.ClassName not in ("WeldConstraint", "Motor6D", "PointLight", "SpotLight",
-                                                        "SurfaceLight", "Attachment")]
-        lother = [c for c in lk if c not in lparts]
-        if len(jk) != len(lparts):
-            errs.append("%s: %d children expected, %d built" % (lo.Name, len(jk), len(lparts)))
+        if len(jk) != len(lk):
+            errs.append("%s: %d children expected, %d built" % (lo.Name, len(jk), len(lk)))
             return
-        if len(jother) != len(lother):
-            errs.append("%s: %d joints/lights/attachments expected, %d built" % (lo.Name, len(jother), len(lother)))
-        for a, b in zip(jk + jother, lparts + lother):
+        for a, b in zip(jk, lk):
             lua_of[a["i"]] = b
             if a["name"] != b.Name:
-                errs.append("name %s != %s" % (a["name"], b.Name))
+                errs.append("name %s != %s (under %s)" % (a["name"], b.Name, lo.Name))
                 continue
             check_node(a, b)
-            if a["kind"] in ("Folder", "Model", "Part", "MeshPart", "Marker"):
+            if a["kind"] in ("Folder", "Model", "Accessory", "Part", "MeshPart", "Marker", "Humanoid"):
                 walk(a, b)
 
     def check_node(a, b):
         k = a["kind"]
         cls = b.ClassName
         want = {"Folder": "Folder", "Model": "Model", "MeshPart": "MeshPart", "Marker": "Part", "Attachment": "Attachment",
-                "Weld": "WeldConstraint", "Motor": "Motor6D"}.get(k)
+                "Weld": "WeldConstraint", "Motor": "Motor6D", "Accessory": "Accessory", "Humanoid": "Humanoid",
+                "Animator": "Animator", "SpecialMesh": "SpecialMesh"}.get(k)
         if k == "Part":
             want = "WedgePart" if a["shape"] == "Wedge" else "Part"
         if k == "Light":
@@ -201,10 +207,21 @@ def check(m, data, R_geom=np.eye(3), size_map=None, tag=""):
             wp, wR = m.rows(m.g.cf_mul(par.CFrame, b.CFrame))
             if not close(wp, a["cf"][0]) or not close(wR, a["cf"][1]):
                 errs.append("attachment %s off" % a["name"])
+            for key, val in (a.get("attrs") or {}).items():
+                if b.GetAttribute(b, key) != val:
+                    errs.append("attachment %s attribute %s" % (a["name"], key))
+        elif k == "Humanoid":
+            if b.RigType.Name != a["rig"] or b.DisplayDistanceType.Name != "None":
+                errs.append("humanoid %s settings" % a["name"])
+        elif k == "SpecialMesh":
+            if b.MeshType.Name != a["mesh_type"] or not close(m.vec(b.Scale), a["scale"], 1e-4):
+                errs.append("special mesh %s" % a["name"])
         elif k == "Light":
             if abs(b.Brightness - a["brightness"]) > 1e-6 or abs(b.Range - a["range"]) > 1e-6:
                 errs.append("light %s values" % a["name"])
-        elif k == "Model":
+            if bool(b.Enabled) != bool(a.get("enabled", True)):
+                errs.append("light %s enabled" % a["name"])
+        elif k in ("Model", "Accessory"):
             for key, val in (a.get("attrs") or {}).items():
                 if b.GetAttribute(b, key) != val:
                     errs.append("model %s attribute %s" % (a["name"], key))
@@ -217,9 +234,14 @@ def check(m, data, R_geom=np.eye(3), size_map=None, tag=""):
             continue
         if n["kind"] == "Weld":
             same = m.g.same
-            if not (same(b.Part0, lua_of[n["part0"]]) and same(b.Part1, lua_of[n["part1"]]) and same(b.Parent, b.Part1)):
+            if not (same(b.Part0, lua_of[n["part0"]]) and same(b.Part1, lua_of[n["part1"]]) and
+                    same(b.Parent, lua_of[n["parent"]])):
                 errs.append("weld %s wired wrong" % n["name"])
         elif n["kind"] == "Motor":
+            same = m.g.same
+            if not (same(b.Part0, lua_of[n["part0"]]) and same(b.Part1, lua_of[n["part1"]]) and
+                    same(b.Parent, lua_of[n["parent"]])):
+                errs.append("motor %s wired wrong" % n["name"])
             hp, hR = np.array(n["hinge"][0]), np.array(n["hinge"][1])
             for part, c in ((b.Part0, b.C0), (b.Part1, b.C1)):
                 wp, wR = m.rows(m.g.cf_mul(part.CFrame, c))
@@ -234,7 +256,7 @@ def check(m, data, R_geom=np.eye(3), size_map=None, tag=""):
 def leftovers(m):
     bad = []
     for d in m.g.workspace.GetDescendants(m.g.workspace).values():
-        if d.ClassName == "MeshPart" and (d.Name.startswith("FV_Axis") or "__" in d.Name):
+        if d.ClassName == "MeshPart" and (d.Name.startswith(CFG["axis"]) or "__" in d.Name):
             bad.append(d.Name)
     names = [c.Name for c in children(m.g.workspace)]
     return bad, names
@@ -251,7 +273,7 @@ def case(data, script, scale, R_imp, mode, label):
     bad, names = leftovers(m)
     warns = list(m.g.WARNINGS.values())
     cache = m.g.game.GetService(m.g.game, "ServerStorage").FindFirstChild(
-        m.g.game.GetService(m.g.game, "ServerStorage"), "PizzaShackMeshes")
+        m.g.game.GetService(m.g.game, "ServerStorage"), CFG["cache"])
     ncache = len(children(cache)) if cache else 0
     print("%-34s errors %d  leftovers %d  workspace %s  cache %d  warnings %d  %s" % (
         label, len(errs), len(bad), names, ncache, len(warns), list(m.g.PRINTS.values())[-1:]))
@@ -289,7 +311,9 @@ def no_import_case(script):
     return 0 if warns and not names else 1
 
 
-def main(map_path, script_path):
+def main(map_path, script_path, config="map"):
+    global CFG
+    CFG = CONFIGS[config]
     data = json.load(open(map_path))
     script = open(script_path).read()
     total = 0
@@ -303,4 +327,4 @@ def main(map_path, script_path):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[1], sys.argv[2], *(sys.argv[3:4] or ["map"]))

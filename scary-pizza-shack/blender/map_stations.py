@@ -170,8 +170,10 @@ def fridge(sc):
     slots = []
     for y in (6.2, 4.6, 3.0):
         sc.box(m, "Shelf", (x0 + 0.5, y - 0.4, z0 + 1), (x1 - 0.5, y, z1), "steel_dark")
+    # numbered for the stock the game puts there: Slot1/2 (dough, cheese) at eye level on the
+    # second shelf, Slot3/4 (first toppings) on the third, Slot5/6 top, Slot7/8 bottom
     k = 1
-    for y in (6.2, 4.6, 3.0, 1.2):
+    for y in (4.6, 3.0, 6.2, 1.2):
         for x in (x0 + 1.2, x1 - 1.2):
             slots.append(spot(sc, m, "Slot%d" % k, x, y, z1 - 1.2, N))
             k += 1
@@ -302,8 +304,6 @@ def topping_rail(sc):
         sc.mesh(m, "Tub", "ToppingRail__Tub", tub, CF(c), "steel", owner="ToppingRail", material="Metal")
         spot(sc, m, "Tub%d" % (k + 1), cx, L.RISER_TOP + 0.06, L.IN_Z0 + 0.5, N)
     spot(sc, m, "Work", (x0 + x1) / 2 - 0.5, L.WORK, L.IN_Z0 + L.RISER + 2.0, N)
-    # sneeze-guard bar over the tubs
-    sc.box(m, "GuardPost", (x0, L.RISER_TOP, L.IN_Z0), (x0 + 1, 6.2, L.IN_Z0 + 1), "steel", grid=True)
     stand(sc, m, (x0 + x1) / 2 - 0.5, L.N_FRONT + L.STAND_GAP, N)
     return m
 
@@ -651,13 +651,26 @@ def sink(sc):
     for sx in (-1, 1):
         tap.add(G.box(0.36, 0.12, 0.12, (sx * 0.35, 0.35, 0.05)))
     mesh(sc, m, "Faucet", tap, "steel", frame=CF(((hx0 + hx1) / 2, L.WORK, z1 - 0.45)), material="Metal")
-    # fire extinguisher on its wall bracket, in the corner by the sink
-    br = G.Geo().add([G.box(0.15, 0.4, 0.9, (0.07, 0, 0)), G.box(0.5, 0.1, 0.9, (0.3, -0.15, 0))])
-    bc = (L.IN_X0, 6.8, z0 + 1.6)
-    mesh(sc, m, "Bracket", br, "black", frame=CF(bc))
-    fe = I.get("FireExtinguisher")
-    I.place(sc, m, fe, CF((L.IN_X0 + 0.55, 6.75, bc[2]), facing(E)))
     stand(sc, m, (x0 + x1) / 2, L.S_FRONT - L.STAND_GAP, S_)
+    return m
+
+
+def extinguisher(sc):
+    """The FireExtinguisher is stock the players take: the station is its wall bracket in
+    the corner over the sink, with a cradle it stands on and a Slot where it goes. The game
+    stands the item on Slot (Slot faces into the room, so it hangs as it always did)."""
+    m = station(sc, "Extinguisher")
+    zc = L.S_FRONT + 1.6
+    br = G.Geo().add([G.box(0.15, 0.4, 0.9, (0.07, 0, 0)), G.box(0.5, 0.1, 0.9, (0.3, -0.15, 0))])
+    mesh(sc, m, "Bracket", br, "black", frame=CF((L.IN_X0, 6.8, zc)))
+    sc.box(m, "Cradle", (L.IN_X0, 4.3, zc - 0.5), (L.IN_X0 + 1, 4.7, zc + 0.5), "black")
+    fe = I.get("FireExtinguisher")
+    held = CF((L.IN_X0 + 0.55, 6.75, zc), facing(E))          # where the item hangs (its Handle)
+    slot = held * fe.rest()
+    sc.marker(m, "Slot", CF((slot.p[0], 4.7, slot.p[2]), slot.R))
+    st = np.array((-14.4, L.FLOOR, L.S_FRONT - L.STAND_GAP))
+    d = np.array((slot.p[0], L.FLOOR, zc)) - st
+    sc.marker(m, "Stand", CF(st, facing(d / np.linalg.norm(d))))
     return m
 
 
@@ -672,8 +685,9 @@ def storage_shelf(sc):
     mk.panel_z(sc, m, "Side", z1 - 0.2, x0, x1, 1.2, 9.2, "wood", surfaces="smooth")
     for y in (4.0, 6.8, 9.2):
         sc.box(m, "Shelf", (x0, y - 0.4, z0), (x1, y, z1), "wood")
+    # Slot1/2 (flour, sauce cans) on the middle shelf, Slot3/4 (flashlights) at the bottom, Slot5/6 top
     k = 1
-    for y in (6.8, 4.0, 1.2):
+    for y in (4.0, 1.2, 6.8):
         for z in (z1 - 1.0, z0 + 1.0):
             spot(sc, m, "Slot%d" % k, x0 + 1.0, y, z, W)
             k += 1
@@ -774,7 +788,7 @@ def build_inside(sc):
     sc.folder(sc.root, "Stations")
     for f in (back_door, fridge, dough_station, sauce_station, chop_station, topping_rail, oven, peel_rack,
               cut_table, kitchen_bin, box_station, register, rules_board, plushie_shelf, serving_window,
-              shutter_button, cctv_desk, sink, storage_shelf, drinks_cooler, fuse_box, hatch):
+              shutter_button, cctv_desk, sink, extinguisher, storage_shelf, drinks_cooler, fuse_box, hatch):
         f(sc)
     ceiling_lamp(sc, "CeilingLamp1", -6.0, 0.5)
     ceiling_lamp(sc, "CeilingLamp2", 6.5, 2.5)

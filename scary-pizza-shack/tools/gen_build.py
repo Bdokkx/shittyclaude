@@ -1,13 +1,25 @@
-"""Write the self-contained Studio build script for the Scary Pizza Shack map.
+"""Write a self-contained Studio build script for the Scary Pizza Shack.
 
-    python tools/gen_build.py out/map.json out/BuildPizzaShack.lua
+    python tools/gen_build.py out/map.json out/BuildPizzaShack.lua                 # batch 1: the map
+    python tools/gen_build.py out/assets.json out/BuildPizzaShackAssets.lua assets # batch 2: assets
 
-map.json comes from blender/build_map.py. The script runs unattended (loadstring from
-the command-bar context) after ScaryPizzaShack_Batch1.fbx has been uploaded and
-loaded with InsertService:LoadAsset somewhere under Workspace.
+The JSON comes from blender/build_map.py or blender/build_assets.py. The script runs
+unattended (loadstring from the command-bar context) after the batch's FBX has been
+uploaded and loaded with InsertService:LoadAsset somewhere under Workspace.
 """
 import json
 import sys
+
+CONFIGS = {
+    "map": dict(root="PizzaShack", cache="PizzaShackMeshes", axis="FV_Axis", fbx="ScaryPizzaShack_Batch1.fbx",
+                batch=1, title="batch 1 map builder", what="the Pizza Shack",
+                folders="Shack, Outside, Stations, Items, Markers"),
+    "assets": dict(root="PizzaShackAssets", cache="PizzaShackAssetMeshes", axis="PSA_Axis",
+                   fbx="ScaryPizzaShack_Batch2.fbx", batch=2, title="batch 2 assets builder",
+                   what="the Pizza Shack assets",
+                   folders="one Model per asset: CustomerKit, Passenger, Watcher, Inspector, InspectorHole, "
+                           "InspectorCar, DeliveryTruck, Van, Plushies, Uniforms"),
+}
 
 FLAG_BITS = (("anchored", 1), ("collide", 2), ("touch", 4), ("query", 8), ("shadow", 16), ("massless", 32))
 SHAPE = {"Block": "B", "Wedge": "W", "Cylinder": "C", "Ball": "S"}
@@ -51,12 +63,20 @@ def pos(cf):
     return " ".join(num(v) for v in cf[0])
 
 
-def main(src, dst):
+def lua_name(name):
+    """Instance names go into a whitespace-separated record: spaces travel as '~'."""
+    assert "~" not in name and "\n" not in name, name
+    return name.replace(" ", "~")
+
+
+def main(src, dst, config="map"):
+    cfg = CONFIGS[config]
     data = json.load(open(src))
     nodes = data["nodes"]
     tb = Tables()
     idx = {}            # json index -> Lua instance number (root = 0)
     lines = []
+    joints = []         # welds and motors, written once every part exists
     post = []           # records that refer to instances made later (primary parts)
     count = 0
     stats = {"Part": 0, "MeshPart": 0, "Marker": 0}
@@ -73,14 +93,10 @@ def main(src, dst):
             idx[n["i"]] = 0
             continue
         par = idx[n["parent"]]
-        name = n["name"]
-        assert " " not in name, name
-        if k == "Folder":
-            new(n)
-            lines.append("F %d %s" % (par, name))
-        elif k == "Model":
+        name = lua_name(n["name"])
+        if k in ("Folder", "Model", "Accessory"):
             me = new(n)
-            lines.append("M %d %s" % (par, name))
+            lines.append("%s %d %s" % ({"Folder": "F", "Model": "M", "Accessory": "Y"}[k], par, name))
             if n.get("primary") is not None:
                 post.append(("R", me, n["primary"]))
             for ak, av in (n.get("attrs") or {}).items():
@@ -105,21 +121,29 @@ def main(src, dst):
                 par, name, tb.mesh(n["mesh"]), pos(n["cf"]), tb.rot(n["cf"][1]), tb.color(n["color"]),
                 tb.mat(n["material"]), num(n["transparency"]), flags(n, {})))
         elif k == "Attachment":
-            new(n)
+            me = new(n)
             lines.append("A %d %s %s %d" % (par, name, pos(n["cf"]), tb.rot(n["cf"][1])))
+            for ak, av in (n.get("attrs") or {}).items():
+                post.append(("T", me, ak, av))
         elif k == "Light":
             new(n)
-            lines.append("L %d %s %s %d %s %s %d %s %s" % (
+            lines.append("L %d %s %s %d %s %s %d %s %s %d" % (
                 par, n["cls"], name, tb.color(n["color"]), num(n["brightness"]), num(n["range"]),
                 1 if n["shadows"] else 0, num(n["angle"]) if n.get("angle") is not None else "-",
-                n.get("face") or "-"))
+                n.get("face") or "-", 1 if n.get("enabled", True) else 0))
+        elif k == "Humanoid":
+            new(n)
+            lines.append("H %d %s %s" % (par, name, n["rig"]))
+        elif k == "Animator":
+            new(n)
+            lines.append("N %d %s" % (par, name))
+        elif k == "SpecialMesh":
+            new(n)
+            lines.append("Q %d %s %s %s" % (par, name, n["mesh_type"], " ".join(num(v, 4) for v in n["scale"])))
         elif k == "Weld":
-            new(n)
-            lines.append("W %d %d %s" % (idx[n["part0"]], idx[n["part1"]], name))
+            joints.append(("W", n, par, name))      # numbered after every other instance
         elif k == "Motor":
-            new(n)
-            lines.append("J %d %d %s %s %d" % (idx[n["part0"]], idx[n["part1"]], name, pos(n["hinge"]),
-                                               tb.rot(n["hinge"][1])))
+            joints.append(("J", n, par, name))
         else:
             raise SystemExit("unknown kind " + k)
         if k in ("Part", "MeshPart") and n.get("pivot") is not None:
@@ -128,6 +152,13 @@ def main(src, dst):
         if k in ("Part", "MeshPart"):
             for ak, av in (n.get("attrs") or {}).items():
                 post.append(("T", idx[n["i"]], ak, av))
+    for kind, n, par, name in joints:
+        new(n)
+        if kind == "W":
+            lines.append("W %d %d %s %d" % (idx[n["part0"]], idx[n["part1"]], name, par))
+        else:
+            lines.append("J %d %d %s %s %d %d" % (idx[n["part0"]], idx[n["part1"]], name, pos(n["hinge"]),
+                                                  tb.rot(n["hinge"][1]), par))
     for rec in post:
         if rec[0] == "R":
             lines.append("R %d %d" % (rec[1], idx[rec[2]]))
@@ -149,11 +180,16 @@ def main(src, dst):
     rots = ",\n\t".join("{%s}" % ", ".join(num(v, 5) for v in r) for r in tb.rots)
     meshes = ",\n\t".join('"%s"' % m for m in tb.meshes)
     body = TEMPLATE
+    for key, val in (("@@TITLE@@", cfg["title"]), ("@@FBX@@", cfg["fbx"]), ("@@ROOT@@", cfg["root"]),
+                     ("@@CACHE@@", cfg["cache"]), ("@@AXIS@@", cfg["axis"]), ("@@WHAT@@", cfg["what"]),
+                     ("@@FOLDERS@@", cfg["folders"]), ("@@BATCH@@", str(cfg["batch"]))):
+        body = body.replace(key, val)
     body = body.replace("@@COLORS@@", colors).replace("@@MATS@@", mats).replace("@@ROTS@@", rots)
     body = body.replace("@@MESHES@@", meshes).replace("@@DATA@@", "\n".join(lines))
     body = body.replace("@@NPARTS@@", str(stats["Part"])).replace("@@NMESH@@", str(stats["MeshPart"]))
     body = body.replace("@@NMARK@@", str(stats["Marker"])).replace("@@NUNIQUE@@", str(len(tb.meshes)))
     assert "]]" not in "\n".join(lines)
+    assert "@@" not in body
     with open(dst, "w") as f:
         f.write(body)
     print("wrote %s: %d records, %d parts, %d mesh parts (%d meshes), %d markers, %d rotations, %d colours, "
@@ -162,29 +198,30 @@ def main(src, dst):
 
 
 TEMPLATE = r'''--[[
-SCARY PIZZA SHACK - batch 1 map builder (generated by tools/gen_build.py)
+SCARY PIZZA SHACK - @@TITLE@@ (generated by tools/gen_build.py)
 
-Runs unattended. Upload ScaryPizzaShack_Batch1.fbx with Open Cloud, load it with
+Runs unattended. Upload @@FBX@@ with Open Cloud, load it with
 InsertService:LoadAsset and parent the result anywhere under Workspace, then run
 this file with loadstring from the command-bar context. It:
 
   1. finds the imported MeshParts by name anywhere under Workspace (and in
      ServerStorage / ReplicatedStorage), and undoes any scale or turn the
-     importer applied, using the four FV_Axis marker cubes in the file;
-  2. keeps a clean copy of every mesh in ServerStorage.PizzaShackMeshes, so the
+     importer applied, using the four @@AXIS@@ marker cubes in the file;
+  2. keeps a clean copy of every mesh in ServerStorage.@@CACHE@@, so the
      script can be run again later even without a fresh import;
-  3. builds Workspace.PizzaShack (Shack, Outside, Stations, Items, Markers):
+  3. builds Workspace.@@ROOT@@ (@@FOLDERS@@):
      @@NPARTS@@ Parts, @@NMESH@@ MeshParts (@@NUNIQUE@@ different meshes), @@NMARK@@ markers;
-  4. replaces the PizzaShack an earlier run built, and deletes the import
+  4. replaces the @@ROOT@@ an earlier run built, and deletes the import
      container and the marker cubes.
 
 Safe to run twice. If the meshes can't be found it changes nothing and warns.
 ]]
 
-local TAG = "PizzaShack: "
+local TAG = "@@ROOT@@: "
 local MARKER_STEP = 4
-local ROOT_NAME = "PizzaShack"
-local CACHE_NAME = "PizzaShackMeshes"
+local ROOT_NAME = "@@ROOT@@"
+local CACHE_NAME = "@@CACHE@@"
+local AXIS = "@@AXIS@@"
 
 local COLORS = {@@COLORS@@}
 local MATERIALS = {@@MATS@@}
@@ -219,7 +256,7 @@ for i, name in ipairs(MESHES) do
 	wanted[name] = i
 	wantedNorm[norm(name)] = i
 end
-for _, name in ipairs({"FV_AxisO", "FV_AxisX", "FV_AxisY", "FV_AxisZ"}) do
+for _, name in ipairs({AXIS .. "O", AXIS .. "X", AXIS .. "Y", AXIS .. "Z"}) do
 	wanted[name] = 0
 	wantedNorm[norm(name)] = 0
 end
@@ -243,10 +280,10 @@ local function imported(name)
 	return found[name] or foundNorm[norm(name)]
 end
 
-local fresh = imported("FV_AxisO") ~= nil
+local fresh = imported(AXIS .. "O") ~= nil
 local missing = {}
 if fresh then
-	for _, name in ipairs({"FV_AxisX", "FV_AxisY", "FV_AxisZ"}) do
+	for _, name in ipairs({AXIS .. "X", AXIS .. "Y", AXIS .. "Z"}) do
 		if not imported(name) then table.insert(missing, name) end
 	end
 	for _, name in ipairs(MESHES) do
@@ -259,7 +296,7 @@ if fresh then
 else
 	if not cache then
 		warn(TAG .. "no imported meshes found under Workspace and no ServerStorage." .. CACHE_NAME
-			.. " from an earlier run. Load ScaryPizzaShack_Batch1.fbx first. Nothing was changed.")
+			.. " from an earlier run. Load @@FBX@@ first. Nothing was changed.")
 		return
 	end
 	for _, name in ipairs(MESHES) do
@@ -272,15 +309,15 @@ else
 	end
 end
 
-pcall(function() ChangeHistoryService:SetWaypoint("Before building the Pizza Shack") end)
+pcall(function() ChangeHistoryService:SetWaypoint("Before building @@WHAT@@") end)
 
 -- 2. the clean mesh cache -------------------------------------------------------------------
 local containers = {}
 if fresh then
-	local o = imported("FV_AxisO").Position
-	local ex = imported("FV_AxisX").Position - o
-	local ey = imported("FV_AxisY").Position - o
-	local ez = imported("FV_AxisZ").Position - o
+	local o = imported(AXIS .. "O").Position
+	local ex = imported(AXIS .. "X").Position - o
+	local ey = imported(AXIS .. "Y").Position - o
+	local ez = imported(AXIS .. "Z").Position - o
 	local scale = (ex.Magnitude + ey.Magnitude + ez.Magnitude) / (3 * MARKER_STEP)
 	if ex.Unit:Cross(ey.Unit):Dot(ez.Unit) < 0.9 or scale <= 0 then
 		warn(TAG .. "the import looks mirrored or collapsed; re-upload the FBX with default settings. Nothing was changed.")
@@ -360,6 +397,9 @@ local meshOf = {}           -- instance -> mesh index (for pivot offsets)
 local n = 0
 local counts = {parts = 0, meshes = 0, markers = 0}
 
+local function nm(s)
+	return (string.gsub(s, "~", " "))
+end
 local function fields(line)
 	local f = {}
 	for w in string.gmatch(line, "%S+") do f[#f + 1] = w end
@@ -372,9 +412,9 @@ end
 for line in string.gmatch(DATA, "[^\n]+") do
 	local f = fields(line)
 	local k = f[1]
-	if k == "F" or k == "M" then
-		local o = Instance.new(k == "F" and "Folder" or "Model")
-		o.Name = f[3]
+	if k == "F" or k == "M" or k == "Y" then
+		local o = Instance.new((k == "F" and "Folder") or (k == "M" and "Model") or "Accessory")
+		o.Name = nm(f[3])
 		o.Parent = inst[tonumber(f[2])]
 		n = n + 1
 		inst[n] = o
@@ -388,7 +428,7 @@ for line in string.gmatch(DATA, "[^\n]+") do
 			p.Shape = (shape == "C" and Enum.PartType.Cylinder) or (shape == "S" and Enum.PartType.Ball)
 				or Enum.PartType.Block
 		end
-		p.Name = f[3]
+		p.Name = nm(f[3])
 		p.Size = Vector3.new(tonumber(f[5]), tonumber(f[6]), tonumber(f[7]))
 		p.CFrame = cfAt(f, 8)
 		p.Color = color(tonumber(f[12]))
@@ -403,7 +443,7 @@ for line in string.gmatch(DATA, "[^\n]+") do
 		counts.parts = counts.parts + 1
 	elseif k == "K" then
 		local p = Instance.new("Part")
-		p.Name = f[3]
+		p.Name = nm(f[3])
 		p.Size = Vector3.new(1, 1, 1)
 		p.CFrame = cfAt(f, 4)
 		p.Transparency = 1
@@ -417,7 +457,7 @@ for line in string.gmatch(DATA, "[^\n]+") do
 	elseif k == "X" then
 		local mi = tonumber(f[4])
 		local p = SOURCES[mi]:Clone()
-		p.Name = f[3]
+		p.Name = nm(f[3])
 		p.CFrame = cfAt(f, 5) * TURNS[mi]
 		p.Color = color(tonumber(f[9]))
 		p.Material = MAT[tonumber(f[10])]
@@ -434,42 +474,66 @@ for line in string.gmatch(DATA, "[^\n]+") do
 	elseif k == "A" then
 		local par = inst[tonumber(f[2])]
 		local a = Instance.new("Attachment")
-		a.Name = f[3]
+		a.Name = nm(f[3])
 		a.CFrame = par.CFrame:Inverse() * cfAt(f, 4)
 		a.Parent = par
 		n = n + 1
 		inst[n] = a
 	elseif k == "L" then
 		local l = Instance.new(f[3])
-		l.Name = f[4]
+		l.Name = nm(f[4])
 		l.Color = color(tonumber(f[5]))
 		l.Brightness = tonumber(f[6])
 		l.Range = tonumber(f[7])
 		l.Shadows = f[8] == "1"
 		if f[9] ~= "-" then l.Angle = tonumber(f[9]) end
 		if f[10] ~= "-" then l.Face = Enum.NormalId[f[10]] end
-		l.Enabled = true
+		l.Enabled = f[11] ~= "0"
 		l.Parent = inst[tonumber(f[2])]
 		n = n + 1
 		inst[n] = l
+	elseif k == "H" then
+		local h = Instance.new("Humanoid")
+		h.Name = nm(f[3])
+		h.RigType = Enum.HumanoidRigType[f[4]]
+		h.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+		h.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
+		h.Parent = inst[tonumber(f[2])]
+		n = n + 1
+		inst[n] = h
+	elseif k == "N" then
+		local a = Instance.new("Animator")
+		a.Name = nm(f[3])
+		a.Parent = inst[tonumber(f[2])]
+		n = n + 1
+		inst[n] = a
+	elseif k == "Q" then
+		local sm = Instance.new("SpecialMesh")
+		sm.Name = nm(f[3])
+		sm.MeshType = Enum.MeshType[f[4]]
+		sm.Scale = Vector3.new(tonumber(f[5]), tonumber(f[6]), tonumber(f[7]))
+		sm.Parent = inst[tonumber(f[2])]
+		n = n + 1
+		inst[n] = sm
 	elseif k == "W" then
+		-- joints come last (every part exists by then): W part0 part1 name parent
 		local w = Instance.new("WeldConstraint")
-		w.Name = f[4]
+		w.Name = nm(f[4])
 		w.Part0 = inst[tonumber(f[2])]
 		w.Part1 = inst[tonumber(f[3])]
-		w.Parent = w.Part1
+		w.Parent = inst[tonumber(f[5])]
 		n = n + 1
 		inst[n] = w
 	elseif k == "J" then
 		local p0, p1 = inst[tonumber(f[2])], inst[tonumber(f[3])]
 		local hinge = cfAt(f, 5)
 		local j = Instance.new("Motor6D")
-		j.Name = f[4]
+		j.Name = nm(f[4])
 		j.Part0 = p0
 		j.Part1 = p1
 		j.C0 = p0.CFrame:Inverse() * hinge
 		j.C1 = p1.CFrame:Inverse() * hinge
-		j.Parent = p1
+		j.Parent = inst[tonumber(f[9])]
 		n = n + 1
 		inst[n] = j
 	elseif k == "V" then
@@ -494,7 +558,7 @@ for line in string.gmatch(DATA, "[^\n]+") do
 		inst[tonumber(f[2])].PrimaryPart = inst[tonumber(f[3])]
 	end
 end
-root:SetAttribute("Batch", 1)
+root:SetAttribute("Batch", @@BATCH@@)
 pcall(function() root:SetAttribute("Built", DateTime.now():ToIsoDate()) end)
 
 -- 4. swap in the new map, remove the old one and the import ----------------------------------
@@ -528,11 +592,11 @@ for part in pairs(containers) do
 	end
 end
 
-pcall(function() ChangeHistoryService:SetWaypoint("Built the Pizza Shack") end)
+pcall(function() ChangeHistoryService:SetWaypoint("Built @@WHAT@@") end)
 print(TAG .. string.format("built Workspace.%s: %d parts, %d mesh parts, %d markers%s", ROOT_NAME, counts.parts,
 	counts.meshes, counts.markers, fresh and (", removed " .. removed .. " import container(s)") or
 	" (meshes from ServerStorage." .. CACHE_NAME .. ")"))
 '''
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[1], sys.argv[2], *(sys.argv[3:4] or ["map"]))

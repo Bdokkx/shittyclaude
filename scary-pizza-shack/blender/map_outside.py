@@ -551,8 +551,9 @@ def markers(sc, trees):
     mark("Inspector_Rise", (-0.5, L.FLOOR, 0.5), S_)
     for k, x in enumerate((-20.0, -14.0, -8.0, -2.0)):
         mark("Inspection_Stand%d" % (k + 1), (x, 0.0, FENCE_Z + 2.0), N)
-    for k, (x, z) in enumerate(((-15.6, -8.4), (-14.0, -8.4), (-15.6, -6.6), (-14.0, -6.6))):
-        mark("PlayerSpawn%d" % (k + 1), (x, L.FLOOR, z), S_)
+    # on the open floor (not against the fridge), each looking at the serving window
+    for k, (x, z) in enumerate(((-11.0, -2.2), (-9.2, -3.6), (-7.4, -2.2), (-5.6, -3.6))):
+        mark("PlayerSpawn%d" % (k + 1), (x, L.FLOOR, z), (0.0 - x, 0.0, L.IN_Z1 - z))
     mark("Watcher_Window", (L.OUT_X0 - 2.5, 0.0, (L.SIDE_Z0 + L.SIDE_Z1) / 2), E)
     # forest spawns and tree-line markers: just inside the first trees, facing the shack
     def nearest_gap(dirx, dirz, start, step=2.0):

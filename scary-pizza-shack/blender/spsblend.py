@@ -346,9 +346,9 @@ def _white():
     return m
 
 
-def export_fbx(sc, path):
+def export_fbx(sc, path, axis="FV_Axis"):
     """One object per unique mesh (named exactly like the mesh, white material), laid out on
-    a grid so the raw import is readable, plus the four FV_Axis marker cubes."""
+    a grid so the raw import is readable, plus the four <axis>O/X/Y/Z marker cubes."""
     white = _white()
     coll = bpy.data.collections.new("FBXExport")
     bpy.context.scene.collection.children.link(coll)
@@ -373,8 +373,8 @@ def export_fbx(sc, path):
         objs.append(ob)
         x += hi[0] - lo[0] + 3.0
         row_d = max(row_d, hi[2] - lo[2] + 3.0)
-    for nm, d in (("FV_AxisO", (0, 0, 0)), ("FV_AxisX", (MARK_STEP, 0, 0)), ("FV_AxisY", (0, MARK_STEP, 0)),
-                  ("FV_AxisZ", (0, 0, MARK_STEP))):
+    for nm, d in ((axis + "O", (0, 0, 0)), (axis + "X", (MARK_STEP, 0, 0)), (axis + "Y", (0, MARK_STEP, 0)),
+                  (axis + "Z", (0, 0, MARK_STEP))):
         g = G.box(0.25, 0.25, 0.25, MARK_O + np.array(d))
         me = bpy.data.meshes.new(nm)
         me.from_pydata(rb2bl(np.array(g.v)).tolist(), [], g.f)

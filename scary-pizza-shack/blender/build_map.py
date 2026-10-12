@@ -71,7 +71,7 @@ def main(outdir):
             "DrinksCooler": ["Stand"] + ["Slot%d" % k for k in range(1, 13)], "FuseBox": ["Stand"],
             "CeilingLamp1": ["Stand"], "CeilingLamp2": ["Stand"], "Hatch": ["Stand"], "Generator": ["Stand"],
             "Dumpster": ["Stand"], "YardGate": ["Stand"], "StreetLamp": ["Stand"], "YardLamp": ["Stand"],
-            "BusStop": ["Stand"], "RoadSign": ["Stand"], "Bin": ["Stand"]}
+            "BusStop": ["Stand"], "RoadSign": ["Stand"], "Bin": ["Stand"], "Extinguisher": ["Stand", "Slot"]}
     for st, marks in need.items():
         if st not in stations:
             problems.append("station %s missing" % st)

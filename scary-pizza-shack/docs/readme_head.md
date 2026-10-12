@@ -13,6 +13,25 @@ code reads, and the 46 hand-held items.
 | `previews/interior.jpg`, `previews/interior_2.jpg`, `previews/front_night.jpg`, `previews/yard_night.jpg`, `previews/aerial.jpg` | the look: the kitchen from both ends, the front and the yard at night, and a daytime aerial for reading the layout |
 | `previews/stations_sheet.jpg`, `previews/items_sheet.jpg` | every station seen from its Stand, every item |
 
+## Changed after your batch-1 notes
+
+You applied these at import; the source now matches, so a rebuild gives the same map.
+
+1. **ToppingRail:** the `GuardPost` that stood in Tub1 is gone (it was meant to carry a
+   sneeze-guard bar that never got built).
+2. **PlayerSpawn1..4** stand on the open floor at (-11, 0.4, -2.2), (-9.2, 0.4, -3.6),
+   (-7.4, 0.4, -2.2) and (-5.6, 0.4, -3.6), each looking at the serving window.
+3. **Shelf numbering:** Fridge `Slot1`/`Slot2` (dough, cheese) on the second shelf from the
+   top, `Slot3`/`Slot4` on the third, `Slot5`/`Slot6` on the top shelf, `Slot7`/`Slot8` at
+   the bottom (west slot first in each row). StorageShelf `Slot1`/`Slot2` (flour, sauce
+   cans) on the middle shelf, `Slot3`/`Slot4` (flashlights) on the bottom one, `Slot5`/
+   `Slot6` on the top.
+4. **Extinguisher** is its own station: the wall bracket in the corner over the sink, a
+   small black `Cradle` the extinguisher stands on, `Slot` on the cradle (facing into the
+   room) and a `Stand` in front of the sink. The FireExtinguisher prop is gone from the
+   Sink; `item:PivotTo(Slot.CFrame * item.Handle.Rest.CFrame:Inverse())` hangs the item
+   exactly where the prop used to be.
+
 ## Running it
 
 1. Upload `ScaryPizzaShack_Batch1.fbx` with Open Cloud (asset type Model), load it with
@@ -57,8 +76,9 @@ flags, surfaces, PivotOffset, welds, joints, attachments, lights, attributes): 0
 * **Item markers** (`Work`, `WorkSauce`, `WorkCheese`, `Handover`, `Slot..`, `Tub..`,
   `Delivery_Drop`, and the items' own `Carry` / `Inside`) face the same way as the
   station's `Stand`, so an item set down keeps the orientation it had in the player's
-  hand. All 47 station item markers are checked by the build to sit exactly on their
-  surface.
+  hand (one exception: `Extinguisher.Slot` faces into the room, so the extinguisher hangs
+  the way it always did). All 48 station item markers are checked by the build to sit
+  exactly on their surface.
 * **Brick grid.** Every Block and Wedge Part has X and Z in whole studs and Y in multiples
   of 0.4 (checked: 0 exceptions). Blocks are Plastic with TopSurface Studs, BottomSurface
   Inlet and Smooth sides; wedges have an Inlet bottom and a smooth slope. Deliberate

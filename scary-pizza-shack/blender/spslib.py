@@ -141,6 +141,21 @@ class Scene:
         parent = self._node(parent)
         return Node("Model", name, parent, **p)
 
+    def accessory(self, parent, name):
+        """A real Roblox Accessory (Humanoid:AddAccessory): give it a part named Handle."""
+        parent = self._node(parent)
+        return Node("Accessory", name, parent)
+
+    def humanoid(self, model, name="Humanoid", rig="R6"):
+        """Humanoid (no name/health display) with an Animator inside."""
+        h = Node("Humanoid", name, model, rig=rig)
+        Node("Animator", "Animator", h)
+        return h
+
+    def special_mesh(self, part, mesh_type="Head", scale=(1.25, 1.25, 1.25), name="Mesh"):
+        assert part.kind == "Part"
+        return Node("SpecialMesh", name, part, mesh_type=mesh_type, scale=tuple(float(v) for v in scale))
+
     def _node(self, x):
         if isinstance(x, Node):
             return x
@@ -241,8 +256,10 @@ class Scene:
     def weld(self, part0, part1, name="Weld"):
         return Node("Weld", name, part1, part0=part0, part1=part1)
 
-    def motor(self, part0, part1, name, hinge_world_cf):
-        return Node("Motor", name, part1, part0=part0, part1=part1, hinge=hinge_world_cf)
+    def motor(self, part0, part1, name, hinge_world_cf, parent=None):
+        """Motor6D whose C0/C1 both land on hinge_world_cf. Parented to part1 unless told
+        otherwise (R6 joints live in Part0: HumanoidRootPart.RootJoint, Torso.Neck, ...)."""
+        return Node("Motor", name, parent or part1, part0=part0, part1=part1, hinge=hinge_world_cf)
 
     def attr(self, node, key, value):
         node.p.setdefault("attrs", {})[key] = value
@@ -436,16 +453,23 @@ def to_json(scene, path):
                 d["pivot"] = _cf_json(p["pivot"])
             if p.get("attrs"):
                 d["attrs"] = p["attrs"]
-        if n.kind == "Model":
+        if n.kind in ("Model", "Accessory"):
             if p.get("primary") is not None:
                 d["primary"] = p["primary"].idx
             if p.get("attrs"):
                 d["attrs"] = p["attrs"]
+        if n.kind == "Humanoid":
+            d["rig"] = p["rig"]
+        if n.kind == "SpecialMesh":
+            d["mesh_type"] = p["mesh_type"]
+            d["scale"] = list(p["scale"])
         if n.kind == "Attachment":
             d["cf"] = _cf_json(p["cf"])
         if n.kind == "Light":
             for k in ("cls", "color", "brightness", "range", "shadows", "angle", "face", "enabled"):
                 d[k] = p[k]
+        if n.kind == "Attachment" and p.get("attrs"):
+            d["attrs"] = p["attrs"]
         if n.kind in ("Weld", "Motor"):
             d["part0"] = p["part0"].idx
             d["part1"] = p["part1"].idx

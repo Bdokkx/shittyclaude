@@ -15,9 +15,9 @@
   DoughStation, SauceStation (WorkSauce then WorkCheese, 4 studs each), ChopStation,
   ToppingRail; east wall north to south Oven, PeelRack, CutTable (Bin on the floor between
   it and the box table), BoxStation; south wall PlushieShelf and RulesBoard above, Register,
-  ServingWindow, ShutterButton, CCTVDesk, Sink; west wall StorageShelf, DrinksCooler, the
-  side window and bench, FuseBox by the back door. Ceiling: CeilingLamp1, CeilingLamp2,
-  Hatch. The empty middle is about 26 x 11 (X -13..13, Z -5..6); `Inspector_Rise` is at its
+  ServingWindow, ShutterButton, CCTVDesk, Sink with the Extinguisher above it; west wall
+  StorageShelf, DrinksCooler, the side window and bench, FuseBox by the back door.
+  Ceiling: CeilingLamp1, CeilingLamp2, Hatch. The empty middle is about 26 x 11 (X -13..13, Z -5..6); `Inspector_Rise` is at its
   centre.
 * **Front (Z 11..23):** paved apron and pavement, menu board on the wall east of the
   window, StreetLamp at the kerb west of the queue, bench and litter bin against the wall,
@@ -60,7 +60,7 @@
    upper one at eye height.
 5. **Fridge:** open-fronted, no doors (your addendum), 4 x 4, with a cold light strip.
 6. **Sink** was not in your new station order, so I kept it out of the cooking line: it sits
-   in the south-west corner with the FireExtinguisher on its bracket on the wall above.
+   in the south-west corner, with the Extinguisher station on the wall above.
    The CCTVDesk therefore sits just west of the ShutterButton (X -13..-7) instead of in the
    corner.
 7. **PlushieShelf** is on the south wall above the BoxStation, just east of the RulesBoard

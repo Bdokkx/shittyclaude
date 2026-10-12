@@ -13,12 +13,31 @@ code reads, and the 46 hand-held items.
 | `previews/interior.jpg`, `previews/interior_2.jpg`, `previews/front_night.jpg`, `previews/yard_night.jpg`, `previews/aerial.jpg` | the look: the kitchen from both ends, the front and the yard at night, and a daytime aerial for reading the layout |
 | `previews/stations_sheet.jpg`, `previews/items_sheet.jpg` | every station seen from its Stand, every item |
 
+## Changed after your batch-1 notes
+
+You applied these at import; the source now matches, so a rebuild gives the same map.
+
+1. **ToppingRail:** the `GuardPost` that stood in Tub1 is gone (it was meant to carry a
+   sneeze-guard bar that never got built).
+2. **PlayerSpawn1..4** stand on the open floor at (-11, 0.4, -2.2), (-9.2, 0.4, -3.6),
+   (-7.4, 0.4, -2.2) and (-5.6, 0.4, -3.6), each looking at the serving window.
+3. **Shelf numbering:** Fridge `Slot1`/`Slot2` (dough, cheese) on the second shelf from the
+   top, `Slot3`/`Slot4` on the third, `Slot5`/`Slot6` on the top shelf, `Slot7`/`Slot8` at
+   the bottom (west slot first in each row). StorageShelf `Slot1`/`Slot2` (flour, sauce
+   cans) on the middle shelf, `Slot3`/`Slot4` (flashlights) on the bottom one, `Slot5`/
+   `Slot6` on the top.
+4. **Extinguisher** is its own station: the wall bracket in the corner over the sink, a
+   small black `Cradle` the extinguisher stands on, `Slot` on the cradle (facing into the
+   room) and a `Stand` in front of the sink. The FireExtinguisher prop is gone from the
+   Sink; `item:PivotTo(Slot.CFrame * item.Handle.Rest.CFrame:Inverse())` hangs the item
+   exactly where the prop used to be.
+
 ## Running it
 
 1. Upload `ScaryPizzaShack_Batch1.fbx` with Open Cloud (asset type Model), load it with
    `InsertService:LoadAsset(id)` and parent the result anywhere under Workspace.
 2. Run `BuildPizzaShack.lua` with `loadstring` from the command-bar context. It prints
-   `PizzaShack: built Workspace.PizzaShack: 2081 parts, 220 mesh parts, 121 markers, removed 1 import container(s)`.
+   `PizzaShack: built Workspace.PizzaShack: 2080 parts, 216 mesh parts, 123 markers, removed 1 import container(s)`.
 
 What it does, in order:
 
@@ -57,8 +76,9 @@ flags, surfaces, PivotOffset, welds, joints, attachments, lights, attributes): 0
 * **Item markers** (`Work`, `WorkSauce`, `WorkCheese`, `Handover`, `Slot..`, `Tub..`,
   `Delivery_Drop`, and the items' own `Carry` / `Inside`) face the same way as the
   station's `Stand`, so an item set down keeps the orientation it had in the player's
-  hand. All 47 station item markers are checked by the build to sit exactly on their
-  surface.
+  hand (one exception: `Extinguisher.Slot` faces into the room, so the extinguisher hangs
+  the way it always did). All 48 station item markers are checked by the build to sit
+  exactly on their surface.
 * **Brick grid.** Every Block and Wedge Part has X and Z in whole studs and Y in multiples
   of 0.4 (checked: 0 exceptions). Blocks are Plastic with TopSurface Studs, BottomSurface
   Inlet and Smooth sides; wedges have an Inlet bottom and a smooth slope. Deliberate
@@ -115,9 +135,9 @@ flags, surfaces, PivotOffset, welds, joints, attachments, lights, attributes): 0
   DoughStation, SauceStation (WorkSauce then WorkCheese, 4 studs each), ChopStation,
   ToppingRail; east wall north to south Oven, PeelRack, CutTable (Bin on the floor between
   it and the box table), BoxStation; south wall PlushieShelf and RulesBoard above, Register,
-  ServingWindow, ShutterButton, CCTVDesk, Sink; west wall StorageShelf, DrinksCooler, the
-  side window and bench, FuseBox by the back door. Ceiling: CeilingLamp1, CeilingLamp2,
-  Hatch. The empty middle is about 26 x 11 (X -13..13, Z -5..6); `Inspector_Rise` is at its
+  ServingWindow, ShutterButton, CCTVDesk, Sink with the Extinguisher above it; west wall
+  StorageShelf, DrinksCooler, the side window and bench, FuseBox by the back door.
+  Ceiling: CeilingLamp1, CeilingLamp2, Hatch. The empty middle is about 26 x 11 (X -13..13, Z -5..6); `Inspector_Rise` is at its
   centre.
 * **Front (Z 11..23):** paved apron and pavement, menu board on the wall east of the
   window, StreetLamp at the kerb west of the queue, bench and litter bin against the wall,
@@ -160,7 +180,7 @@ flags, surfaces, PivotOffset, welds, joints, attachments, lights, attributes): 0
    upper one at eye height.
 5. **Fridge:** open-fronted, no doors (your addendum), 4 x 4, with a cold light strip.
 6. **Sink** was not in your new station order, so I kept it out of the cooking line: it sits
-   in the south-west corner with the FireExtinguisher on its bracket on the wall above.
+   in the south-west corner, with the Extinguisher station on the wall above.
    The CCTVDesk therefore sits just west of the ShutterButton (X -13..-7) instead of in the
    corner.
 7. **PlushieShelf** is on the south wall above the BoxStation, just east of the RulesBoard
@@ -205,7 +225,7 @@ flags, surfaces, PivotOffset, welds, joints, attachments, lights, attributes): 0
 | DoughStation | (-6.9, 3.5, -7.8) | 4.3 x 6.7 x 5.6 | Work, Stand | - |
 | SauceStation | (-1, 4.4, -7.8) | 8 x 8.5 x 5.6 | WorkSauce, WorkCheese, Stand, StandSauce, StandCheese | - |
 | ChopStation | (5, 3.1, -7.8) | 4 x 5.9 x 5.6 | Work, Stand | - |
-| ToppingRail | (10, 3.2, -7.8) | 6 x 6 x 5.6 | Tub1, Tub2, Tub3, Tub4, Tub5, Tub6, Work, Stand | - |
+| ToppingRail | (10, 2.3, -7.8) | 6 x 4.2 x 5.6 | Tub1, Tub2, Tub3, Tub4, Tub5, Tub6, Work, Stand | - |
 | Oven | (15.2, 10, -4.2) | 5.4 x 20.4 x 11.5 | Slot1, Slot2, Stand | **Door1**: drop-down door hinged on its bottom edge; rotate the pivot +90 deg about Z and it falls open towards the room, ending flush with the deck floor; **Door2**: drop-down door hinged on its bottom edge; rotate the pivot +90 deg about Z and it falls open towards the room, ending flush with the deck floor |
 | PeelRack | (15.1, 4.4, 1.5) | 3.9 x 8 x 1 | Carry, Stand | - |
 | CutTable | (15.2, 3.7, 4) | 4.8 x 7 x 4 | Work, Stand | - |
@@ -217,7 +237,8 @@ flags, surfaces, PivotOffset, welds, joints, attachments, lights, attributes): 0
 | ServingWindow | (0, 5.4, 9.5) | 10 x 10.4 x 7 | Handover, Customer, Ticket1, Ticket2, Ticket3, Ticket4, Ticket5, Stand | **Shutter**: starts OPEN (rolled up into the box over the window). Slide it straight down 3.6 to close: pivot Y 7.0 = open, Y 3.4 = closed (resting on the ledge). The 8 slats are welded to it |
 | ShutterButton | (-6, 5.4, 9.3) | 2 x 2 x 1.5 | Stand | **Button**: presses in: move it +Z (towards the wall) by 0.2, then back |
 | CCTVDesk | (-10, 4.2, 8.3) | 6 x 8.1 x 4.6 | Stand | **Phone.Handset**: free part: lift it off the hook (move it where you like); pivot at its centre |
-| Sink | (-15.1, 3.6, 8.3) | 4.2 x 6.8 x 4.6 | Stand | - |
+| Sink | (-15, 2.5, 8.3) | 4 x 4.5 x 4.6 | Stand | - |
+| Extinguisher | (-16.5, 5.7, 7.6) | 1 x 2.7 x 1 | Slot, Stand | - |
 | StorageShelf | (-16, 4.8, 4) | 2 x 8.8 x 4 | Slot1, Slot2, Slot3, Slot4, Slot5, Slot6, Stand | - |
 | DrinksCooler | (-14.8, 4.6, 0) | 4.4 x 8.4 x 4 | Slot1, Slot2, Slot3, Slot4, Slot5, Slot6, Slot7, Slot8, Slot9, Slot10, Slot11, Slot12, Stand | **Door**: glass door hinged on its north edge; rotate the pivot +90 deg about Y to swing it open into the room. Frame strips and handle are welded to it |
 | FuseBox | (-16.2, 5.7, -8.4) | 1.7 x 2.2 x 2 | Stand | **Lever**: pointing up = ON. Rotate the pivot about X (the wall's normal): +120 deg swings it down = OFF |
@@ -256,10 +277,10 @@ flags, surfaces, PivotOffset, welds, joints, attachments, lights, attributes): 0
 | Inspection_Stand2 | (-14, 0, -45) | north |
 | Inspection_Stand3 | (-8, 0, -45) | north |
 | Inspection_Stand4 | (-2, 0, -45) | north |
-| PlayerSpawn1 | (-15.6, 0.4, -8.4) | south |
-| PlayerSpawn2 | (-14, 0.4, -8.4) | south |
-| PlayerSpawn3 | (-15.6, 0.4, -6.6) | south |
-| PlayerSpawn4 | (-14, 0.4, -6.6) | south |
+| PlayerSpawn1 | (-11, 0.4, -2.2) | south-east |
+| PlayerSpawn2 | (-9.2, 0.4, -3.6) | south-east |
+| PlayerSpawn3 | (-7.4, 0.4, -2.2) | south-east |
+| PlayerSpawn4 | (-5.6, 0.4, -3.6) | south |
 | Watcher_Window | (-20.5, 0, -4) | east |
 | TreeLine1 | (-51.71, 0, -27.6) | south-east |
 | TreeLine2 | (-17.46, 0, -66.2) | south |
@@ -326,16 +347,16 @@ flags, surfaces, PivotOffset, welds, joints, attachments, lights, attributes): 0
 | folder | parts (Parts + MeshParts + markers) |
 |---|---|
 | Shack | 321 |
-| Stations | 435 |
+| Stations | 432 |
 | Outside | 1489 |
 | Items | 144 |
 | Markers | 33 |
-| **total** | **2422** |
+| **total** | **2419** |
 
 ## Budgets
 
 * **Shack shell** (`Shack` folder: floor, walls, roof, sign, awning, trims): 321 parts (budget 900).
-* **Whole map**: 2,422 parts, Parts + MeshParts + markers (budget 7,000). The forest is
+* **Whole map**: 2,419 parts, Parts + MeshParts + markers (budget 7,000). The forest is
   1,260 of them (210 trees x 6); there is room for more trees if you want it denser.
 * **Meshes**: 156 in the FBX; the largest station/prop mesh is 324 triangles (the sauce
   pot; budget 1,500); the heaviest hand-held item is 476 triangles in total (the BasilPot;

@@ -1,6 +1,6 @@
 """Top-down plans with labels: the inside of the shack and the whole site.
 
-    python blender/render_plan.py <outdir> [samples=24]
+    python blender/render_plan.py <outdir> [inside] [site] [world] [samples=24] [reuse=1]
 """
 import math
 import os
@@ -242,6 +242,5 @@ def world():
     print("saved plan_world.jpg")
 
 
-inside()
-site()
-world()
+for which in [a for a in sys.argv[2:] if "=" not in a] or ["inside", "site", "world"]:
+    {"inside": inside, "site": site, "world": world}[which]()

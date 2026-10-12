@@ -94,6 +94,11 @@ local ENUMS = {
 	SurfaceType = {"Smooth", "Glue", "Weld", "Studs", "Inlet", "Universal", "Hinge", "Motor", "SteppingMotor", "SmoothNoOutlines"},
 	NormalId = {"Right", "Top", "Back", "Left", "Bottom", "Front"},
 	CollisionFidelity = {"Default", "Hull", "Box", "PreciseConvexDecomposition"},
+	HumanoidRigType = {"R6", "R15"},
+	HumanoidDisplayDistanceType = {"Viewer", "Subject", "None"},
+	HumanoidHealthDisplayType = {"DisplayWhenDamaged", "AlwaysOn", "AlwaysOff"},
+	MeshType = {"Head", "Torso", "Wedge", "Prism", "Pyramid", "ParallelRamp", "RightAngleRamp", "CornerWedge",
+		"Brick", "Sphere", "Cylinder", "FileMesh"},
 }
 Enum = {}
 for ename, members in pairs(ENUMS) do
@@ -127,9 +132,14 @@ props("PointLight", {"Color", "Brightness", "Range", "Shadows", "Enabled"}, "Ins
 props("SpotLight", {"Color", "Brightness", "Range", "Shadows", "Enabled", "Angle", "Face"}, "Instance")
 props("SurfaceLight", {"Color", "Brightness", "Range", "Shadows", "Enabled", "Angle", "Face"}, "Instance")
 props("SurfaceAppearance", {}, "Instance")
+props("Accessory", {}, "Instance")
+props("Humanoid", {"RigType", "DisplayDistanceType", "HealthDisplayType"}, "Instance")
+props("Animator", {}, "Instance")
+props("SpecialMesh", {"MeshType", "Scale"}, "Instance")
 local PARTS = {Part = true, MeshPart = true, WedgePart = true}
 local CREATABLE = {Folder = true, Model = true, Part = true, WedgePart = true, Attachment = true,
-	WeldConstraint = true, Motor6D = true, PointLight = true, SpotLight = true, SurfaceLight = true}
+	WeldConstraint = true, Motor6D = true, PointLight = true, SpotLight = true, SurfaceLight = true,
+	Accessory = true, Humanoid = true, Animator = true, SpecialMesh = true}
 
 Inst = {}
 CREATED = 0
@@ -148,6 +158,12 @@ local function newInst(class, fields)
 		p.CFrame = CFrame.new()
 	elseif class == "Motor6D" then
 		p.C0 = CFrame.new(); p.C1 = CFrame.new()
+	elseif class == "SpecialMesh" then
+		p.MeshType = Enum.MeshType.Head; p.Scale = vec(1, 1, 1)
+	elseif class == "Humanoid" then
+		p.RigType = Enum.HumanoidRigType.R15
+		p.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.Viewer
+		p.HealthDisplayType = Enum.HumanoidHealthDisplayType.DisplayWhenDamaged
 	end
 	for k, v in pairs(fields or {}) do p[k] = v end
 	CREATED = CREATED + 1
@@ -188,7 +204,9 @@ Inst.__newindex = function(o, k, v)
 	end
 	if k == "Size" then assert(getmetatable(v) == V and v.X > 0 and v.Y > 0 and v.Z > 0, "bad Size") end
 	if k == "CFrame" or k == "PivotOffset" or k == "C0" or k == "C1" then assert(getmetatable(v) == C, "bad " .. k) end
-	if (k == "Material" or k == "Shape" or k:find("Surface") or k == "Face" or k == "CollisionFidelity") then
+	if k == "Scale" then assert(getmetatable(v) == V, "bad Scale") end
+	if (k == "Material" or k == "Shape" or k:find("Surface") or k == "Face" or k == "CollisionFidelity" or
+		k == "RigType" or k == "DisplayDistanceType" or k == "HealthDisplayType" or k == "MeshType") then
 		assert(type(v) == "table" and v.EnumType, "bad enum for " .. k)
 	end
 	if k == "PrimaryPart" and v ~= nil then assert(v:IsDescendantOf(o), "PrimaryPart must be inside the model") end
