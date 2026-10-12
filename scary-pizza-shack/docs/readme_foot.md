@@ -19,7 +19,7 @@ python blender/build_map.py out                 # scene -> checks -> out/map.jso
 python tools/gen_build.py out/map.json out/BuildPizzaShack.lua
 python tools/mock_shack.py out/map.json out/BuildPizzaShack.lua   # dry run in the Studio stand-in
 python blender/render_plan.py previews           # labelled plans
-python blender/render_final.py previews          # interior / front at night / aerial / yard
+python blender/render_final.py previews          # interior x2 / front at night / aerial / yard (test=1: quick camera tests)
 python blender/render_sheets.py previews         # station and item sheets
 python tools/make_readme.py
 ```

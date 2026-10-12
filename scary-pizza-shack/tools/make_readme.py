@@ -24,7 +24,9 @@ def main():
     tables = subprocess.run([PY, os.path.join(ROOT, "tools", "readme_tables.py")], capture_output=True, text=True,
                             check=True).stdout
     foot = open(os.path.join(ROOT, "docs", "readme_foot.md")).read()
-    text = head + "\n![inside plan](previews/plan_inside.jpg)\n\n" + changes + "\n## Reference\n\n" + tables + "\n" + foot
+    pics = ("![inside plan](previews/plan_inside.jpg)\n\n![the kitchen](previews/interior.jpg)\n\n"
+            "![the front at night](previews/front_night.jpg)\n\n")
+    text = head + "\n" + pics + changes + "\n## Reference\n\n" + tables + "\n" + foot
     import json
     data = json.load(open(os.path.join(ROOT, "out", "map.json")))
     nodes = data["nodes"]
