@@ -43,6 +43,7 @@ The pieces so far:
 | `BuildSceneryClock.lua` | The Clockwork Yard hero and props |
 | `BuildSceneryNeon.lua` | The Neon City hero and props |
 | `BuildSceneryCloud.lua` | The Cloud Kingdom hero and props |
+| `BuildSceneryVoid.lua` | The Glitch Void hero and props |
 
 ---
 
@@ -1199,3 +1200,33 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 - `hero_Cloud_corner.jpg`: from the corner
 - `props_Cloud.jpg`: the props in a row
 - `props_Cloud_top.jpg`: the props from above
+
+### Glitch Void (`BuildSceneryVoid.lua`)
+
+**`PotatoKit.Heroes.Void`**: 78 parts (42 of them Neon), 35.4 wide, 30.0 tall, 29.8 deep.
+
+- **The cube:** a huge black cube, 15 on a side, standing on one corner. It hovers 2.5 studs over a cracked dark platform, and its twelve edges glow cyan (`Edge`).
+- **The glitch:** a slice of the cube has slipped sideways like a bad signal, and glitch debris rises from under it.
+- **The platform:** glowing cracks run out across it, with pixels of static lying about.
+- **In the air:** small cubes float round it and turn (`Pixel`, each with its own `Spin`). Two checkered magenta and black "missing texture" blocks (`Missing`) and an error window hang near it.
+- **The obelisks:** four little black obelisks with glowing tops stand at the platform's edge.
+- **Solid (8 parts):** the platform, the cube and the obelisks. The cube's upper faces slope at 35 degrees, so players can climb onto it.
+- **Glow:** every Neon part has NightLamp; the edges, cracks and pixels also flicker.
+
+| `PotatoKit.Props.Void.<Name>` | Parts | W × H × D | Count | Scale | Band | Solid | What |
+|---|---|---|---|---|---|---|---|
+| `GlitchTree` | 11 | 7.7 × 12.0 × 4.6 | 6 | 0.85–1.25 | Side | yes | A tree of pixel blocks with glowing glitch pixels and a cyan seam down its trunk |
+| `FloatingCubes` | 10 | 4.6 × 8.5 × 4.4 | 6 | 0.8–1.3 | Any | no | Cubes floating over a lit base, the glowing ones turning (`Pixel`, Spin) |
+| `ErrorSign` | 10 | 6.3 × 9.8 × 2.7 | 4 | 0.9–1.2 | Side | no | An error window on a post |
+| `VoidCrystal` | 11 | 4.2 × 7.5 × 3.9 | 6 | 0.8–1.3 | Side | yes | Black crystal shards with glowing purple and magenta seams, on dark rocks |
+| `StaticTV` | 13 | 5.3 × 7.0 × 3.7 | 4 | 0.9–1.2 | Any | yes | An old TV full of static, with knobs and rabbit-ear aerials |
+| `BrokenPillar` | 10 | 5.5 × 10.4 × 4.4 | 5 | 0.9–1.25 | Side | yes | A pillar of slipped, floating slices with glowing seams, and a fallen chunk |
+| `PortalRing` | 11 | 8.9 × 9.6 × 2.4 | 3 | 0.9–1.2 | Edge | yes | An eight-sided dark ring with a glowing swirl inside that turns (`Swirl`, `Spin` = 60) |
+| `PixelBush` | 10 | 4.6 × 2.9 × 3.8 | 8 | 0.8–1.3 | Any | no | A bush of pixel cubes with two glowing glitch pixels |
+
+**Previews:** `previews/scenery/`
+
+- `hero_Void.jpg`: from the lane
+- `hero_Void_corner.jpg`: from the corner
+- `props_Void.jpg`: the props in a row
+- `props_Void_top.jpg`: the props from above
