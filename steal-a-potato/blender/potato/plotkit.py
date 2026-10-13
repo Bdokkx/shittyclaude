@@ -132,14 +132,15 @@ def fence_rail(sc, parent, name, st, base=None):
 
 
 def gate_arch(sc, parent, name, st, base=None):
-    """An open doorway 8 wide (local X) and 7 high the player runs through along Z: two posts on
+    """An open doorway 14 wide (local X) and 6.7 high the player runs through along Z: two posts on
     wider plinths, a header beam in the tier's strong colour and the dark Board above the opening
-    (front, -Z) with BoardBack on the other side. Pivot on the ground at its centre."""
+    (front, -Z, 12.2 x 2.8) with BoardBack on the other side, framed by trim. Pivot on the ground at
+    its centre."""
     base = base or CF()
     b = deco(sc, base)
     m = sc.model(parent, "GateArch")
-    W, H = 8.0, 10.2
-    pw = 1.5
+    W, H = 14.0, 10.2
+    pw = 1.6
     px = W / 2 + pw / 2
     pls = []
     for s in (-1, 1):
@@ -157,17 +158,21 @@ def gate_arch(sc, parent, name, st, base=None):
     else:
         b.part(m, "Header", (hw, 1.3, 2.0), (0, H + 0.63, 0), None, st["header"])
         b.part(m, "HeaderCap", (hw - 0.9, 0.3, 1.5), (0, H + 1.43, 0), None, shade(st["header"], 0.3))
-    # the name board: two dark panels back to back, a trim beam under them
-    by0, by1 = 7.2, H - 0.07
-    bc = (by0 + by1) / 2
-    bh = by1 - by0
-    board = b.plate(m, "Board", (W + 0.4, bh, 0.25), (0, bc, -0.125), None, st["board"])
-    b.plate(m, "BoardBack", (W + 0.4, bh, 0.25), (0, bc, 0.125), G.ry(180), st["board"])
+    # the name board: two dark panels back to back, trim under them and either side
+    BW, BH = 12.2, 2.8
+    by0 = 7.2
+    bc = by0 + BH / 2
+    b.plate(m, "Board", (BW, BH, 0.25), (0, bc, -0.125), None, st["board"])
+    b.plate(m, "BoardBack", (BW, BH, 0.25), (0, bc, 0.125), G.ry(180), st["board"])
     b.part(m, "Trim", (W + 0.2, 0.5, 0.9), (0, by0 - 0.25, 0), None, st["trim"])
+    side_w = (W - BW) / 2 + 0.1
+    for s in (-1, 1):
+        b.part(m, "Trim", (side_w, H - by0 - 0.1, 0.8), (s * (BW / 2 + side_w / 2 - 0.05), (by0 + H) / 2 - 0.03, 0),
+               None, st["trim"])
     for s in (-1, 1):
         x = s * px
         if name == "Fence_Wood":
-            b.part(m, "Cap", (pw + 0.4, 0.4, pw + 0.4), (x, H + 1.45, 0), None, st["cap"])
+            b.part(m, "Cap", (pw + 0.46, 0.4, pw + 0.46), (x, H + 1.45, 0), None, st["cap"])
         elif name == "Fence_Gold":
             round_knob(b, m, (x, H + 1.95, 0), 1.4, ("ffd447", "ffe58a", "fff1c1"))
         elif name == "Fence_Diamond":
@@ -286,61 +291,145 @@ def leaf_sprout(b, m, top, cols=("3f9e3c", "55b848", "7ad155")):
         b.part(m, "Sprout", (0.55, 0.12, 0.34), t + (s * 0.24, 0.42, 0), R, cols[1 if s < 0 else 2])
 
 
+TOP_K = 1.3                 # toppers 30% bigger than the first cut: they tell the areas apart in the field
+TOP = np.array((0.0, 1.85, 0.0))
+
+
 def seed(sc, parent, area, base=None):
     base = base or CF()
     b = deco(sc, base)
     m = sc.model(parent, "Seed_" + area)
     body = seed_body(b, m)
-    top = (0.0, 1.9, 0.0)
+    k = TOP_K
+
+    def tp(name, size, pos, R=None, col="ffffff", material="Plastic"):
+        """A topper brick: sized and placed TOP_K times bigger about the top of the egg."""
+        pos = TOP + (np.asarray(pos, float) - TOP) * k
+        return b.part(m, name, tuple(v * k for v in size), pos, R, col, material=material)
+
+    def dt(name, size, pos, R=None, col="ffffff", material="Plastic"):
+        return b.part(m, name, size, pos, R, col, material=material)
     if area == "Meadow":
-        leaf_sprout(b, m, top)
-        b.part(m, "Detail", (0.24, 0.2, 0.1), (0.4, 1.0, -0.82), None, "8a6a40")
-        b.part(m, "Detail", (0.2, 0.16, 0.1), (-0.3, 0.55, -0.82), None, "8a6a40")
+        tp("Sprout", (0.22, 0.5, 0.22), (0, 2.1, 0), G.rz(-8), "3f9e3c")
+        for s_ in (-1, 1):
+            R = G.ry(s_ * 15) @ G.rz(s_ * 30)
+            tp("Sprout", (0.55, 0.12, 0.34), (s_ * 0.24, 2.32, 0), R, "55b848" if s_ < 0 else "7ad155")
+        dt("Detail", (0.24, 0.2, 0.1), (0.4, 1.0, -0.82), None, "8a6a40")
+        dt("Detail", (0.2, 0.16, 0.1), (-0.3, 0.55, -0.82), None, "8a6a40")
     elif area == "Dunes":
-        b.part(m, "Detail", (1.66, 0.22, 1.04), (0, 0.45, 0), None, "e8c27a")             # sand band
-        b.part(m, "Detail", (1.04, 0.23, 1.66), (0, 0.45, 0), None, "e8c27a")
-        b.part(m, "Sprout", (0.3, 0.62, 0.3), (0, 2.12, 0), None, "4fa83a")               # a tiny cactus
-        b.part(m, "Sprout", (0.2, 0.32, 0.2), (0.26, 2.12, 0), None, "4fa83a")
-        b.part(m, "Sprout", (0.2, 0.3, 0.2), (-0.24, 2.02, 0), None, "4fa83a")
-        b.part(m, "Detail", (0.2, 0.14, 0.2), (0, 2.5, 0), G.ry(45), "ff8fc7")             # its flower
+        dt("Detail", (1.76, 0.22, 1.12), (0, 0.45, 0), None, "e8c27a")                    # sand band
+        dt("Detail", (1.12, 0.23, 1.76), (0, 0.45, 0), None, "e8c27a")
+        tp("Sprout", (0.3, 0.62, 0.3), (0, 2.12, 0), None, "4fa83a")                       # a tiny cactus
+        tp("Sprout", (0.2, 0.32, 0.2), (0.26, 2.12, 0), None, "4fa83a")
+        tp("Sprout", (0.2, 0.3, 0.2), (-0.24, 2.02, 0), None, "4fa83a")
+        tp("Detail", (0.2, 0.14, 0.2), (0, 2.5, 0), G.ry(45), "ff8fc7")                    # its flower
     elif area == "Marsh":
-        b.part(m, "Sprout", (0.26, 0.4, 0.26), (0, 2.02, 0), None, "f2efe6")              # a mushroom
-        b.part(m, "Detail", (0.9, 0.3, 0.9), (0, 2.3, 0), G.ry(45), "e8403a")
-        b.part(m, "Detail", (0.62, 0.2, 0.62), (0, 2.48, 0), G.ry(45), "e8403a")
-        b.part(m, "Dots", (0.2, 0.08, 0.2), (0.18, 2.6, 0.05), None, "ffffff")
-        b.part(m, "Dots", (0.16, 0.08, 0.16), (-0.25, 2.47, -0.25), G.ry(30), "ffffff")
-        b.part(m, "Detail", (0.42, 0.1, 0.42), (-0.5, 0.06, -0.62), G.ry(20), "4fa83a")    # a lily pad
+        tp("Sprout", (0.26, 0.4, 0.26), (0, 2.02, 0), None, "f2efe6")                      # a toadstool
+        tp("Detail", (0.9, 0.3, 0.9), (0, 2.3, 0), G.ry(45), "e8403a")
+        tp("Detail", (0.62, 0.2, 0.62), (0, 2.48, 0), G.ry(45), "e8403a")
+        tp("Dots", (0.2, 0.08, 0.2), (0.18, 2.6, 0.05), None, "ffffff")
+        tp("Dots", (0.16, 0.08, 0.16), (-0.25, 2.47, -0.25), G.ry(30), "ffffff")
+        dt("Detail", (0.42, 0.1, 0.42), (-0.5, 0.06, -0.62), G.ry(20), "4fa83a")           # a lily pad
     elif area == "Frost":
-        b.part(m, "Detail", (1.06, 0.22, 1.06), (0, 1.86, 0), G.ry(45), "ffffff")          # snow cap
-        b.part(m, "Detail", (0.7, 0.2, 0.7), (0.05, 2.02, 0), G.ry(10), "ffffff")
+        tp("Detail", (1.06, 0.22, 1.06), (0, 1.86, 0), G.ry(45), "ffffff")                 # snow cap
+        tp("Detail", (0.7, 0.2, 0.7), (0.05, 2.02, 0), G.ry(10), "ffffff")
         for x, z, h in ((-0.55, -0.6, 0.5), (0.2, -0.78, 0.38), (0.62, -0.42, 0.45)):
-            b.part(m, "Icicle", (0.16, h, 0.16), (x, 1.5 - h / 2, z), None, "a9d8ff")
-        b.part(m, "Sprout", (0.16, 0.36, 0.16), (0, 2.25, 0), G.rz(-15), "6b4226")         # a twig
+            dt("Icicle", (0.16, h, 0.16), (x, 1.5 - h / 2, z), None, "a9d8ff")
+        tp("Sprout", (0.16, 0.36, 0.16), (0, 2.25, 0), G.rz(-15), "6b4226")                # a twig
     elif area == "Lava":
-        b.part(m, "Detail", (0.12, 0.7, 0.1), (0.25, 0.9, -0.82), G.rz(20), "ff6a1a", material="Neon")
-        b.part(m, "Detail", (0.5, 0.1, 0.1), (-0.2, 1.15, -0.82), G.rz(-10), "ff6a1a", material="Neon")
-        for y, s, col in ((2.0, 0.6, "ff5a1f"), (2.35, 0.42, "ff9f1a"), (2.62, 0.24, "ffe14d")):
-            b.part(m, "Flame", (s, 0.4, s), (0, y, 0), G.ry(45 * (y > 2.2)), col, material="Neon")
+        dt("Detail", (0.12, 0.7, 0.1), (0.25, 0.9, -0.82), G.rz(20), "ff6a1a", material="Neon")
+        dt("Detail", (0.5, 0.1, 0.1), (-0.2, 1.15, -0.82), G.rz(-10), "ff6a1a", material="Neon")
+        for y, s_, col in ((2.0, 0.6, "ff5a1f"), (2.35, 0.42, "ff9f1a"), (2.62, 0.24, "ffe14d")):
+            tp("Flame", (s_, 0.4, s_), (0, y, 0), G.ry(45 * (y > 2.2)), col, material="Neon")
     elif area == "Crystal":
-        for (x, z, h, rz, rx_, col) in ((0, 0, 0.9, 0, 0, "b67cff"), (0.32, 0.1, 0.62, -22, 8, "7fe3ff"),
-                                        (-0.3, -0.1, 0.55, 24, -6, "d8b4ff")):
-            b.part(m, "Crystal", (0.3, h, 0.3), (x, 1.84 + h / 2 - 0.08, z), ori(rx_, 45, rz), col)
-        b.part(m, "Detail", (0.3, 0.3, 0.1), (0.35, 0.95, -0.82), G.rz(45), "b67cff")
+        for (x, z, h, rz_, rx_, col) in ((0, 0, 0.9, 0, 0, "b67cff"), (0.32, 0.1, 0.62, -22, 8, "7fe3ff"),
+                                         (-0.3, -0.1, 0.55, 24, -6, "d8b4ff")):
+            tp("Crystal", (0.3, h, 0.3), (x, 1.84 + h / 2 - 0.08, z), ori(rx_, 45, rz_), col)
+        dt("Detail", (0.3, 0.3, 0.1), (0.35, 0.95, -0.82), G.rz(45), "b67cff")
     elif area == "Candy":
-        b.part(m, "Sprout", (0.16, 0.6, 0.16), (0, 2.12, 0), None, "ffffff")               # a lollipop stick
-        b.part(m, "Detail", (0.7, 0.7, 0.18), (0, 2.65, 0), None, "ff7eb6")
-        b.part(m, "Detail", (0.5, 0.5, 0.2), (0, 2.65, 0), G.rz(45), "ffffff")
-        for (x, y, rz, col) in ((-0.4, 1.1, 20, "5ee06a"), (0.35, 0.7, -30, "4da6ff"), (0.15, 1.35, 70, "ffe14d")):
-            b.part(m, "Sprinkle", (0.3, 0.1, 0.1), (x, y, -0.83), G.rz(rz), col)
+        tp("Sprout", (0.16, 0.6, 0.16), (0, 2.12, 0), None, "ffffff")                      # a lollipop
+        tp("Detail", (0.7, 0.7, 0.18), (0, 2.65, 0), None, "ff7eb6")
+        tp("Detail", (0.5, 0.5, 0.2), (0, 2.65, 0), G.rz(45), "ffffff")
+        for (x, y, rz_, col) in ((-0.4, 1.1, 20, "5ee06a"), (0.35, 0.7, -30, "4da6ff"), (0.15, 1.35, 70, "ffe14d")):
+            dt("Sprinkle", (0.3, 0.1, 0.1), (x, y, -0.83), G.rz(rz_), col)
     elif area == "Cosmic":
         for i in range(4):                                                                 # a ring round it
             R = G.rz(14) @ G.ry(i * 90)
-            b.part(m, "Ring", (2.1, 0.12 + 0.04 * (i % 2), 0.3), R @ (0, 0, 1.0) + (0, 0.85, 0), R, "ffd447")
-        star(b, m, (0, 2.25, 0), 0.32, "fffbe6")
+            dt("Ring", (2.1, 0.12 + 0.04 * (i % 2), 0.3), R @ (0, 0, 1.0) + (0, 0.85, 0), R, "ffd447")
+        star(b, m, TOP + (np.array((0, 2.25, 0)) - TOP) * k, 0.32 * k, "fffbe6")
+    elif area == "Jungle":
+        dt("Vine", (1.78, 0.18, 1.14), (0, 1.0, 0), G.rz(-8), "2f8a3c")                     # a vine wound round it
+        dt("Vine", (1.14, 0.19, 1.78), (0, 1.1, 0), G.rz(6), "3fae4a")
+        for i, (yaw, col) in enumerate(((0, "3fae4a"), (120, "55b848"), (240, "2f8a3c"))):    # three fronds
+            R = G.ry(yaw) @ G.rx(-38)
+            tp("Leaf", (0.36, 0.1, 0.9), (0, 2.05, 0) + R @ (0, 0, -0.38), R, col)
+        tp("Sprout", (0.2, 0.36, 0.2), (0, 2.02, 0), None, "6b4226")
+    elif area == "Reef":
+        tp("Shell", (0.5, 0.16, 0.5), (0, 2.0, 0), G.ry(45), "ff8a3d")                     # a starfish
+        for i in range(5):
+            R = G.ry(i * 72)
+            tp("Shell", (0.16, 0.13, 0.42), (0, 2.0, 0) + R @ (0, 0, -0.3), R, "ff8a3d")
+        dt("Coral", (0.16, 0.5, 0.16), (-0.62, 0.55, -0.55), G.rz(12), "ff6fa8")
+        dt("Coral", (0.14, 0.3, 0.14), (-0.75, 0.75, -0.45), G.rz(-30), "ff6fa8")
+        dt("Detail", (0.3, 0.3, 0.1), (0.4, 1.05, -0.82), G.rz(45), "4fc3f7")
+    elif area == "Haunt":
+        tp("Pumpkin", (0.62, 0.42, 0.42), (0, 2.12, 0), None, "f07412")                    # a tiny jack-o'-lantern
+        tp("Pumpkin", (0.42, 0.43, 0.62), (0, 2.12, 0), None, "f07412")
+        tp("Pumpkin", (0.52, 0.38, 0.52), (0, 2.12, 0), G.ry(45), "ffa23f")
+        tp("Sprout", (0.12, 0.22, 0.12), (0, 2.4, 0), G.rz(12), "5b7a2e")
+        tp("Face", (0.12, 0.12, 0.1), (-0.12, 2.16, -0.33), G.rz(45), "ffc93c", material="Neon")
+        tp("Face", (0.12, 0.12, 0.1), (0.12, 2.16, -0.33), G.rz(45), "ffc93c", material="Neon")
+        dt("Band", (1.78, 0.2, 1.14), (0, 0.6, 0), None, "6b3fa0")
+        dt("Band", (1.14, 0.21, 1.78), (0, 0.6, 0), None, "6b3fa0")
+    elif area == "Dino":
+        for (x, y, z, sz, col) in ((-0.5, 1.2, -0.79, 0.42, "6aa84f"), (0.45, 0.65, -0.86, 0.34, "6aa84f"),
+                                   (0.82, 1.3, -0.3, 0.3, "4f8a3a"), (-0.75, 0.6, 0.45, 0.36, "4f8a3a")):
+            dt("Spot", (sz, sz, 0.1), (x, y, z), G.ry(-math.degrees(math.atan2(x, -z))), col)  # a spotted egg
+        tp("Crack", (0.5, 0.1, 0.1), (-0.1, 2.0, -0.32), G.rz(30), "3a2a1e")
+        tp("Crack", (0.4, 0.1, 0.1), (0.24, 1.98, -0.335), G.rz(-35), "3a2a1e")
+        tp("Sprout", (0.18, 0.4, 0.18), (0.1, 2.12, 0.05), G.rz(-12), "4f8a3a")             # a fern curl
+        tp("Leaf", (0.45, 0.1, 0.25), (-0.1, 2.32, 0.05), G.rz(25), "6aa84f")
+    elif area == "Toy":
+        tp("Key", (0.16, 0.4, 0.16), (0, 2.08, 0.25), G.rx(-20), "8e89a0")                  # a wind-up key
+        for s_ in (-1, 1):
+            tp("Key", (0.36, 0.42, 0.12), (s_ * 0.26, 2.38, 0.33), G.rx(-20) @ G.rz(s_ * 12), "b9b4c8")
+        dt("Stripe", (1.78, 0.22, 1.14), (0, 0.8, 0), None, "e8403a")
+        dt("Stripe", (1.14, 0.23, 1.78), (0, 0.8, 0), None, "3e7bd6")
+    elif area == "Clock":
+        tp("Gear", (0.7, 0.7, 0.18), (0, 2.25, 0), None, "c9a227")                         # a brass gear
+        tp("Gear", (0.7, 0.7, 0.17), (0, 2.25, 0), G.rz(45), "c9a227")
+        tp("Gear", (0.32, 0.32, 0.22), (0, 2.25, 0), None, "8a6a1e")
+        tp("Sprout", (0.16, 0.3, 0.16), (0, 1.95, 0), None, "8a6a1e")
+        dt("Face", (0.5, 0.5, 0.1), (0, 0.92, -0.83), None, "fff7ec")                     # a clock face
+        dt("Hand", (0.06, 0.22, 0.1), (0, 1.0, -0.88), None, "1e1a22")
+        dt("Hand", (0.17, 0.06, 0.1), (0.07, 0.92, -0.895), None, "1e1a22")
+    elif area == "Neon":
+        dt("Stripe", (1.78, 0.14, 1.14), (0, 0.55, 0), None, "00f0ff", material="Neon")
+        dt("Stripe", (1.14, 0.15, 1.78), (0, 1.05, 0), None, "ff2bd6", material="Neon")
+        tp("Antenna", (0.12, 0.5, 0.12), (0, 2.1, 0), None, "3a3a46")
+        tp("Antenna", (0.3, 0.3, 0.3), (0, 2.42, 0), G.ry(45), "00f0ff", material="Neon")
+    elif area == "Cloud":
+        for (x, y, z, sz) in ((0, 2.15, 0, 0.62), (-0.36, 2.05, 0.05, 0.46), (0.38, 2.06, -0.04, 0.5),
+                              (0.05, 2.38, 0.02, 0.4)):
+            tp("Cloud", (sz, sz * 0.8, sz), (x, y, z), G.ry(20), "ffffff")
+        dt("Drop", (0.12, 0.2, 0.12), (-0.35, 1.0, -0.84), None, "7fc4ff")
+        dt("Drop", (0.12, 0.2, 0.12), (0.3, 0.7, -0.86), None, "7fc4ff")
+    elif area == "Void":
+        for (x, y, z, sz, col, mat) in ((0, 2.2, 0, 0.36, "1e1a22", "Plastic"), (0.36, 2.45, -0.1, 0.22, "ff2bd6", "Neon"),
+                                        (-0.32, 2.36, 0.12, 0.2, "00f0ff", "Neon"), (0.1, 2.62, 0.2, 0.16, "1e1a22", "Plastic")):
+            tp("Glitch", (sz, sz, sz), (x, y, z), ori(20, 30, 10), col, material=mat)
+        dt("Crack", (0.1, 0.6, 0.1), (0.3, 0.9, -0.84), G.rz(25), "ff2bd6", material="Neon")
+    elif area == "Olympus":
+        for i in range(6):                                                                 # a laurel wreath
+            R = G.ry(i * 60 + 15)
+            tp("Laurel", (0.42, 0.1, 0.22), (0, 1.98, 0) + R @ (0, 0, -0.42), R @ G.rz(15), "6aa84f")
+        dt("Band", (1.78, 0.22, 1.14), (0, 0.5, 0), None, "ffd447")
+        dt("Band", (1.14, 0.23, 1.78), (0, 0.5, 0), None, "ffd447")
     return finish(m, body[0], base)
 
 
-AREAS = ("Meadow", "Dunes", "Marsh", "Frost", "Lava", "Crystal", "Candy", "Cosmic")
+AREAS = ("Meadow", "Dunes", "Marsh", "Jungle", "Reef", "Frost", "Haunt", "Lava", "Crystal", "Dino", "Toy",
+         "Candy", "Clock", "Neon", "Cloud", "Cosmic", "Void", "Olympus")
 
 
 def build(sc):

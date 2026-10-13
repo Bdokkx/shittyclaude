@@ -20,12 +20,39 @@ sys.path.insert(0, TOOLS)
 
 import spslib  # noqa: E402
 
-from potato import brickcheck, plotkit, spud_anim, spuds  # noqa: E402
+from potato import brickcheck, npc, plotkit, rig, spud_anim, spuds  # noqa: E402
 
 PIECES = {
     "potatoes_meadow": dict(file="Potatoes_Meadow", title="the Meadow Patch potatoes and their clips"),
     "plot": dict(file="PlotKit", title="the plot kit (fences, soil, board, mound, seeds)"),
+    "questnpc": dict(file="QuestNpc", title="Farmer Spud, the quest NPC, and his clips"),
 }
+
+
+def check_rig(m, joints, allowed_anchored=("Root", "Prompt")):
+    """A brick rig: Root anchored PrimaryPart, every other part unanchored (but the Prompt), the joints
+    there, surfaces right, no flickering faces at rest."""
+    errs = []
+    parts = [n for n in m.walk() if n.kind == "Part"]
+    if m.p.get("primary") is None or m.p["primary"].name != "Root":
+        errs.append("%s: PrimaryPart is not Root" % m.name)
+    for p in parts:
+        if p.p["anchored"] and p.name not in allowed_anchored:
+            errs.append("%s: %s anchored" % (m.name, p.path()))
+        if p.p["collide"] or p.p["touch"]:
+            errs.append("%s: %s collides / touches" % (m.name, p.path()))
+        if p.p["shadow"] and max(p.p["size"]) < 2.5:
+            errs.append("%s: small %s casts a shadow" % (m.name, p.path()))
+    names = sorted(n.name for n in m.walk() if n.kind == "Motor")
+    for j in joints:
+        if j not in names:
+            errs.append("%s: no Motor6D %s (has %s)" % (m.name, j, names))
+    errs += ["%s: %s" % (m.name, e) for e in brickcheck.rules(parts)]
+    for a, b, ar in brickcheck.zfight(parts, ground=0.0):
+        errs.append("%s: z-fight %s %s / %s %s (%.3f)" % (m.name, a.path().split("/", 2)[-1],
+                    [round(v, 2) for v in a.p["size"]], b.path().split("/", 2)[-1],
+                    [round(v, 2) for v in b.p["size"]], ar))
+    return errs
 
 
 def check_deco(sc):
@@ -123,6 +150,20 @@ def main():
         for c, fr in baked:
             print("  %-14s %.1f s  %d keyframes  joints %s" % (c.name, c.length, len(fr),
                                                               sorted(spud_anim.moving(fr))))
+    elif piece == "questnpc":
+        sc = spslib.Scene("PotatoKit")
+        m = npc.build(sc, sc.root)
+        sc.container(sc.root, "QuestNpcAnimations")
+        errs = check_rig(m, ("Waist", "Neck", "ShoulderL", "ShoulderR", "Brow", "Moustache"))
+        clips = [rig.write_clip(m, c, c.bake()) for c in npc.CLIPS]
+        ap = os.path.join(out, cfg["file"] + "_anims.json")
+        with open(ap, "w") as f:
+            json.dump([rig.folder_json("QuestNpcAnimations", clips)], f)
+        anim_specs["QuestNpcAnimations"] = ap
+        print("  QuestNpc: %d parts, joints %s" % (sum(1 for x in m.walk() if x.kind == "Part"),
+                                                   sorted(n.name for n in m.walk() if n.kind == "Motor")))
+        for c in npc.CLIPS:
+            print("  %-6s %.1f s loop=%s joints %s" % (c.name, c.length, c.loop, sorted(rig.moving(c.bake()))))
     elif piece == "plot":
         sc = spslib.Scene("PotatoKit")
         plotkit.build(sc)

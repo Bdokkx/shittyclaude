@@ -13,7 +13,8 @@ The pieces so far:
 | Script | Piece |
 |---|---|
 | `BuildPotatoesMeadow.lua` | 4.1, the Meadow Patch potatoes and the six potato clips |
-| `BuildPlotKit.lua` | 4.2, the plot kit: four fence tiers, Soil, UpgradeBoard, Mound, eight Seeds |
+| `BuildPlotKit.lua` | 4.2, the plot kit: four fence tiers, Soil, UpgradeBoard, Mound, the Seeds (now 18, with 30% bigger toppers; GateArch now 14 wide) |
+| `BuildQuestNpc.lua` | Farmer Spud, the quest NPC, and his four clips |
 
 ---
 
@@ -129,9 +130,9 @@ Each fence tier is a Folder, replaced as a whole. It holds three Models, built t
   - The rail bricks are named `Bar`. In Fence_Rainbow they are Neon, with a `Hue` attribute (0 and 0.5) as a suggested phase.
   - Pivot on the ground halfway between the posts.
 - **`GateArch`**
-  - An open doorway 8 wide (local X) and 6.7 high; the player runs through it along Z.
+  - An open doorway **14 wide** (local X) and 6.7 high; the player runs through it along Z. The posts are 1.6 square at X = ±7.8.
   - Two posts on plinths and a header beam in the tier's strong colour. Fence_Rainbow's header is six Neon stripes.
-  - **`Board`** faces the front (-Z) and **`BoardBack`** the back, 8.4 × 2.9. Both are dark SmoothPlastic, so the owner's name in white reads from either side.
+  - **`Board`** faces the front (-Z) and **`BoardBack`** the back, **12.2 × 2.8**, framed by trim either side. Both are dark SmoothPlastic, so the owner's name in white reads from either side.
   - Attribute `OpeningWidth` = 8. Pivot on the ground at the centre.
 
 **Pivots:**
@@ -140,7 +141,7 @@ Each fence tier is a Folder, replaced as a whole. It holds three Models, built t
 - **Mound:** the top centre of the dent, where the seed goes.
 - **UpgradeBoard:** on the ground at its centre. `Board` and `Button` face -Z, and `Prompt` is 2.6 in front.
 
-**Seeds.** Each seed is an egg about 1.7 wide; 2.2–2.8 tall with its topper. Pivot at the bottom. Every brick of the egg is named **`Body`** and is light grey (236, 236, 232) for you to tint. The rest comes coloured:
+**Seeds.** Each seed is an egg about 1.7 wide; 2.4–3.1 tall with its topper (toppers are 30% bigger than in the first cut). Pivot at the bottom. Every brick of the egg is named **`Body`** and is light grey (236, 236, 232) for you to tint. The rest comes coloured:
 
 | Seed | Topper and details |
 |---|---|
@@ -152,6 +153,16 @@ Each fence tier is a Folder, replaced as a whole. It holds three Models, built t
 | Crystal | Three crystal shards (purple, cyan, lilac); a purple gem |
 | Candy | A lollipop on a stick; three sprinkles |
 | Cosmic | A gold ring round it; a Neon star on top |
+| Jungle | Three palm fronds on a stub; a vine wound round it |
+| Reef | An orange starfish on top; pink coral and a blue gem on its side |
+| Haunt | A tiny jack-o'-lantern with Neon eyes; a purple band |
+| Dino | A spotted dino egg with a crack on top and a fern curl |
+| Toy | A wind-up key; red and blue stripes |
+| Clock | A brass gear on top; a clock face on its front |
+| Neon | A Neon antenna ball; cyan and magenta Neon stripes |
+| Cloud | A little white cloud; two raindrops |
+| Void | Glitch cubes, black and Neon; a Neon magenta crack |
+| Olympus | A laurel wreath; a gold band |
 
 **Flags.** All of 4.2 is decoration: anchored, CanCollide, CanTouch and CanQuery off, and no shadow from parts under 2.5 studs. If you want solid fences, turn CanCollide on for the posts and bars.
 
@@ -161,3 +172,56 @@ Each fence tier is a Folder, replaced as a whole. It holds three Models, built t
 - `plot_Fence_<Tier>.jpg`: each tier, with Spud for scale.
 - `plot_misc.jpg`: UpgradeBoard, Mound with a seed in its dent, and Soil with a potato on it.
 - `plot_seeds.jpg`: the eight seeds as built, and tinted.
+
+---
+
+## Farmer Spud, the quest NPC (`BuildQuestNpc.lua`)
+
+| Path | What |
+|---|---|
+| `PotatoKit.QuestNpc` | Farmer Spud, 11.6 tall, 120 parts (attribute `Height` = 11.6) |
+| `PotatoKit.QuestNpcAnimations.Idle`, `Wave`, `Talk`, `Cheer` | KeyframeSequences |
+
+**What he is.**
+
+- **Head:** a big potato head, wider in the middle, under a straw hat with a red band and straw sticking out of the brim.
+- **Face:** bushy white brows, a big round nose with a rosy tip, pink cheeks, and a bushy white moustache with a wheat stalk poking out of it.
+- **Clothes:** a red neckerchief, a cream shirt with rolled sleeves, blue overalls with gold buttons, a pencil in the bib pocket, and a cross-stitched red patch on the left knee.
+- **Boots, hands, hoe:** brown boots with dark soles, hands with three fingers and a thumb, and a hoe held upright in his left hand.
+
+**The rig.**
+
+- **Root:** Model `QuestNpc`, PrimaryPart **Root** (invisible, anchored, 2 × 0.4 × 2 on the ground). The pivot is the middle of his footprint on the ground; he faces -Z.
+- **One name per joint.** Every Motor6D drives an invisible holder at its hinge, and the holder **has the Motor6D's own name**. The visible bricks of that group are the holder's children, welded to it. So a Pose, its Motor6D and the Motor6D's Part1 all share one name, however your player looks joints up.
+- **Flags:** everything is unanchored and Massless except Root and the Prompt. CanCollide and CanTouch are off throughout. Eyes, glints, cheeks, mouth and stitches are SmoothPlastic; there is no Neon.
+
+| Motor6D | Part0 → Part1 | Moves |
+|---|---|---|
+| **Waist** | Root → Waist | torso: shirt, overalls, collar, neckerchief, straps, buttons, pocket |
+| **Neck** | Waist → Neck | the head, nose, cheeks, mouth |
+| **ShoulderL**, **ShoulderR** | Waist → ShoulderL / ShoulderR | upper arms (sleeves) |
+| ElbowL, ElbowR | ShoulderL → ElbowL, ShoulderR → ElbowR | forearm, cuff, hand with fingers; the hoe is in ElbowL |
+| HipL, HipR | Root → HipL / HipR | legs, cuffs, boots (the knee patch is on HipL) |
+| **Brow** | Neck → Brow | the bushy brows |
+| **Moustache** | Neck → Moustache | the moustache and its wheat stalk |
+| Eyes | Neck → Eyes | the eyes and glints. Turned 90° about X they fold into a line: a blink |
+| Hat | Neck → Hat | the straw hat |
+
+**`Prompt`**: an invisible, anchored 4 × 4 × 2 part at chest height (Y 6), 3.4 in front of him, with CanCollide, CanTouch and CanQuery off.
+
+**Clips.** 30 fps, Linear keys, poses named after the joints above.
+
+| KeyframeSequence | Length | Loop | Priority | What he does |
+|---|---|---|---|---|
+| Idle | 4.0 s | yes | Idle | Two breaths; looks slowly to his left, then right, brows lifting as he looks; two blinks; one twitch of the moustache |
+| Wave | 1.6 s | no | Action | Raises his right arm beside his head and waves three times from the elbow, leaning away and tilting his head, brows up, moustache up in a smile |
+| Talk | 2.0 s | loop | Movement | Nods and turns his head, gestures with his right hand (the hoe hand moves a little), moustache twitching as if he's talking, brows working |
+| Cheer | 1.6 s | no | Action | Both arms up (the hoe goes up too), two small hops with the legs leaving the ground, hat bouncing, eyes shut with joy at the top of each hop |
+
+Wave and Cheer start and end at rest, so they fall back into Idle cleanly.
+
+**Previews:** `previews/npc/`
+
+- `turn_FarmerSpud.jpg`, `face_FarmerSpud.jpg`
+- `clip_FarmerSpud_<Clip>.jpg`
+- `FarmerSpud_clips.mp4`
