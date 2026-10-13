@@ -143,7 +143,7 @@ def video(out, build, clips, name, w, samples, pos, tgt, fov=36.0, reps=None):
     lst = os.path.join(out, "_frames.txt")
     with open(lst, "w") as f:
         for nme in names:
-            f.write("file '%s'\nduration %f\n" % (nme, 1.0 / 30))
+            f.write("file '%s'\nduration %f\n" % (os.path.abspath(nme), 1.0 / 30))
     mp4 = os.path.join(out, "%s_clips.mp4" % name)
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", lst, "-vf",
                     "fps=30,format=yuv420p", "-c:v", "libx264", "-crf", "20", mp4], check=True)
