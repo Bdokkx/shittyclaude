@@ -491,15 +491,15 @@ def p_mailbox(sc, parent):
     B = Build(sc, parent, "Mailbox", seed=317)
     B.p("Post", (1.3, 0.4, 1.3), (0.0, 0.2, 0.0), None, WOOD[0])
     B.p("Post", (0.7, 3.8, 0.7), (0.0, 2.1, 0.0), None, WOOD[1])
-    B.p("Post", (1.2, 0.3, 2.4), (0.0, 4.05, 0.0), None, WOOD[0])
-    c = np.array((0.0, 4.95, 0.0))
-    B.p("Box", (1.76, 0.94, 2.84), c, None, "e8403a")
-    round3(B, "Box", c + (0.0, 0.45, 0.0), 1.8, 2.9, 1.8, ("e8403a", "d93a30", "f05a48"), R=G.rx(90))
-    B.p("Door", (1.6, 1.8, 0.14), c + (0.0, 0.35, -1.5), None, "c8302a")
-    B.p("Door", (0.3, 0.3, 0.24), c + (0.0, 0.5, -1.62), None, "c8ccd4")
-    B.plate("Letter", (1.1, 0.12, 0.8), c + (0.25, 1.2, -1.2), G.ry(15) @ G.rx(-30), col="fff7ec")
-    B.p("Flag", (0.18, 1.6, 0.14), c + (1.0, 0.75, 0.2), None, "8a8f9c")
-    B.p("Flag", (0.14, 0.6, 0.9), c + (1.0, 1.2, -0.2), None, "ffd23f")
+    B.p("Post", (1.3, 0.3, 2.6), (0.0, 4.05, 0.0), None, WOOD[0])
+    c = np.array((0.0, 5.0, 0.0))
+    B.p("Box", (1.96, 1.04, 3.04), c, None, "e8403a")
+    round3(B, "Box", c + (0.0, 0.5, 0.0), 2.0, 3.1, 2.0, ("e8403a", "d93a30", "f05a48"), R=G.rx(90))
+    B.p("Door", (1.8, 2.0, 0.14), c + (0.0, 0.4, -1.62), None, "c8302a")
+    B.p("Door", (0.3, 0.3, 0.24), c + (0.0, 0.55, -1.74), None, "c8ccd4")
+    B.plate("Letter", (1.1, 0.12, 0.8), c + (0.25, 1.32, -1.3), G.ry(15) @ G.rx(-30), col="fff7ec")
+    B.p("Flag", (0.18, 1.7, 0.14), c + (-1.1, 0.8, 0.3), None, "8a8f9c")
+    B.p("Flag", (0.14, 0.62, 0.95), c + (-1.1, 1.3, -0.12), None, "ffd23f")
     for k, (x, z, col) in enumerate(((-0.8, -0.8, "ff6b8a"), (0.6, -1.0, "b46bff"), (0.9, 0.7, "ffd23f"))):
         B.p("Flower", (0.3, 0.9 + 0.2 * k, 0.3), (x, 0.45 + 0.1 * k, z), None, GRASS[2])
         B.p("Flower", (0.6, 0.35, 0.6), (x, 0.95 + 0.2 * k, z), G.ry(45), col)
@@ -518,12 +518,12 @@ def p_sacks(sc, parent):
 
 
 AREA = register(Area("Meadow", "Meadow Patch", hero, [
-    (p_hayrolls, prop_attrs(4, 0.9, 1.2, "Edge", True)),
-    (p_fence, prop_attrs(5, 0.9, 1.1, "Edge", True)),
+    (p_hayrolls, prop_attrs(5, 0.9, 1.2, "Edge", True)),
+    (p_fence, prop_attrs(6, 0.9, 1.1, "Edge", True)),
     (p_cart, prop_attrs(3, 0.9, 1.2, "Side", True)),
     (p_beehive, prop_attrs(4, 0.9, 1.2, "Side", False)),
-    (p_sunflowers, prop_attrs(6, 0.85, 1.25, "Side", False)),
+    (p_sunflowers, prop_attrs(8, 0.85, 1.25, "Side", False)),
     (p_signpost, prop_attrs(3, 0.9, 1.15, "Side", False)),
     (p_mailbox, prop_attrs(3, 0.9, 1.15, "Side", False)),
-    (p_sacks, prop_attrs(6, 0.8, 1.2, "Any", False)),
+    (p_sacks, prop_attrs(7, 0.8, 1.2, "Any", False)),
 ], ground="68d03e"))

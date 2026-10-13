@@ -16,14 +16,14 @@ import math
 import numpy as np
 
 import spsgeo as G
+from spsgeo import CF
 
-from .scenery import (Area, Build, bar, frame, ori, potato, prop_attrs, register, rock, round3)
+from .scenery import (Area, Build, bar, frame, ori, potato, prop_attrs, register, rock)
 
 ROCK = ("5e5672", "6a6280", "766e8e", "837b9c", "9088aa", "9e97b8")   # grey-violet, darker at the foot
 CYAN = ("1fa4dc", "5ad6ff", "7ae8ff")      # body, its lighter turned facets, the glow
 PINK = ("d43c9c", "ff74cc", "ff9ce2")
 GOLD = ("d88a12", "f5b532", "fff3c4")
-GEMS = (CYAN, PINK, GOLD)
 WOOD = ("6b4226", "7a4a2a", "8a5a32", "9a6238")
 IRON = ("3a3f4a", "4a505c", "5a6272", "2a2a30")
 DARK = "120c1a"
@@ -376,7 +376,6 @@ def p_timber(sc, parent):
 
 def p_geode(sc, parent):
     B = Build(sc, parent, "Geode", seed=330)
-    from spsgeo import CF
     with B.at(CF(np.array((0.0, 2.3, 0.3)), G.rx(18))):           # tipped back to show the inside
         B.p("Shell", (4.4, 4.4, 1.3), (0.0, 0.0, 1.1), None, ROCK[2])
         for k in range(8):                                          # the broken rim, round
@@ -400,7 +399,7 @@ def p_geode(sc, parent):
 AREA = register(Area("Crystal", "Crystal Caverns", hero, [
     (p_giant, prop_attrs(3, 0.9, 1.25, "Edge", True)),
     (p_cluster, prop_attrs(6, 0.8, 1.3, "Side", False)),
-    (p_gold, prop_attrs(6, 0.8, 1.3, "Any", False)),
+    (p_gold, prop_attrs(6, 0.8, 1.3, "Side", False)),
     (p_cart, prop_attrs(3, 0.95, 1.15, "Side", True)),
     (p_lantern, prop_attrs(5, 0.95, 1.15, "Side", False)),
     (p_stalagmites, prop_attrs(6, 0.8, 1.35, "Side", True)),

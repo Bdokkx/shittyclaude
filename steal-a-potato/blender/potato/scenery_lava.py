@@ -3,12 +3,12 @@
 The volcano is a stepped cone of nine rounded tiers (a core and two crossing slabs each, every tier
 turned its own way and a different height), dark charcoal at the foot warming to red-brown at the
 top, boulders lying on its ledges. Its crater opens towards the lane behind a jagged rim: a glowing
-pool, a boiling dome of lava spurting up and splashing, embers flying and puffs of smoke rising
-over it. Three streams of lava run down the front over the noses of the steps, each a run of short
-orange Neon bars with a yellow core, widening as they go, two from the crater and one from a vent
-in the flank, into a bubbling lava pool at the foot behind a low rock kerb. Glowing cracks split
-the steps; lava bombs lie about. At the foot a potato in a silver fire-proof suit dips a long ladle
-into the pool. The whole cone, the boulders on it and the kerb are solid.
+pool, a boiling dome of lava spurting up and splashing, puffs of smoke rising over it. Three streams
+of lava run down the front over the noses of the steps, each a run of short orange Neon bars with a
+yellow core, widening as they go, two from the crater and one from a vent in the flank, into a
+bubbling lava pool at the foot behind a low rock kerb. Glowing cracks split the steps; lava bombs
+lie about. At the foot a potato in a silver fire-proof suit dips a long ladle into the pool. The
+whole cone, the boulders on it and the kerb are solid.
 """
 import math
 
@@ -17,7 +17,7 @@ import numpy as np
 import spsgeo as G
 from spsgeo import CF
 
-from .scenery import (Area, Build, bar, flame, frame, ori, potato, prop_attrs, register, rock, round3, turn)
+from .scenery import (Area, Build, bar, flame, frame, ori, potato, prop_attrs, register, rock, round3)
 
 # charcoal at the foot of the cone, warming to red-brown at the top: three close shades a tier
 TIER_COLS = (("2c2729", "342e32", "3c363a"), ("2f2a2d", "383135", "40383d"), ("362e33", "3f353a", "483c40"),
@@ -247,9 +247,9 @@ def hero(sc, parent):
     neon(B, "Pool", (21.0, 0.42, 5.2), (0.0, 0.21, -11.2), None, LAVA[0], flicker=0.1)
     neon(B, "Pool", (16.0, 0.48, 6.4), (0.4, 0.24, -11.0), G.ry(4), LAVA[1], flicker=None)
     neon(B, "Pool", (8.0, 0.56, 2.6), (-0.6, 0.28, -12.0), G.ry(-6), LAVA[3], flicker=0.2)
-    for k, (x, z, s) in enumerate(((-5.6, -12.4, 1.1), (4.4, -11.9, 0.9), (1.0, -12.9, 0.7))):
-        neon(B, "Bubble", (s, s * 0.8, s), (x, 0.5 + s * 0.3, z), ori(0, 30 * k + 10, 0), LAVA[2 + k % 2],
-             flicker=0.3)
+    for k, (x, y, z, s) in enumerate(((-5.6, 1.2, -12.4, 1.2), (4.4, 1.1, -11.9, 1.0), (1.0, 0.8, -12.9, 0.8),
+                                      (-3.2, 1.7, -12.0, 0.6))):          # bubbles bursting, splashes
+        neon(B, "Bubble", (s, s * 0.8, s), (x, y, z), ori(10 * k, 30 * k + 10, 15), LAVA[2 + k % 2], flicker=0.3)
     for k in range(8):
         f = math.pi * (k + 0.5) / 8
         p = np.array((11.4 * math.cos(f), 0.0, -10.2 - 4.25 * math.sin(f)))
@@ -302,8 +302,8 @@ def p_stump(sc, parent):
     for k in range(5):                                                    # thick roots into the ground
         a = math.radians(20 + 72 * k + 10 * (-1) ** k)
         d = np.array((math.sin(a), 0.0, -math.cos(a)))
-        bar(B, "Root", d * 1.0 + (0, 1.1, 0), d * (2.8 + 0.25 * (k % 2)) + (0, 0.12, 0), 0.85, (CHAR[0], WOOD[0])[k % 2],
-            t=0.7, n=(0, 1, 0))
+        bar(B, "Root", d * 1.0 + (0, 1.1, 0), d * (2.8 + 0.25 * (k % 2)) + (0, 0.12, 0), 0.85,
+            (CHAR[0], WOOD[0])[k % 2], t=0.7, n=(0, 1, 0))
     # the trunk: two crossing blocks, burnt brown under black char
     c1, R1 = np.array((0.0, 1.8, 0.0)), ori(0, 15, 2)
     B.p("Stump", (2.8, 3.6, 2.5), c1, R1, CHAR[1])

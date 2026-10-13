@@ -303,7 +303,7 @@ def p_stall(sc, parent):
     B.p("Counter", (5.6, 2.4, 1.8), (0.0, 1.2, -0.5), None, WOOD[1])
     B.p("Counter", (6.4, 0.4, 2.2), (0.0, 2.6, -0.5), None, WOOD[2])
     for k in range(4):
-        B.plate("Cloth", (1.4, 2.0, 0.1), (-2.1 + 1.4 * k, 1.3, -1.45), col=("e8403a", "fff1d0")[k % 2])
+        B.p("Cloth", (1.4, 2.0, 0.12), (-2.1 + 1.4 * k, 1.3, -1.46), None, ("e8403a", "fff1d0")[k % 2])
     for k in range(6):
         x = -2.75 + 1.1 * k
         B.p("Awning", (1.1, 0.16 + 0.02 * (k % 2), 3.9), (x, 5.75, 0.0), G.rx(-17), ("e8403a", "fff1d0")[k % 2])
@@ -340,8 +340,7 @@ def p_camel(sc, parent):
     fur = ("d8a868", "c8945a", "e6b87a")
     B.p("Camel", (5.0, 2.2, 2.2), (0.0, 4.4, 0.0), None, fur[0])
     B.p("Camel", (4.2, 0.8, 2.0), (0.0, 3.3, 0.0), None, fur[1])
-    B.p("Hump", (2.6, 1.4, 1.9), (-0.4, 5.9, 0.0), None, fur[2])
-    B.p("Hump", (1.6, 0.8, 1.5), (-0.4, 6.8, 0.0), G.ry(45), fur[0])
+    round3(B, "Hump", (-0.4, 6.1, 0.0), 2.8, 2.0, 2.0, (fur[2], fur[0], fur[2]), lid=(1.4, 0.4, 1.2))
     for sx in (-1, 1):
         for sz in (-1, 1):
             B.p("Leg", (0.7, 3.4, 0.7), (sx * 1.8, 1.7, sz * 0.6), None, fur[1 + (sx > 0)])
@@ -381,12 +380,12 @@ def p_scorpion(sc, parent):
 
 
 AREA = register(Area("Dunes", "Sandy Dunes", hero, [
-    (p_obelisk, prop_attrs(3, 0.9, 1.2, "Edge", True)),
+    (p_obelisk, prop_attrs(4, 0.9, 1.2, "Edge", True)),
     (p_stall, prop_attrs(3, 0.9, 1.1, "Edge", True)),
-    (p_saguaro, prop_attrs(6, 0.85, 1.3, "Side", True)),
+    (p_saguaro, prop_attrs(7, 0.85, 1.3, "Side", True)),
     (p_oasis, prop_attrs(3, 0.9, 1.2, "Side", False)),
     (p_scarab, prop_attrs(3, 0.9, 1.2, "Side", True)),
     (p_camel, prop_attrs(3, 0.9, 1.15, "Side", True)),
-    (p_pots, prop_attrs(6, 0.8, 1.2, "Any", False)),
+    (p_pots, prop_attrs(7, 0.8, 1.2, "Any", False)),
     (p_scorpion, prop_attrs(5, 0.9, 1.4, "Any", False)),
 ], ground="f2d280"))
