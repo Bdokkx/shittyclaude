@@ -29,6 +29,7 @@ The pieces so far:
 | `BuildPotatoesReef.lua` | The Coral Cove potatoes |
 | `BuildPotatoesHaunt.lua` | The Haunted Hollow potatoes |
 | `BuildPotatoesDino.lua` | The Dino Valley potatoes |
+| `BuildPotatoesToy.lua` | The Toy Town potatoes |
 
 ---
 
@@ -745,4 +746,33 @@ The rig, rules and clips are the same as the Meadow Patch six. Each has 42 to 45
 
 - `lineup_Dino_L10.jpg`
 - `levels_RexOverlord.jpg`
+- `turn_<Id>.jpg` for each of the six
+
+---
+
+## Toy Town potatoes (`BuildPotatoesToy.lua`)
+
+| Path | Rarity | What |
+|---|---|---|
+| `PotatoKit.Potatoes.BlockSpud` | Epic | A toy building brick: square and bright red, four big studs on top |
+| `PotatoKit.Potatoes.TeddyTater` | Legendary | A teddy bear: soft brown, round ears with tan middles, a tan muzzle with a black nose and a red bow tie |
+| `PotatoKit.Potatoes.DuckySpud` | Legendary | A rubber duck: bright yellow, a flat orange beak, a curl of a tuft, a little tail cocked up behind and bath bubbles |
+| `PotatoKit.Potatoes.RoboSpud` | Mythic | A tin toy robot: riveted silver, glowing square eyes, a grille for a mouth, a chest screen with a glowing heartbeat, side bolts and an antenna with a red light |
+| `PotatoKit.Potatoes.JackSpud` | Secret | A jack-in-the-box's jester: purple and yellow, a three-pointed jester's hat with gold bells, a red clown's nose and harlequin diamonds |
+| `PotatoKit.Potatoes.GeneralTater` | Secret | A toy soldier general: a red coat with a white cross-belt, gold buttons, gold epaulettes and a medal, a tall black busby with a gold badge and a red plume, a black moustache |
+
+The rig, rules and clips are the same as the Meadow Patch six. Each has 40 to 45 parts.
+
+- **DuckySpud's `Mouth`** is its beak (two `Beak` bricks). Its bubbles are see-through (Transparency 0.45).
+- **RoboSpud's face:**
+  - Its `Eyes` glow (Neon).
+  - Its `Mouth` is a grille: a dark plate with three `Grille` bars.
+- **Hats and crowns:**
+  - JackSpud's hat and GeneralTater's busby are part of the body (`Extra`), so they wear them at every level.
+  - The crown sits on top of the hat.
+
+**Previews:** `previews/potatoes/`
+
+- `lineup_Toy_L10.jpg`
+- `levels_GeneralTater.jpg`
 - `turn_<Id>.jpg` for each of the six
