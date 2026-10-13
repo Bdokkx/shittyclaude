@@ -24,6 +24,7 @@ The pieces so far:
 | `BuildPotatoesLava.lua` | The Lava Furrows potatoes |
 | `BuildPotatoesCrystal.lua` | The Crystal Caverns potatoes |
 | `BuildPotatoesCandy.lua` | The Candy Crops potatoes |
+| `BuildPotatoesCosmic.lua` | The Cosmic Garden potatoes |
 
 ---
 
@@ -601,4 +602,32 @@ The rig, rules and clips are the same as the Meadow Patch six. Each has 43 to 45
 
 - `lineup_Candy_L10.jpg`
 - `levels_SugarKing.jpg`
+- `turn_<Id>.jpg` for each of the six
+
+---
+
+## Cosmic Garden potatoes (`BuildPotatoesCosmic.lua`)
+
+| Path | Rarity | What |
+|---|---|---|
+| `PotatoKit.Potatoes.MoonRockSpud` | Epic | A grey moon rock pitted with craters, a little red flag planted in its head beside its crown |
+| `PotatoKit.Potatoes.CometTater` | Legendary | Icy blue with frost and ice on its head, a bright glowing tail streaming away behind it and out to one side |
+| `PotatoKit.Potatoes.AlienSpud` | Mythic | Lime green, two antennae with glowing bobbles, and big black alien eyes with a big and a small glint |
+| `PotatoKit.Potatoes.NebulaMash` | Secret | Deep purple space: glowing clouds of pink, lilac and blue gas, a galaxy's arm swirling across it and a sky of stars |
+| `PotatoKit.Potatoes.BlackHoleTuber` | Divine | Pitch black, framed by a glowing orange ring of light with sparks caught in it; glowing eyes and mouth |
+| `PotatoKit.Potatoes.GalacticOverlord` | Divine | Deep space blue, a ring like Saturn's tilted round its middle, small stars orbiting it and, at level 10, a bigger gold crown |
+
+The rig, rules and clips are the same as the Meadow Patch six. Each has 43 to 45 parts.
+
+- **The glow is Neon:** the comet's tail, the bobbles, the gas clouds, the galaxy's arm, the stars, and BlackHoleTuber's ring and sparks.
+- **The dark three:**
+  - NebulaMash and GalacticOverlord have white eyes with a dark `Pupil` each, and a glowing `Mouth`.
+  - BlackHoleTuber's eyes and mouth glow.
+- **The rings** are part of the body (`Extra`). They pass through the space the arms swing in, so the arms cross them in some clips.
+- **GalacticOverlord's crown** is the usual gold `Crown`, 1.2 times the size.
+
+**Previews:** `previews/potatoes/`
+
+- `lineup_Cosmic_L10.jpg`
+- `levels_GalacticOverlord.jpg`
 - `turn_<Id>.jpg` for each of the six

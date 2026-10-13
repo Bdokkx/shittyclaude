@@ -33,6 +33,7 @@ PIECES = {
     "potatoes_lava": dict(file="Potatoes_Lava", title="the Lava Furrows potatoes", area="Lava"),
     "potatoes_crystal": dict(file="Potatoes_Crystal", title="the Crystal Caverns potatoes", area="Crystal"),
     "potatoes_candy": dict(file="Potatoes_Candy", title="the Candy Crops potatoes", area="Candy"),
+    "potatoes_cosmic": dict(file="Potatoes_Cosmic", title="the Cosmic Garden potatoes", area="Cosmic"),
     "plot": dict(file="PlotKit", title="the plot kit (fences, soil, board, mound, seeds)"),
     "questnpc": dict(file="QuestNpc", title="Farmer Spud, the quest NPC, and his clips"),
     "fuse": dict(file="FuseMachine", title="the Fuse Machine"),
