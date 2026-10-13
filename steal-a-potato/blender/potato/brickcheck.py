@@ -86,7 +86,7 @@ def _signed(poly):
     return a / 2
 
 
-def zfight(parts, tol=0.004, min_area=0.004):
+def zfight(parts, tol=0.004, min_area=0.004, ground=None):
     parts = [p for p in parts if p.p["shape"] == "Block" and p.p["transparency"] < 0.99]
     faces = {id(p): _faces(p) for p in parts}
     cents = {id(p): p.p["cf"].p for p in parts}
@@ -99,6 +99,8 @@ def zfight(parts, tol=0.004, min_area=0.004):
             for nb, ob, cb in faces[id(b)]:
                 if na @ nb < 0.9999 or abs(oa - ob) > tol:
                     continue
+                if ground is not None and na[1] < -0.9999 and abs(oa + ground) < 0.01:
+                    continue                       # bottoms resting on the ground are never seen
                 # project both onto the plane's own axes
                 u = ca[1] - ca[0]
                 u /= np.linalg.norm(u)

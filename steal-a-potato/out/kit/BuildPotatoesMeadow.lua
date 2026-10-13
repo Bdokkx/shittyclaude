@@ -11,6 +11,12 @@ ReplicatedStorage.PotatoKit (made if missing; attribute Studs = true):
     PotatoKit.Potatoes.RedRascal
     PotatoKit.Potatoes.SweetPotato
     PotatoKit.Potatoes.GoldenSpud
+    PotatoKit.PotatoAnimations.PotatoIdle (KeyframeSequence)
+    PotatoKit.PotatoAnimations.PotatoHop (KeyframeSequence)
+    PotatoKit.PotatoAnimations.PotatoWave (KeyframeSequence)
+    PotatoKit.PotatoAnimations.PotatoDance (KeyframeSequence)
+    PotatoKit.PotatoAnimations.PotatoHatch (KeyframeSequence)
+    PotatoKit.PotatoAnimations.PotatoLevelUp (KeyframeSequence)
 
 265 Parts, every one a plain Roblox Part (Plastic with Inlet on all six faces; Neon and
 SmoothPlastic ones Smooth), plus 243 keyframes. Each item above replaces anything with the

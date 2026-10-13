@@ -175,6 +175,9 @@ def main(src, dst, title, anims=None):
                 lines.append("T %d %s s %s" % (me, key, lua_name(str(val))))
 
     items = items_of(nodes)
+    for folder_name, path in (anims or {}).items():
+        for ks in json.load(open(path))[0]["children"]:
+            items.append("PotatoKit.%s.%s (KeyframeSequence)" % (folder_name, ks["name"]))
     colors = ", ".join("{%d, %d, %d}" % c for c in tb.colors)
     mats = ", ".join('"%s"' % m for m in tb.mats)
     rots = ",\n\t".join("{%s}" % ", ".join(num(v, 5) for v in r) for r in tb.rots)

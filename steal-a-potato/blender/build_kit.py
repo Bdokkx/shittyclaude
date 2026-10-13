@@ -20,11 +20,32 @@ sys.path.insert(0, TOOLS)
 
 import spslib  # noqa: E402
 
-from potato import brickcheck, spud_anim, spuds  # noqa: E402
+from potato import brickcheck, plotkit, spud_anim, spuds  # noqa: E402
 
 PIECES = {
     "potatoes_meadow": dict(file="Potatoes_Meadow", title="the Meadow Patch potatoes and their clips"),
+    "plot": dict(file="PlotKit", title="the plot kit (fences, soil, board, mound, seeds)"),
 }
+
+
+def check_deco(sc):
+    """Decoration rules for the kit pieces, and flickering faces inside each piece."""
+    errs = []
+    items = [n for n in sc.root.walk() if n.kind == "Model"]
+    for m in items:
+        parts = [n for n in m.walk() if n.kind == "Part"]
+        if m.p.get("primary") is None:
+            errs.append("%s: no PrimaryPart" % m.path())
+        for p in parts:
+            if not p.p["anchored"] or p.p["collide"] or p.p["touch"] or p.p["query"]:
+                errs.append("%s: flags" % p.path())
+            if p.p["shadow"] and max(p.p["size"]) < 2.5:
+                errs.append("%s: small part casts a shadow" % p.path())
+        errs += brickcheck.rules(parts)
+        for a, b, ar in brickcheck.zfight(parts, ground=0.0):
+            errs.append("%s: z-fight %s %s / %s %s (%.3f)" % (m.path(), a.name, [round(v, 2) for v in a.p["size"]],
+                                                               b.name, [round(v, 2) for v in b.p["size"]], ar))
+    return errs
 
 
 def potatoes(area):
@@ -102,6 +123,12 @@ def main():
         for c, fr in baked:
             print("  %-14s %.1f s  %d keyframes  joints %s" % (c.name, c.length, len(fr),
                                                               sorted(spud_anim.moving(fr))))
+    elif piece == "plot":
+        sc = spslib.Scene("PotatoKit")
+        plotkit.build(sc)
+        errs = check_deco(sc)
+        for m in [n for n in sc.root.walk() if n.kind == "Model"]:
+            print("  %-34s %3d parts" % (m.path(), sum(1 for x in m.walk() if x.kind == "Part")))
     else:
         raise SystemExit("unknown piece " + piece)
     if errs:

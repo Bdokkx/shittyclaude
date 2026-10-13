@@ -1,0 +1,358 @@
+"""4.2, the plot kit in bricks: PotatoKit.Fences (four tiers), Soil, UpgradeBoard, Mound, Seeds.
+
+Every piece is a Model built at the origin. Its pivot is where the game puts it: the ground under
+a post, the middle of a rail on the ground, the top centre of the soil and the mound, the bottom
+of a seed. All decoration: anchored, CanCollide / CanTouch / CanQuery off, no shadow under 2.5.
+
+Fences, in Folk Valley's idiom (posts 0.8-1.0 square on a wider plinth, rails 0.4-0.55 square),
+each tier clearly richer than the one before:
+  Fence_Wood     dark posts, bright wood rails
+  Fence_Gold     gold posts with cream bands and round gold knobs, gold rails with a cream strip
+  Fence_Diamond  white posts with cyan bands, a Neon jewel on each post, cyan rails, little
+                 diamonds between the rails
+  Fence_Rainbow  dark posts with a Neon star on each, Neon rails (the game cycles their colour)
+"""
+import math
+
+import numpy as np
+
+import spsgeo as G
+from spsgeo import CF
+
+from .bricks import Bricks, hexc, ori, shade
+
+POST_H = 4.4
+SPAN = 7.0
+TINT = "ececE8"            # seed bodies: light grey, tinted by the game
+
+TIERS = {
+    "Fence_Wood": dict(plinth="5a3a22", post="6b4226", cap="9a6238", band=None, top="c8743a", rail="c8743a",
+                       rail2="a0572b", pw=0.8, rw=0.5, header="c8743a", board="22232b", trim="9a6238"),
+    "Fence_Gold": dict(plinth="b8860b", post="e0a800", cap="ffd447", band="fff1c1", top="ffe58a", rail="ffc72c",
+                       rail2="f5b700", pw=0.95, rw=0.55, header="ffd447", board="22232b", trim="fff1c1"),
+    "Fence_Diamond": dict(plinth="b9c6dc", post="f4f8ff", cap="dff6ff", band="7fe3ff", top="6ff3ff", rail="4fc3f7",
+                          rail2="dff6ff", pw=0.95, rw=0.55, header="7fe3ff", board="1d2433", trim="4fc3f7"),
+    "Fence_Rainbow": dict(plinth="1e1a2e", post="2b2233", cap="4a3b5c", band="3f3250", top="ffe14d", rail="ff4d6d",
+                          rail2="4da6ff", pw=0.95, rw=0.55, header="2b2233", board="15121c", trim="3f3250"),
+}
+TIER_ORDER = ("Fence_Wood", "Fence_Gold", "Fence_Diamond", "Fence_Rainbow")
+RAINBOW = ("ff4d6d", "ff9f3d", "ffe14d", "5ee06a", "4da6ff", "a46bff")
+
+
+def deco(sc, base=None):
+    return Bricks(sc, base, anchored=True, collide=False, touch=False, query=False, massless=False)
+
+
+def finish(m, primary, pivot_world):
+    """PrimaryPart and its PivotOffset so the Model's pivot is pivot_world."""
+    m.p["primary"] = primary
+    primary.p["pivot"] = primary.p["cf"].inv() * pivot_world
+    return m
+
+
+# ---------------------------------------------------------------- toppers
+
+def round_knob(b, m, c, s, cols, name="Knob"):
+    """Folk Valley's round: two crossing blocks, one turned 45 degrees, a lid."""
+    c = np.asarray(c, float)
+    out = [b.part(m, name, (s, s * 0.8, s * 0.6), c, None, cols[0]),
+           b.part(m, name, (s * 0.6, s * 0.84, s), c, None, cols[0]),
+           b.part(m, name, (s * 0.82, s * 0.66, s * 0.82), c, G.ry(45), cols[1]),
+           b.part(m, name, (s * 0.5, s * 0.16, s * 0.5), c + (0, s * 0.45, 0), None, cols[2])]
+    return out
+
+
+def jewel(b, m, c, s, col, name="Jewel"):
+    """A cut gem standing on its point: a cube turned 45 about Y and tipped 35 to sit on a corner."""
+    return b.part(m, name, (s, s, s), np.asarray(c, float), ori(35.26, 45, 0), col, material="Neon")
+
+
+def star(b, m, c, r, col, name="Star", material="Neon", R=None):
+    """A five-point star facing -Z: five rays round a centre block."""
+    R = np.eye(3) if R is None else R
+    c = np.asarray(c, float)
+    out = [b.part(m, name, (r * 0.62, r * 0.62, 0.3), c, R @ G.rz(45), col, material=material)]
+    for i in range(5):
+        a = i * 72.0
+        Rr = R @ G.rz(a)
+        out.append(b.part(m, name, (r * 0.36, r, 0.24 + 0.012 * i), c + Rr @ (0, r * 0.62, 0), Rr, col,
+                          material=material))
+    return out
+
+
+# ---------------------------------------------------------------- fences
+
+def fence_post(sc, parent, name, st, base=None):
+    """About 4.4 tall (the topper rises above); pivot on the ground at its centre."""
+    base = base or CF()
+    b = deco(sc, base)
+    m = sc.model(parent, "Post")
+    pw = st["pw"]
+    pl = b.part(m, "Plinth", (pw + 0.5, 0.5, pw + 0.5), (0, 0.25, 0), None, st["plinth"])
+    b.part(m, "Post", (pw, POST_H - 0.85, pw), (0, 0.5 + (POST_H - 0.85) / 2 - 0.02, 0), None, st["post"])
+    b.part(m, "Cap", (pw + 0.3, 0.38, pw + 0.3), (0, POST_H - 0.19 - 0.02, 0), None, st["cap"])
+    if st["band"]:
+        for y in (1.15, POST_H - 0.85):
+            b.part(m, "Band", (pw + 0.12, 0.26, pw + 0.12), (0, y, 0), None, st["band"])
+    if name == "Fence_Wood":
+        b.part(m, "Top", (pw * 0.62, 0.22, pw * 0.62), (0, POST_H + 0.08, 0), None, st["top"])
+    elif name == "Fence_Gold":
+        round_knob(b, m, (0, POST_H + 0.44, 0), 0.95, ("ffd447", "ffe58a", "fff1c1"))
+    elif name == "Fence_Diamond":
+        b.part(m, "Setting", (0.66, 0.25, 0.66), (0, POST_H + 0.1, 0), G.ry(45), st["band"])
+        jewel(b, m, (0, POST_H + 0.82, 0), 0.72, st["top"])
+    else:
+        b.part(m, "Stem", (0.3, 0.55, 0.3), (0, POST_H + 0.25, 0), None, st["band"])
+        star(b, m, (0, POST_H + 1.05, 0), 0.62, st["top"])
+    return finish(m, pl, base)
+
+
+def fence_rail(sc, parent, name, st, base=None):
+    """7 long between post centres (local X -3.5..3.5); every piece runs along X or sits square to
+    it, so the Model stretches cleanly. Pivot on the ground halfway between the posts."""
+    base = base or CF()
+    b = deco(sc, base)
+    m = sc.model(parent, "Rail")
+    rw = st["rw"]
+    L = SPAN - st["pw"] + 0.36                   # tucked 0.18 into each post
+    neon = name == "Fence_Rainbow"
+    mat = "Neon" if neon else "Plastic"
+    top = b.part(m, "Bar", (L, rw, rw), (0, POST_H * 0.78, 0), None, st["rail"], material=mat)
+    b.part(m, "Bar", (L - 0.04, rw * 0.84, rw * 0.84), (0, POST_H * 0.36, 0), None, st["rail2"], material=mat)
+    if name == "Fence_Gold":
+        b.part(m, "Trim", (L - 0.1, 0.14, rw * 0.5), (0, POST_H * 0.78 + rw / 2 + 0.06, 0), None, "fff1c1")
+    elif name == "Fence_Diamond":
+        for x in (-1.6, 1.6):
+            b.part(m, "Diamond", (0.78, 0.78, 0.32), (x, POST_H * 0.57, 0), G.rz(45), "dff6ff")
+            b.part(m, "Diamond", (0.42, 0.42, 0.4), (x, POST_H * 0.57, 0), G.rz(45), "7fe3ff")
+    if neon:
+        for i, p in enumerate((n for n in m.children if n.name == "Bar")):
+            sc.attr(p, "Hue", round(i * 0.5, 2))
+    return finish(m, top, base)
+
+
+def gate_arch(sc, parent, name, st, base=None):
+    """An open doorway 8 wide (local X) and 7 high the player runs through along Z: two posts on
+    wider plinths, a header beam in the tier's strong colour and the dark Board above the opening
+    (front, -Z) with BoardBack on the other side. Pivot on the ground at its centre."""
+    base = base or CF()
+    b = deco(sc, base)
+    m = sc.model(parent, "GateArch")
+    W, H = 8.0, 10.2
+    pw = 1.5
+    px = W / 2 + pw / 2
+    pls = []
+    for s in (-1, 1):
+        pls.append(b.part(m, "Plinth", (pw + 0.8, 0.8, pw + 0.8), (s * px, 0.4, 0), None, st["plinth"]))
+        b.part(m, "Post", (pw, H - 0.8, pw), (s * px, 0.8 + (H - 0.8) / 2 - 0.02, 0), None, st["post"])
+        if st["band"]:
+            for y in (1.6, 6.4):
+                b.part(m, "Band", (pw + 0.14, 0.34, pw + 0.14), (s * px, y, 0), None, st["band"])
+    hw = W + 2 * pw + 1.2
+    if name == "Fence_Rainbow":
+        seg = hw / len(RAINBOW)
+        for i, col in enumerate(RAINBOW):
+            b.part(m, "Header", (seg + 0.01, 1.3 + 0.04 * (i % 2), 2.0 + 0.04 * (i % 2)),
+                   (-hw / 2 + seg * (i + 0.5), H + 0.63, 0), None, col, material="Neon")
+    else:
+        b.part(m, "Header", (hw, 1.3, 2.0), (0, H + 0.63, 0), None, st["header"])
+        b.part(m, "HeaderCap", (hw - 0.9, 0.3, 1.5), (0, H + 1.43, 0), None, shade(st["header"], 0.3))
+    # the name board: two dark panels back to back, a trim beam under them
+    by0, by1 = 7.2, H - 0.07
+    bc = (by0 + by1) / 2
+    bh = by1 - by0
+    board = b.plate(m, "Board", (W + 0.4, bh, 0.25), (0, bc, -0.125), None, st["board"])
+    b.plate(m, "BoardBack", (W + 0.4, bh, 0.25), (0, bc, 0.125), G.ry(180), st["board"])
+    b.part(m, "Trim", (W + 0.2, 0.5, 0.9), (0, by0 - 0.25, 0), None, st["trim"])
+    for s in (-1, 1):
+        x = s * px
+        if name == "Fence_Wood":
+            b.part(m, "Cap", (pw + 0.4, 0.4, pw + 0.4), (x, H + 1.45, 0), None, st["cap"])
+        elif name == "Fence_Gold":
+            round_knob(b, m, (x, H + 1.95, 0), 1.4, ("ffd447", "ffe58a", "fff1c1"))
+        elif name == "Fence_Diamond":
+            b.part(m, "Setting", (0.94, 0.3, 0.94), (x, H + 1.62, 0), G.ry(45), st["band"])
+            jewel(b, m, (x, H + 2.35, 0), 1.0, st["top"])
+        else:
+            star(b, m, (x, H + 2.6, 0), 0.95, st["top"])
+    sc.attr(m, "OpeningWidth", W)
+    finish(m, pls[0], base)
+    return m
+
+
+def fence_tier(sc, parent, name):
+    f = sc.folder(parent, name)
+    st = TIERS[name]
+    fence_post(sc, f, name, st)
+    fence_rail(sc, f, name, st)
+    gate_arch(sc, f, name, st)
+    return f
+
+
+# ---------------------------------------------------------------- Soil, Mound, UpgradeBoard
+
+SOIL = ("6e4a2c", "5a3a22", "7a5232")
+WOOD = ("9a6238", "a0572b", "6b4226", "c8743a")
+
+
+def soil(sc, parent, base=None):
+    """A raised bed 5 x 5: a wooden border with corner posts, dirt in furrows. Pivot at the top
+    centre of the dirt, where the plant stands."""
+    base = base or CF()
+    b = deco(sc, base)
+    m = sc.model(parent, "Soil")
+    top = 0.62
+    dirt = b.part(m, "Dirt", (4.3, top - 0.02, 4.3), (0, (top - 0.02) / 2, 0), None, SOIL[0])
+    for s in (-1, 1):
+        b.part(m, "Border", (4.4, 0.62, 0.5), (0, 0.33, s * 2.25), None, WOOD[0])
+        b.part(m, "Border", (0.5, 0.6, 4.0), (s * 2.25, 0.32, 0), None, WOOD[1])
+        for t in (-1, 1):
+            b.part(m, "Corner", (0.76, 0.86, 0.76), (s * 2.15, 0.43, t * 2.15), None, WOOD[2])
+    for z in (-1.25, 1.25):
+        b.part(m, "Furrow", (3.7, 0.14, 0.62), (0, top + 0.05, z), None, SOIL[1])
+    for pos, R, sz in (((1.2, top + 0.08, 0.35), ori(0, 20, 6), (0.5, 0.22, 0.42)),
+                       ((-1.35, top + 0.07, -0.4), ori(0, -35, -5), (0.42, 0.2, 0.36)),
+                       ((0.5, top + 0.06, -0.55), ori(0, 50, 4), (0.3, 0.16, 0.3))):
+        b.part(m, "Clod", sz, pos, R, SOIL[2])
+    return finish(m, dirt, base * CF((0, top, 0)))
+
+
+def mound(sc, parent, base=None):
+    """A heap of freshly dug soil 5 wide and about 1 high: two of Folk Valley's rounds, the dark
+    dent on top, clods and pebbles round it. Pivot at the top centre of the dent (where the seed
+    goes)."""
+    base = base or CF()
+    b = deco(sc, base)
+    m = sc.model(parent, "Mound")
+    heap = b.part(m, "Heap", (4.3, 0.55, 4.3), (0, 0.275, 0), G.ry(8), SOIL[1])
+    b.part(m, "Heap", (5.0, 0.44, 3.0), (0, 0.22, 0), G.ry(8), SOIL[1])
+    b.part(m, "Heap", (3.0, 0.45, 5.0), (0, 0.225, 0), G.ry(8), SOIL[1])
+    b.part(m, "Heap", (4.1, 0.5, 4.1), (0, 0.25, 0), G.ry(53), SOIL[0])
+    b.part(m, "Top", (3.2, 0.42, 2.2), (0, 0.72, 0), G.ry(-12), SOIL[0])
+    b.part(m, "Top", (2.2, 0.44, 3.2), (0, 0.72, 0), G.ry(-12), SOIL[0])
+    b.part(m, "Top", (2.9, 0.46, 2.9), (0, 0.72, 0), G.ry(33), SOIL[2])
+    b.part(m, "Dent", (1.6, 0.1, 1.6), (0, 0.97, 0), G.ry(20), "4a2f1c")
+    for pos, R, sz, col, nm in (((1.95, 0.62, -1.15), ori(10, 20, 15), (0.55, 0.45, 0.5), SOIL[2], "Clod"),
+                                ((-2.05, 0.5, 0.85), ori(-8, 50, -10), (0.5, 0.4, 0.45), SOIL[0], "Clod"),
+                                ((0.6, 0.55, 2.1), ori(12, -30, 6), (0.45, 0.38, 0.42), SOIL[2], "Clod"),
+                                ((-1.55, 0.5, -1.8), ori(0, 15, 10), (0.36, 0.3, 0.36), "a3adeb", "Pebble"),
+                                ((2.25, 0.46, 1.25), ori(0, 40, 0), (0.42, 0.32, 0.38), "b9b4c8", "Pebble")):
+        b.part(m, nm, sz, pos, R, col)
+    return finish(m, heap, base * CF((0, 0.97, 0)))
+
+
+def upgrade_board(sc, parent, base=None):
+    """Folk Valley's sign, small: two legs on plinths, a gold header beam, the dark Board between
+    (front -Z) and a bright green Button under it for the price; an invisible Prompt in front.
+    Pivot on the ground at its centre."""
+    base = base or CF()
+    b = deco(sc, base)
+    m = sc.model(parent, "UpgradeBoard")
+    pls = []
+    for s in (-1, 1):
+        pls.append(b.part(m, "Plinth", (1.3, 0.5, 1.3), (s * 2.6, 0.25, 0), None, "8e89a0"))
+        b.part(m, "Leg", (0.8, 5.6, 0.8), (s * 2.6, 0.5 + 2.8 - 0.02, 0), None, WOOD[2])
+    b.part(m, "Header", (6.6, 1.0, 1.2), (0, 6.6, 0), None, "f5b700")
+    b.part(m, "HeaderCap", (6.0, 0.28, 0.8), (0, 7.24, 0), None, "ffd447")
+    b.plate(m, "Board", (4.42, 2.9, 0.3), (0, 4.6, -0.05), None, "22232b")
+    b.part(m, "Frame", (4.42, 0.4, 0.7), (0, 2.95, 0), None, WOOD[0])
+    b.part(m, "ButtonBase", (3.0, 1.0, 0.7), (0, 2.25, -0.25), None, "3f9e3c")
+    b.plate(m, "Button", (2.6, 0.72, 0.2), (0, 2.27, -0.66), None, "5dbb46")
+    b.part(m, "Prompt", (4.0, 4.0, 2.0), (0, 3.0, -2.6), None, "ffffff", material="SmoothPlastic",
+           transparency=1.0, shadow=False)
+    return finish(m, pls[0], base)
+
+
+# ---------------------------------------------------------------- Seeds
+
+def seed_body(b, m, c=(0.0, 0.0, 0.0)):
+    """An egg 1.7 wide and 1.9 tall, stacked like Folk Valley's rounds and narrowing to the top;
+    every brick named Body (the game tints them)."""
+    c = np.asarray(c, float)
+    return [b.part(m, "Body", (1.25, 0.32, 1.25), c + (0, 0.16, 0), G.ry(45), TINT),           # foot
+            b.part(m, "Body", (1.7, 0.9, 1.1), c + (0, 0.74, 0), None, TINT),                  # wide middle,
+            b.part(m, "Body", (1.1, 0.92, 1.7), c + (0, 0.74, 0), None, TINT),                 # crossing
+            b.part(m, "Body", (1.36, 0.94, 1.36), c + (0, 0.74, 0), G.ry(45), TINT),           # and turned
+            b.part(m, "Body", (1.3, 0.56, 0.86), c + (0, 1.42, 0), None, TINT),                # shoulders
+            b.part(m, "Body", (0.86, 0.58, 1.3), c + (0, 1.42, 0), None, TINT),
+            b.part(m, "Body", (0.74, 0.3, 0.74), c + (0, 1.78, 0), G.ry(45), TINT)]            # tip
+
+
+def leaf_sprout(b, m, top, cols=("3f9e3c", "55b848", "7ad155")):
+    t = np.asarray(top, float)
+    b.part(m, "Sprout", (0.22, 0.5, 0.22), t + (0, 0.2, 0), G.rz(-8), cols[0])
+    for s in (-1, 1):
+        R = G.ry(s * 15) @ G.rz(s * 30)
+        b.part(m, "Sprout", (0.55, 0.12, 0.34), t + (s * 0.24, 0.42, 0), R, cols[1 if s < 0 else 2])
+
+
+def seed(sc, parent, area, base=None):
+    base = base or CF()
+    b = deco(sc, base)
+    m = sc.model(parent, "Seed_" + area)
+    body = seed_body(b, m)
+    top = (0.0, 1.9, 0.0)
+    if area == "Meadow":
+        leaf_sprout(b, m, top)
+        b.part(m, "Detail", (0.24, 0.2, 0.1), (0.4, 1.0, -0.82), None, "8a6a40")
+        b.part(m, "Detail", (0.2, 0.16, 0.1), (-0.3, 0.55, -0.82), None, "8a6a40")
+    elif area == "Dunes":
+        b.part(m, "Detail", (1.66, 0.22, 1.04), (0, 0.45, 0), None, "e8c27a")             # sand band
+        b.part(m, "Detail", (1.04, 0.23, 1.66), (0, 0.45, 0), None, "e8c27a")
+        b.part(m, "Sprout", (0.3, 0.62, 0.3), (0, 2.12, 0), None, "4fa83a")               # a tiny cactus
+        b.part(m, "Sprout", (0.2, 0.32, 0.2), (0.26, 2.12, 0), None, "4fa83a")
+        b.part(m, "Sprout", (0.2, 0.3, 0.2), (-0.24, 2.02, 0), None, "4fa83a")
+        b.part(m, "Detail", (0.2, 0.14, 0.2), (0, 2.5, 0), G.ry(45), "ff8fc7")             # its flower
+    elif area == "Marsh":
+        b.part(m, "Sprout", (0.26, 0.4, 0.26), (0, 2.02, 0), None, "f2efe6")              # a mushroom
+        b.part(m, "Detail", (0.9, 0.3, 0.9), (0, 2.3, 0), G.ry(45), "e8403a")
+        b.part(m, "Detail", (0.62, 0.2, 0.62), (0, 2.48, 0), G.ry(45), "e8403a")
+        b.part(m, "Dots", (0.2, 0.08, 0.2), (0.18, 2.6, 0.05), None, "ffffff")
+        b.part(m, "Dots", (0.16, 0.08, 0.16), (-0.25, 2.47, -0.25), G.ry(30), "ffffff")
+        b.part(m, "Detail", (0.42, 0.1, 0.42), (-0.5, 0.06, -0.62), G.ry(20), "4fa83a")    # a lily pad
+    elif area == "Frost":
+        b.part(m, "Detail", (1.06, 0.22, 1.06), (0, 1.86, 0), G.ry(45), "ffffff")          # snow cap
+        b.part(m, "Detail", (0.7, 0.2, 0.7), (0.05, 2.02, 0), G.ry(10), "ffffff")
+        for x, z, h in ((-0.55, -0.6, 0.5), (0.2, -0.78, 0.38), (0.62, -0.42, 0.45)):
+            b.part(m, "Icicle", (0.16, h, 0.16), (x, 1.5 - h / 2, z), None, "a9d8ff")
+        b.part(m, "Sprout", (0.16, 0.36, 0.16), (0, 2.25, 0), G.rz(-15), "6b4226")         # a twig
+    elif area == "Lava":
+        b.part(m, "Detail", (0.12, 0.7, 0.1), (0.25, 0.9, -0.82), G.rz(20), "ff6a1a", material="Neon")
+        b.part(m, "Detail", (0.5, 0.1, 0.1), (-0.2, 1.15, -0.82), G.rz(-10), "ff6a1a", material="Neon")
+        for y, s, col in ((2.0, 0.6, "ff5a1f"), (2.35, 0.42, "ff9f1a"), (2.62, 0.24, "ffe14d")):
+            b.part(m, "Flame", (s, 0.4, s), (0, y, 0), G.ry(45 * (y > 2.2)), col, material="Neon")
+    elif area == "Crystal":
+        for (x, z, h, rz, rx_, col) in ((0, 0, 0.9, 0, 0, "b67cff"), (0.32, 0.1, 0.62, -22, 8, "7fe3ff"),
+                                        (-0.3, -0.1, 0.55, 24, -6, "d8b4ff")):
+            b.part(m, "Crystal", (0.3, h, 0.3), (x, 1.84 + h / 2 - 0.08, z), ori(rx_, 45, rz), col)
+        b.part(m, "Detail", (0.3, 0.3, 0.1), (0.35, 0.95, -0.82), G.rz(45), "b67cff")
+    elif area == "Candy":
+        b.part(m, "Sprout", (0.16, 0.6, 0.16), (0, 2.12, 0), None, "ffffff")               # a lollipop stick
+        b.part(m, "Detail", (0.7, 0.7, 0.18), (0, 2.65, 0), None, "ff7eb6")
+        b.part(m, "Detail", (0.5, 0.5, 0.2), (0, 2.65, 0), G.rz(45), "ffffff")
+        for (x, y, rz, col) in ((-0.4, 1.1, 20, "5ee06a"), (0.35, 0.7, -30, "4da6ff"), (0.15, 1.35, 70, "ffe14d")):
+            b.part(m, "Sprinkle", (0.3, 0.1, 0.1), (x, y, -0.83), G.rz(rz), col)
+    elif area == "Cosmic":
+        for i in range(4):                                                                 # a ring round it
+            R = G.rz(14) @ G.ry(i * 90)
+            b.part(m, "Ring", (2.1, 0.12 + 0.04 * (i % 2), 0.3), R @ (0, 0, 1.0) + (0, 0.85, 0), R, "ffd447")
+        star(b, m, (0, 2.25, 0), 0.32, "fffbe6")
+    return finish(m, body[0], base)
+
+
+AREAS = ("Meadow", "Dunes", "Marsh", "Frost", "Lava", "Crystal", "Candy", "Cosmic")
+
+
+def build(sc):
+    """The whole of 4.2 under the scene root (PotatoKit)."""
+    fences = sc.container(sc.root, "Fences")
+    for name in TIER_ORDER:
+        f = fence_tier(sc, fences, name)
+        f.p["item"] = True
+    soil(sc, sc.root)
+    upgrade_board(sc, sc.root)
+    mound(sc, sc.root)
+    seeds = sc.container(sc.root, "Seeds")
+    for a in AREAS:
+        seed(sc, seeds, a)
+    return sc
