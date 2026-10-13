@@ -43,8 +43,9 @@ SIDE = {"E": "east", "W": "west"}
 def main(stats_path, lua_path, src, dst):
     st = json.load(open(stats_path))
     kb = os.path.getsize(lua_path) / 1024
-    size = ("**%s parts**, %d of them written once as templates and copied %d times, so the script is %.0f KB."
-            % (format(st["total"], ","), st["templates"], st["copies"], kb))
+    size = ("**%s parts** in all. The %d pieces that repeat (Mounds, props, heroes, signs, lamps) are each written "
+            "once in the script and copied %s times, so the script is only %.0f KB."
+            % (format(st["total"], ","), st["templates"], format(st["copies"], ","), kb))
     rows = ["| # | Area | Ground / walls | Hero (wall) | Its own touch | Parts |", "|---|---|---|---|---|---|"]
     for a in st["areas"]:
         rows.append("| %d | %s (`%s`) | `%s` / `%s` | %s (%s) | %s | %s |" % (

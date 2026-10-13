@@ -8,6 +8,8 @@ Every Part is a plain Roblox Part:
 - **SmoothPlastic, Smooth faces:** flat surfaces that carry text or a face.
 - **Neon (Smooth):** only what glows.
 
+**The map** (4.6) is separate: `out/map/BuildPotatoMap.lua` builds `Workspace.PotatoMap` with all eighteen areas dressed with these heroes and props. See `out/map/README.md`.
+
 The pieces so far:
 
 | Script | Piece |
@@ -35,14 +37,22 @@ The pieces so far:
 | `BuildPotatoesCloud.lua` | The Cloud Kingdom potatoes |
 | `BuildPotatoesVoid.lua` | The Glitch Void potatoes |
 | `BuildPotatoesOlympus.lua` | The Spud Olympus potatoes |
+| `BuildSceneryMeadow.lua` | The Meadow Patch hero and props |
+| `BuildSceneryDunes.lua` | The Sandy Dunes hero and props |
+| `BuildSceneryMarsh.lua` | The Mushroom Marsh hero and props |
 | `BuildSceneryJungle.lua` | The Jungle Ruins hero and props |
 | `BuildSceneryReef.lua` | The Coral Cove hero and props |
+| `BuildSceneryFrost.lua` | The Frost Fields hero and props |
 | `BuildSceneryHaunt.lua` | The Haunted Hollow hero and props |
+| `BuildSceneryLava.lua` | The Lava Furrows hero and props |
+| `BuildSceneryCrystal.lua` | The Crystal Caverns hero and props |
 | `BuildSceneryDino.lua` | The Dino Valley hero and props |
 | `BuildSceneryToy.lua` | The Toy Town hero and props |
+| `BuildSceneryCandy.lua` | The Candy Crops hero and props |
 | `BuildSceneryClock.lua` | The Clockwork Yard hero and props |
 | `BuildSceneryNeon.lua` | The Neon City hero and props |
 | `BuildSceneryCloud.lua` | The Cloud Kingdom hero and props |
+| `BuildSceneryCosmic.lua` | The Cosmic Garden hero and props |
 | `BuildSceneryVoid.lua` | The Glitch Void hero and props |
 | `BuildSceneryOlympus.lua` | The Spud Olympus hero and props |
 
@@ -940,7 +950,7 @@ The rig, rules and clips are the same as the Meadow Patch six. Each has 44 or 45
 
 ---
 
-## Heroes and props of the ten new areas
+## Heroes and props of the eighteen areas
 
 Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 
@@ -959,6 +969,7 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 - Each is 10 to 40 parts of decoration. Its pivot is the middle of its footprint on the ground, front -Z.
 - Each carries the scatter attributes: `Count`, `ScaleMin`, `ScaleMax`, `Band` and `Solid`.
 - `Solid = true` marks the props players should bump into. Their parts are built non-colliding like all decoration, so turn CanCollide on for the big ones when you scatter them.
+- `Band = Any` props are small clutter you may scatter into the running lane, so **none of them is Solid**. Thirteen props of the ten areas sent before were both; they are `Band = Side` now. Only that attribute changed in those scripts: `Clock.GiantSpring`, `Cloud`'s cloud puffs, `Dino`'s amber rock, `Haunt.Coffin`, `Jungle`'s rocks, `Olympus.Amphora`, `Reef`'s treasure chest and giant clam, `Toy`'s blocks, duck and car, and `Void`'s TV.
 
 **Attributes on parts**
 
@@ -967,6 +978,114 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 - `Spin` (degrees a second about the part's own Y). Every part of a spinning thing is centred on its axle with its own Y along it, so spinning each part about its own Y turns the whole thing.
 
 **Previews.** In the hero pictures, the yellow and blue figure is a 5-stud player and the potato is Spud at level 10. They are there for scale and are not in the scripts.
+
+### Meadow Patch (`BuildSceneryMeadow.lua`)
+
+**`PotatoKit.Heroes.Meadow`**: 219 parts, 40.6 wide, 35.9 tall, 25.3 deep.
+
+- **The windmill:** an eight-sided tower of upright planks in two reds, leaning in as it rises, with white corner trim, on a stone plinth.
+  - It has a wooden balcony with a white railing, a door with a white brace, and a lantern hanging under the balcony.
+  - It has a lit window with a flower box, small side windows, and a grey stepped cap with a potato weathervane.
+- **The sails:** four sails of white and cream cloth in red frames on dark beams, round a hub facing the lane.
+  - Every sail part, the hub and the windshaft carry **`Spin` = 20** and are centred on one axle, so turning each part about its own Y turns the whole sail.
+  - Their lowest point (10.7) clears the railing.
+- **The scarecrow:** a potato scarecrow stands in a potato patch in front of the windmill. It has a stitched happy face, straw hair, a straw hat with a red band and a patched blue shirt. Its arms are out along a crossbar, with a crow on one arm.
+- **Round its foot:** a rolled hay bale, a square bale with a pitchfork, potato sacks, and stepping stones to the door.
+- **Solid (37 parts):** the plinth, the door step, the tower walls, the balcony deck and the potato patch.
+- **Glow:** NightLamp on the lit window; Flicker and NightLamp on the hanging lantern.
+
+| `PotatoKit.Props.Meadow.<Name>` | Parts | W × H × D | Count | Scale | Band | Solid | What |
+|---|---|---|---|---|---|---|---|
+| `HayRolls` | 21 | 10.0 × 8.2 × 6.2 | 5 | 0.9–1.2 | Edge | yes | Three stacked rolled bales with spiral ends and loose straw |
+| `PicketFence` | 38 | 12.1 × 4.1 × 2.1 | 6 | 0.9–1.1 | Edge | yes | A white picket fence with a gate swung open, and flowers |
+| `PotatoCart` | 33 | 7.9 × 5.1 × 5.0 | 3 | 0.9–1.2 | Side | yes | A two-wheeled hand cart heaped with potatoes |
+| `Beehive` | 27 | 5.7 × 9.1 × 5.4 | 4 | 0.9–1.2 | Side | no | A straw beehive on a stand with a honey pot and three bees |
+| `Sunflowers` | 27 | 8.9 × 10.2 × 2.6 | 8 | 0.85–1.25 | Side | no | Three tall sunflowers facing the lane |
+| `Signpost` | 22 | 8.2 × 10.1 × 3.5 | 3 | 0.9–1.15 | Side | no | A wooden post with three arrows and a bluebird on top |
+| `Mailbox` | 19 | 2.5 × 6.6 × 3.4 | 3 | 0.9–1.15 | Side | no | A red round-topped mailbox with its flag up, a letter and flowers |
+| `PotatoSacks` | 32 | 6.3 × 3.9 × 5.6 | 7 | 0.8–1.2 | Any | no | Two tied sacks and an open heaped one, with spilled potatoes |
+
+These stand beside Folk Valley's own apple trees, flowers, bushes, rocks, pond and picnic table, which the map uses too.
+
+**Previews:** `previews/scenery/`
+
+- `hero_Meadow.jpg`: from the lane
+- `hero_Meadow_corner.jpg`: from the corner
+- `props_Meadow.jpg`: the props in a row
+- `props_Meadow_top.jpg`: the props from above
+
+### Sandy Dunes (`BuildSceneryDunes.lua`)
+
+**`PotatoKit.Heroes.Dunes`**: 186 parts, 43.8 wide, 36.9 tall, 28.8 deep.
+
+- **The pyramid:** eight sandstone tiers, each 4 high, in three shades getting lighter upwards.
+  - Each tier has a cream trim and a few stones standing proud of its faces.
+  - The back is nearly straight up, against the wall.
+  - A gold stepped capstone sits on top, with a gold ankh on the top tier.
+- **The potato pharaoh:** a giant golden potato face set into the lane face of the pyramid. It has kohl-lined eyes, a smile, pink cheeks and freckles.
+  - It wears a blue-and-gold striped headdress with a gold band and a small cobra, striped flaps falling beside the face, a striped beard and a broad collar.
+- **At its foot:** a gateway with hieroglyph panels and gold tops on its posts, and a winged sun above. The doorway is dark inside, and a little mummy potato peeks out.
+  - Round the gateway: more hieroglyph panels, torches either side, painted pots, sand drifts and fallen stones.
+- **Solid (26 parts):** the tiers and their trims, the gateway and its step, the head's body blocks and the lower capstone.
+- **Glow:** the two torch flames have Flicker and NightLamp.
+
+| `PotatoKit.Props.Dunes.<Name>` | Parts | W × H × D | Count | Scale | Band | Solid | What |
+|---|---|---|---|---|---|---|---|
+| `Obelisk` | 13 | 3.8 × 15.2 × 3.8 | 4 | 0.9–1.2 | Edge | yes | A rose-granite obelisk on a stepped base, with a gold tip and hieroglyphs |
+| `MarketStall` | 36 | 6.6 × 6.4 × 3.8 | 3 | 0.9–1.1 | Edge | yes | A striped awning over a counter with potatoes, a pot and a lantern (Flicker, NightLamp) |
+| `Saguaro` | 21 | 6.2 × 10.4 × 3.8 | 7 | 0.85–1.3 | Side | yes | A chunky cactus with two arms, pink flowers and spines |
+| `OasisPool` | 24 | 8.2 × 3.7 × 8.2 | 3 | 0.9–1.2 | Side | no | A round pool with a stone rim, reeds with cattails and a lily pad |
+| `Scarab` | 28 | 8.8 × 4.4 × 4.2 | 3 | 0.9–1.2 | Side | yes | A teal scarab on a plinth, pushing a potato with a face |
+| `Camel` | 25 | 8.4 × 8.0 × 2.6 | 3 | 0.9–1.15 | Side | yes | A camel with a round hump and a saddle cloth |
+| `ClayPots` | 33 | 6.6 × 3.5 × 4.2 | 7 | 0.8–1.2 | Any | no | Three painted clay pots, one tipped over, and shards |
+| `Scorpion` | 22 | 7.3 × 4.3 × 3.6 | 5 | 0.9–1.4 | Any | no | An orange scorpion with its tail raised |
+
+These stand beside Folk Valley's own mesas, palms, cacti, rocks, bones, tumbleweed and crates, which the map uses too.
+
+**Previews:** `previews/scenery/`
+
+- `hero_Dunes.jpg`: from the lane
+- `hero_Dunes_corner.jpg`: from the corner
+- `props_Dunes.jpg`: the props in a row
+- `props_Dunes_top.jpg`: the props from above
+
+### Mushroom Marsh (`BuildSceneryMarsh.lua`)
+
+**`PotatoKit.Heroes.Marsh`**: 216 parts, 41.9 wide, 38.0 tall, 29.8 deep.
+
+- **The toadstool house:** the fat cream stem is the house, three eight-sided drums getting lighter upwards.
+  - The red cap steps up in three eight-sided layers to a lid. It has round white dots on its faces and ledges, and pink gills underneath.
+- **On its front:**
+  - a round plank door in a dark frame, on a plank porch with three stone steps;
+  - a railed balcony on two posts over the porch, with a lantern hanging under it;
+  - three round glowing windows;
+  - a crooked stone chimney with smoke.
+- **The potato:** a waving potato in a little toadstool hat stands at the door.
+- **Round its foot:** red, purple and blue toadstools, two spore lamps by the steps, moss and grass, and a murky pond with lily pads, a pink bud and cattails.
+- **Solid (26 parts):** the stem drums, the porch, the steps and the balcony deck.
+- **Glow:**
+  - **NightLamp:** the window panes, the door's little window and the spots on the tall blue toadstool.
+  - **Flicker and NightLamp:** the lantern and the spore-lamp pods.
+
+| `PotatoKit.Props.Marsh.<Name>` | Parts | W × H × D | Count | Scale | Band | Solid | What |
+|---|---|---|---|---|---|---|---|
+| `GiantToadstool` | 36 | 10.7 × 15.1 × 10.3 | 5 | 0.85–1.25 | Side | no | A tall red toadstool to run under: a turned stem with a ring, and a tilted dotted cap with gills |
+| `PurpleShroom` | 22 | 12.6 × 14.9 × 12.1 | 4 | 0.85–1.2 | Side | no | A bent stem under a wide flat purple cap with lilac spots and a glowing underside (NightLamp), with a baby shroom |
+| `BlueShrooms` | 29 | 11.0 × 11.9 × 7.1 | 5 | 0.85–1.25 | Side | no | Two blue mushrooms leaning apart, with glowing cyan spots (Flicker, NightLamp) |
+| `FairyRing` | 24 | 8.0 × 2.6 × 8.1 | 6 | 0.8–1.3 | Any | no | Nine tiny mushrooms of mixed colours in a ring on grass, with two sparkles (Flicker, NightLamp) |
+| `LilyPads` | 23 | 8.9 × 2.7 × 7.1 | 6 | 0.8–1.3 | Any | no | A patch of murky water with four pads, a pink lotus, a bud, reeds and a dragonfly |
+| `Cattails` | 18 | 3.9 × 7.0 × 3.8 | 8 | 0.8–1.3 | Side | no | Reeds with brown cattail heads and long blades on a mossy tuft |
+| `MossyLog` | 25 | 10.3 × 4.7 × 5.3 | 4 | 0.9–1.2 | Side | yes | A hollow log with moss on top, bracket fungi, blue mushrooms and a broken branch |
+| `SporeLamp` | 18 | 4.9 × 8.6 × 3.6 | 6 | 0.9–1.2 | Side | no | A shepherd's-crook stalk with glowing spore pods hanging from it (Flicker, NightLamp) |
+| `FrogStatue` | 31 | 5.4 × 6.0 × 5.6 | 3 | 0.9–1.2 | Side | yes | A jade frog in a gold crown with a glowing gem (NightLamp), on a stump with roots |
+| `HangingMoss` | 22 | 10.1 × 10.7 × 3.6 | 4 | 0.9–1.2 | Edge | no | A crooked dead tree arching over, with strands of moss hanging from it |
+
+**Previews:** `previews/scenery/`
+
+- `hero_Marsh.jpg`: from the lane
+- `hero_Marsh_corner.jpg`: from the corner
+- `props_Marsh.jpg`: the props in a row
+- `props_Marsh_top.jpg`: the props from above
 
 ### Jungle Ruins (`BuildSceneryJungle.lua`)
 
@@ -1033,6 +1152,39 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 - `props_Reef.jpg`: the props in a row
 - `props_Reef_top.jpg`: the props from above
 
+### Frost Fields (`BuildSceneryFrost.lua`)
+
+**`PotatoKit.Heroes.Frost`**: 217 parts, 44.1 wide, 39.8 tall, 16.3 deep.
+
+- **The ice castle gate:** two eight-sided ice towers in three close pale blues, getting lighter upwards (no transparency).
+  - Each tower has a white battlement ring and a stepped blue spire with a cyan crystal on its tip.
+  - Each also has a crystal cluster on the battlements, a royal blue banner with a white snowflake, and a slit window.
+- **The gatehouse:** piers of big ice blocks and a chamfered arch framed in white, with a glowing keystone. A half-raised portcullis hangs over a deep blue passage, and a snowy walkway with battlements runs over the top.
+- **The ice king:** a frozen potato king on a plinth in the middle of the walkway. He wears a gold crown with a crystal gem and a royal blue stole, and raises a crystal sceptre.
+- **Icicles** hang under the battlements, the walkway, the arch and the window sills. Snow drifts and crystal clusters lie at the gate's foot.
+- **Solid (68 parts):** the towers, the gate piers and lintel, the walkway and the step. The arch is a walk-in niche about 4 deep: the portcullis is decoration and the dark wall at its back is solid.
+- **Glow:** the crystals, the keystone, the crown gem and the sceptre have Flicker and NightLamp.
+
+| `PotatoKit.Props.Frost.<Name>` | Parts | W × H × D | Count | Scale | Band | Solid | What |
+|---|---|---|---|---|---|---|---|
+| `Igloo` | 22 | 9.0 × 7.0 × 10.6 | 3 | 0.9–1.2 | Side | yes | A snow-block dome with an entrance tunnel and a warm glowing doorway (Flicker, NightLamp) |
+| `SledPresents` | 26 | 3.0 × 6.0 × 8.1 | 4 | 0.9–1.2 | Any | no | A red sled with curled runners, three stacked presents with ribbons, and a pull rope |
+| `PenguinStatue` | 24 | 4.8 × 7.1 × 4.2 | 3 | 0.9–1.2 | Side | yes | A penguin potato on an ice plinth, in a red scarf and bobble hat |
+| `IceCrystals` | 12 | 5.1 × 5.3 × 4.4 | 8 | 0.8–1.4 | Any | no | Five blue ice shards with glowing cyan tips (Flicker, NightLamp) on a snow base |
+| `FrozenFountain` | 22 | 7.6 × 8.1 × 7.6 | 2 | 0.9–1.15 | Side | yes | A stone basin with a frozen pool, a frozen stream from its bowl, icicles and a glowing tip |
+| `SnowFort` | 22 | 9.7 × 5.6 × 4.8 | 4 | 0.9–1.2 | Edge | yes | A curved wall of snow blocks with a pile of snowballs, a red flag and a shovel |
+| `SnowLamp` | 20 | 3.4 × 11.0 × 2.8 | 6 | 0.95–1.15 | Side | no | A dark iron lamp post with a warm lantern (Flicker, NightLamp), a snow cap and a holly wreath |
+| `SkiStand` | 18 | 4.2 × 7.8 × 3.6 | 4 | 0.9–1.2 | Side | no | Two skis and crossed poles stuck in a snow pile, with a bobble hat on a pole |
+
+These stand beside Folk Valley's own snowy pines, ice shards, rocks, snow piles, snowmen, frozen pond and cabin, which the map uses too.
+
+**Previews:** `previews/scenery/`
+
+- `hero_Frost.jpg`: from the lane
+- `hero_Frost_corner.jpg`: from the corner
+- `props_Frost.jpg`: the props in a row
+- `props_Frost_top.jpg`: the props from above
+
 ### Haunted Hollow (`BuildSceneryHaunt.lua`)
 
 **`PotatoKit.Heroes.Haunt`**: 166 parts, 44.6 wide, 37.3 tall, 24.2 deep.
@@ -1064,6 +1216,73 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 - `hero_Haunt_corner.jpg`: from the corner
 - `props_Haunt.jpg`: the props in a row
 - `props_Haunt_top.jpg`: the props from above
+
+### Lava Furrows (`BuildSceneryLava.lua`)
+
+**`PotatoKit.Heroes.Lava`**: 205 parts, 42.5 wide, 39.9 tall (26.5 to the crater rim, the rest is smoke), 29.5 deep.
+
+- **The volcano:** a stepped cone of nine rounded tiers, each turned its own way, charcoal at the foot and red-brown at the top, with boulders on the ledges.
+- **The crater:** a jagged rim open towards the lane, with a glowing pool, a boiling dome and a short spurt of lava with splashes, and grey smoke puffs over it.
+- **The lava:** three Neon streams run down the front over the step edges, orange with yellow cores and widening as they go. Two come from the crater and one from a vent in the flank. They end in a lava pool with bursting bubbles, behind a low kerb of stones. Glowing cracks zig-zag across the steps and three lava bombs lie about.
+- **The potato:** in a silver fire-proof suit with a gold visor flipped up, dipping a long ladle into the pool.
+- **Solid (65 parts):** every tier of the cone, the crater rim, the ledge boulders, the big rocks at the foot, the vent lip and the kerb stones. A player can climb the lower steps but not walk into the upper ones.
+- **Glow:** all its Neon (the streams, the pool, the crater, the cracks, the bombs) has NightLamp, and nearly all of it Flicker.
+
+| `PotatoKit.Props.Lava.<Name>` | Parts | W × H × D | Count | Scale | Band | Solid | What |
+|---|---|---|---|---|---|---|---|
+| `RockSpikes` | 26 | 7.6 × 9.9 × 6.1 | 6 | 0.85–1.3 | Side | yes | Five leaning stacked spikes, charcoal at the foot and red-brown at the tips |
+| `CharredStump` | 24 | 8.6 × 7.8 × 7.0 | 5 | 0.85–1.25 | Side | yes | A burnt stump with a snapped splinter and a smouldering top, a fallen log with a glowing end, and a wisp of smoke |
+| `SteamVent` | 18 | 6.3 × 6.9 × 6.0 | 5 | 0.9–1.3 | Side | no | A ring of leaning rocks with a glow inside and white steam rising |
+| `ObsidianSlabs` | 14 | 8.7 × 6.5 × 5.9 | 4 | 0.9–1.3 | Edge | yes | Leaning purple-black slabs with glossy edges |
+| `BonePile` | 24 | 7.0 × 3.6 × 4.9 | 6 | 0.8–1.2 | Any | no | A horned skull, crossed bones and ribs on ash |
+| `LavaPool` | 15 | 8.1 × 1.4 × 7.0 | 4 | 0.9–1.3 | Side | no | A round glowing pool with a bubble and a crust, in a kerb of rocks |
+| `MagmaBoulder` | 17 | 8.0 × 4.8 × 5.9 | 5 | 0.85–1.3 | Side | yes | A lumpy boulder split by branching glowing cracks, with embers round it |
+| `FirePit` | 28 | 5.7 × 4.5 × 5.1 | 3 | 0.9–1.15 | Side | no | A stone ring of crossed charred logs and flames, with a foil-wrapped baked potato (no face) on a spit |
+| `WarningSign` | 16 | 6.3 × 6.1 × 3.0 | 3 | 0.95–1.15 | Side | yes | A hazard-striped sign with a yellow "!" diamond and a lava drip |
+| `CooledLava` | 13 | 8.1 × 1.2 × 6.3 | 8 | 0.8–1.4 | Any | no | Flat crusts of cooled lava with a faint glowing crack |
+
+**Previews:** `previews/scenery/`
+
+- `hero_Lava.jpg`: from the lane
+- `hero_Lava_corner.jpg`: from the corner
+- `props_Lava.jpg`: the props in a row
+- `props_Lava_top.jpg`: the props from above
+
+### Crystal Caverns (`BuildSceneryCrystal.lua`)
+
+**`PotatoKit.Heroes.Crystal`**: 194 parts, 45.5 wide, 38.8 tall, 29.4 deep.
+
+- **The crag and the mine:** a grey-violet crag of big turned blocks, darker at the foot, with lighter ledges. Two angled buttresses frame the cave mouth.
+  - The mine has a dark opening, two big timber posts with a lintel and braces, and a sign with a glowing pink gem.
+- **The crystals:** a fan of nineteen crystals bursts out of the top, the rock face and the ground. Each is a faceted prism with a glowing point.
+  - The giant cyan one reaches 38.8.
+  - Big pink and gold ones lean out to the sides.
+- **The track:** rails on sleepers run out of the mine towards the lane, with a cart heaped with gems on them. Lanterns hang from a post and the frame, and loose gems lie about.
+- **The potato miner:** on the buttress ledge about 10 up, in a yellow hard hat with a headlamp and blue overalls, a pickaxe on its shoulder, holding up a glowing gem.
+- **Solid (33 parts):** the crag, the bigger rocks, the timber frame and the bodies of the three biggest crystals.
+- **Glow:**
+  - **Neon:** the crystal points and glints.
+  - **NightLamp:** the lanterns, the gems, the headlamp and four of the crystals. All of these but the sign gem also flicker.
+
+| `PotatoKit.Props.Crystal.<Name>` | Parts | W × H × D | Count | Scale | Band | Solid | What |
+|---|---|---|---|---|---|---|---|
+| `GiantCluster` | 30 | 11.3 × 12.4 × 8.9 | 3 | 0.9–1.25 | Edge | yes | Seven cyan, pink and gold crystals fanning out of a rock base |
+| `CrystalCluster` | 19 | 7.5 × 7.9 × 6.2 | 6 | 0.8–1.3 | Side | no | Five cyan and pink crystals growing out of a rock |
+| `GoldCrystals` | 19 | 5.7 × 5.4 × 4.3 | 6 | 0.8–1.3 | Side | no | Four gold crystals with glowing tips on a flat rock |
+| `MineCart` | 25 | 3.9 × 5.6 × 9.3 | 3 | 0.95–1.15 | Side | yes | A cart heaped with gems on a short track with a red buffer |
+| `MineLantern` | 13 | 4.0 × 7.6 × 3.1 | 5 | 0.95–1.15 | Side | no | A timber post with a hanging lantern (NightLamp) and a crystal at its foot |
+| `Stalagmites` | 20 | 6.2 × 8.5 × 5.1 | 6 | 0.8–1.35 | Side | yes | Four tapering rock spires and a pink crystal |
+| `GemPile` | 14 | 4.4 × 2.6 × 4.1 | 6 | 0.8–1.2 | Any | no | A sack spilling gems and gold coins |
+| `PickaxeRock` | 17 | 5.6 × 7.7 × 5.8 | 3 | 0.9–1.2 | Side | yes | A pickaxe bitten into a rock, with crystals and chips |
+| `TimberSupport` | 19 | 9.7 × 10.1 × 3.2 | 3 | 0.95–1.15 | Edge | yes | Posts, a beam and braces holding up rubble, with a hanging lantern |
+| `Geode` | 32 | 7.5 × 5.8 × 6.5 | 4 | 0.85–1.25 | Side | yes | A round geode cracked open towards the lane, crystals inside, its other half beside it |
+
+**Previews:** `previews/scenery/`
+
+- `hero_Crystal.jpg`: from the lane
+- `hero_Crystal_corner.jpg`: from the corner
+- `props_Crystal.jpg`: the props in a row
+- `props_Crystal_top.jpg`: the props from above
 
 ### Dino Valley (`BuildSceneryDino.lua`)
 
@@ -1124,6 +1343,40 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 - `hero_Toy_corner.jpg`: from the corner
 - `props_Toy.jpg`: the props in a row
 - `props_Toy_top.jpg`: the props from above
+
+### Candy Crops (`BuildSceneryCandy.lua`)
+
+**`PotatoKit.Heroes.Candy`**: 217 parts, 42.6 wide, 37.3 tall, 25.2 deep.
+
+- **The cake:** three tiers on a round white board, getting lighter upwards: chocolate, then pink, then vanilla.
+  - Each tier is an eight-sided drum under an overhanging icing lid.
+  - Drips of different lengths run down every side: white on the lower two tiers, pink on the top one. The longest end in a fat drop.
+  - Each tier has a band of sprinkles, and the lower rims have cherries on whipped cream.
+- **The slice:** a wedge is cut out of the front of the chocolate tier. It shows lighter sponge with a cream layer and a jam layer.
+- **On top:** a potato cake-topper with a party hat and both arms up, holding a blue swirl lollipop high. Four big striped candles stand round it.
+- **Beside the cake:** a giant candy cane curling towards it, a giant swirl lollipop with a ribbon bow, and gumdrops at the foot.
+- **Solid (28 parts):** the board, the three tier drums and their icing lids.
+- **Glow:** the candles' eight flame parts have Flicker and NightLamp.
+
+| `PotatoKit.Props.Candy.<Name>` | Parts | W × H × D | Count | Scale | Band | Solid | What |
+|---|---|---|---|---|---|---|---|
+| `CandyCane` | 22 | 4.3 × 11.3 × 5.2 | 6 | 0.85–1.3 | Edge | no | A tall red-and-white cane and a shorter leaning green-and-white one on a sugar drift |
+| `LollipopTree` | 34 | 8.6 × 14.8 × 4.6 | 6 | 0.85–1.25 | Side | no | Three swirl lollipops (pink, blue, lemon) on sticks out of a pink gumdrop |
+| `Doughnut` | 30 | 7.1 × 7.1 × 3.5 | 4 | 0.9–1.25 | Side | yes | A giant doughnut on its edge, with pink icing and sprinkles |
+| `Gumdrops` | 24 | 7.6 × 3.6 × 5.6 | 10 | 0.8–1.4 | Any | no | Four sugared gumdrops |
+| `Cupcake` | 26 | 4.7 × 8.8 × 4.7 | 4 | 0.9–1.25 | Side | yes | A pleated blue-and-white wrapper, a pink frosting swirl, sprinkles and a cherry |
+| `GingerbreadFence` | 36 | 9.4 × 5.4 × 1.5 | 5 | 0.9–1.1 | Edge | yes | Gingerbread posts and pickets with icing and gumdrops on the posts |
+| `IceCreamCone` | 20 | 4.4 × 13.6 × 4.4 | 4 | 0.9–1.2 | Side | yes | A waffle cone standing on its tip in a melted puddle: two scoops, drips, a wafer and a cherry |
+| `WrappedSweets` | 20 | 5.0 × 2.2 × 4.8 | 10 | 0.8–1.3 | Any | no | Two wrapped sweets with twisted wrapper ends |
+| `ChocolateStack` | 22 | 7.2 × 3.7 × 5.7 | 4 | 0.9–1.2 | Side | yes | Three crossed bars (dark, milk, white), the top one half unwrapped |
+| `CandyMushroom` | 22 | 5.4 × 4.9 × 3.9 | 8 | 0.8–1.3 | Any | no | Pink and mint mushrooms with white sugar dots |
+
+**Previews:** `previews/scenery/`
+
+- `hero_Candy.jpg`: from the lane
+- `hero_Candy_corner.jpg`: from the corner
+- `props_Candy.jpg`: the props in a row
+- `props_Candy_top.jpg`: the props from above
 
 ### Clockwork Yard (`BuildSceneryClock.lua`)
 
@@ -1219,6 +1472,42 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 - `hero_Cloud_corner.jpg`: from the corner
 - `props_Cloud.jpg`: the props in a row
 - `props_Cloud_top.jpg`: the props from above
+
+### Cosmic Garden (`BuildSceneryCosmic.lua`)
+
+**`PotatoKit.Heroes.Cosmic`**: 206 parts, 40.7 wide, 36.2 tall, 25.6 deep.
+
+- **The rocket:** a big retro rocket crashed nose first into a crater, tilted so it stays inside the footprint.
+  - Its body is white and eight-sided, with a stepped red nose cone, red bands and three swept red fins.
+  - It has two round portholes and an open hatch with its door swung out.
+- **The crater:** a ring of turned grey slabs over a scorched floor, with boulders round the buried nose. Glowing cracks zig-zag out across the ground.
+- **The engine end** points up: a dark nozzle with an orange and pale blue Neon glow and flame blocks, and see-through smoke puffs drifting off it.
+- **The potato astronaut:** it waves from the ladder that runs from the hatch to the ground. It wears white boots, a backpack with a red light, an aerial with a glowing tip, and a glass dome of pale blue panes.
+- **Round it:** a potato flag on the crater rim, torn hull panels, a torn-off fin, and two clumps of glowing alien plants.
+- **Solid (43 parts):** the crater slabs, the boulders and the rocket's big lower sections.
+- **Glow:**
+  - **Flicker and NightLamp:** the engine, the cracks, the backpack light, the aerial tip and half the plant bulbs.
+  - **NightLamp only:** the other bulbs, the portholes and the door window.
+
+| `PotatoKit.Props.Cosmic.<Name>` | Parts | W × H × D | Count | Scale | Band | Solid | What |
+|---|---|---|---|---|---|---|---|
+| `RingPlanet` | 19 | 7.0 × 10.4 × 7.1 | 5 | 0.85–1.25 | Side | no | A tilted orange planet with a cream-and-lilac ring on a pole. `Spin` 24 on the planet and ring, all centred on its axis. |
+| `Crater` | 16 | 8.8 × 2.2 × 8.7 | 6 | 0.8–1.4 | Any | no | A ring of turned moon-grey slabs round a dark floor, with two glowing crystals |
+| `SatelliteDish` | 21 | 6.7 × 8.5 × 5.5 | 3 | 0.9–1.2 | Edge | yes | A rimmed white dish on a mast, with a blinking red light on its feed |
+| `AlienPlants` | 24 | 5.1 × 6.5 × 4.3 | 10 | 0.8–1.3 | Any | no | Teal fronds and curling stems with Neon bulbs |
+| `FloatingRocks` | 14 | 7.8 × 10.8 × 4.7 | 4 | 0.9–1.2 | Side | yes | An upright ring of rocks hovering round a glowing orb on a thin dark pole |
+| `StarLamp` | 17 | 4.5 × 10.8 × 3.1 | 6 | 0.9–1.15 | Edge | no | A post with a big yellow Neon star and a small pink one on a branch |
+| `MoonRocks` | 12 | 6.9 × 3.7 × 5.1 | 8 | 0.8–1.3 | Side | yes | Lavender moon rocks with glowing cyan and purple crystals |
+| `AlienStatue` | 19 | 5.1 × 7.9 × 5.1 | 3 | 0.9–1.2 | Side | yes | A green alien potato on a plinth with a gold plaque, glowing eyes and antenna tips |
+| `SpaceFlag` | 14 | 5.9 × 7.5 × 7.5 | 3 | 0.9–1.2 | Side | no | A red potato flag in a mound of moon rock, with boot prints leading to it |
+| `Rover` | 20 | 4.4 × 5.8 × 3.7 | 3 | 0.9–1.2 | Side | yes | A six-wheeled rover with a gold deck, a blue solar panel and a camera head with glowing eyes |
+
+**Previews:** `previews/scenery/`
+
+- `hero_Cosmic.jpg`: from the lane
+- `hero_Cosmic_corner.jpg`: from the corner
+- `props_Cosmic.jpg`: the props in a row
+- `props_Cosmic_top.jpg`: the props from above
 
 ### Glitch Void (`BuildSceneryVoid.lua`)
 
