@@ -145,7 +145,7 @@ def shot_props(out, area, w, samples):
         xs = [t[0][0] for t in texts]
         for i, ((x, _y), name) in enumerate(texts):
             room = min([abs(x - xs[j]) for j in (i - 1, i + 1) if 0 <= j < len(xs)] or [w])
-            size = min(size, int(room / (len(name) * 0.64)))
+            size = min(size, int(room / (len(name) * 0.72)))
         files.append(RS.label(p, texts, size=max(12, size)))
     return files
 
