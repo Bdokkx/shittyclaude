@@ -37,6 +37,7 @@ The pieces so far:
 | `BuildPotatoesOlympus.lua` | The Spud Olympus potatoes |
 | `BuildSceneryJungle.lua` | The Jungle Ruins hero and props |
 | `BuildSceneryReef.lua` | The Coral Cove hero and props |
+| `BuildSceneryHaunt.lua` | The Haunted Hollow hero and props |
 
 ---
 
@@ -1006,3 +1007,35 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 - `hero_Reef_corner.jpg`: from the corner
 - `props_Reef.jpg`: the props in a row
 - `props_Reef_top.jpg`: the props from above
+
+### Haunted Hollow (`BuildSceneryHaunt.lua`)
+
+**`PotatoKit.Heroes.Haunt`**: 166 parts, 44.6 wide, 37.3 tall, 24.2 deep.
+
+- **The manor:** it leans a little. Two storeys of upright purple planks on a stone footing, a steep gable roof with a glowing dormer and a crooked chimney.
+- **The windows:** some are lit orange or purple and flicker; some are dark, one with its shutters hanging askew.
+- **The porch:** steps up to it, a door, and a purple lantern.
+- **The tower:** round, beside the manor, with a pointed roof, two lit windows and a bat on the spire. A ghost drifts past it.
+- **In front:** a giant jack-o'-lantern with a glowing face, three graves behind a spiky iron fence, and a dead tree with a lantern hanging from it.
+- **Solid (28 parts):** the footing, the walls, the tower, the porch and its steps.
+- **Glow:** Flicker and NightLamp on the `Window`s (the dormer's is named `Dormer`), the pumpkin's face (`Pumpkin`, Neon parts only), both `Lantern`s and the bat's eyes (`Bat`, NightLamp only).
+- **The ghost:** its parts are at Transparency 0.25.
+
+| `PotatoKit.Props.Haunt.<Name>` | Parts | W × H × D | Count | Scale | Band | Solid | What |
+|---|---|---|---|---|---|---|---|
+| `DeadTree` | 20 | 6.5 × 14.9 × 6.2 | 6 | 0.85–1.3 | Side | yes | A bare crooked tree, a lantern hanging from a branch, a bat on another |
+| `Graves` | 17 | 7.8 × 4.1 × 4.6 | 6 | 0.9–1.2 | Side | yes | Three crooked headstones with crosses and mounds, a lit candle |
+| `JackOLanterns` | 34 | 7.9 × 3.7 × 4.0 | 6 | 0.8–1.3 | Any | no | Three pumpkins, two carved with glowing faces |
+| `Cauldron` | 18 | 4.4 × 5.9 × 4.4 | 3 | 0.9–1.2 | Side | yes | A black pot on three legs over a fire, green brew bubbling, a ladle |
+| `CrookedLamp` | 14 | 4.0 × 9.6 × 2.0 | 6 | 0.9–1.15 | Side | no | A bent iron lamp post with a lantern and a bat on it |
+| `IronFence` | 16 | 11.9 × 5.0 × 1.5 | 5 | 0.9–1.1 | Edge | yes | A spiky iron fence between two big posts |
+| `Coffin` | 11 | 4.8 × 6.1 × 4.0 | 3 | 0.9–1.2 | Any | yes | A coffin standing on a mound, its lid swung open, two red eyes glowing inside |
+| `GlowShrooms` | 12 | 5.2 × 4.2 × 3.7 | 8 | 0.8–1.4 | Any | no | Four mushrooms with glowing purple caps |
+| `Ghost` | 11 | 4.4 × 4.3 × 1.9 | 4 | 0.8–1.3 | Any | no | A friendly ghost floating above the ground with a lantern (Transparency 0.25) |
+
+**Previews:** `previews/scenery/`
+
+- `hero_Haunt.jpg`: from the lane
+- `hero_Haunt_corner.jpg`: from the corner
+- `props_Haunt.jpg`: the props in a row
+- `props_Haunt_top.jpg`: the props from above
