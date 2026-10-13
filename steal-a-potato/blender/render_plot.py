@@ -49,7 +49,7 @@ def fence_run(sc, parent, name, x0, z0, posts=4, gate=True):
         move(r, CF((x0 + (i + 0.5) * PK.SPAN, 0, z0)))
     if gate:
         g = PK.gate_arch(sc, f, name, st)
-        move(g, CF((x0 + (posts - 1) * PK.SPAN + 6.25, 0, z0)))
+        move(g, CF((x0 + (posts - 1) * PK.SPAN + 9.6, 0, z0)))
     return f
 
 
@@ -163,13 +163,13 @@ def shot_misc(out, w, samples):
     return files
 
 
-AREA_TINTS = (("Sandy Dunes", ("d9a95b", "7f9a3c", "e8403a")), ("Frost Hollow", ("e6eef8", "3f9e9a", "4fc3f7")))
+AREA_TINTS = (("Sandy Dunes", ("d9a95b", "7f9a3c", "e8403a")), ("Frost Fields", ("e6eef8", "3f9e9a", "4fc3f7")))
 
 
 def shot_mound(out, w, samples):
     sc = spslib.Scene("Kit")
     xs = (10.5, 3.5, -3.5, -10.5)
-    names = ["with a seed", "empty"] + ["tinted: " + a for a, _ in AREA_TINTS]
+    names = ["with a seed", "empty"] + [a + " tint" for a, _ in AREA_TINTS]
     seeds = ("Meadow", None, "Dunes", "Frost")
     for i, x in enumerate(xs):
         md = PK.mound(sc, sc.root)
@@ -182,9 +182,9 @@ def shot_mound(out, w, samples):
     keep = everything(sc)
     p = os.path.join(out, "plot_mound.png")
     h = int(w * 0.4)
-    scene = render(sc, keep, p, w, h, samples, (0.0, 9.5, -15.5), (0.0, 0.9, 0.6), fov=38.0)
+    scene = render(sc, keep, p, w, h, samples, (0.0, 9.5, -16.5), (0.0, 0.9, 0.6), fov=38.0)
     texts = labels(scene, w, h, [((x, -0.8, -3.6), n) for x, n in zip(xs, names)])
-    return RS.label(p, texts, size=w // 52)
+    return RS.label(p, texts, size=w // 58)
 
 
 SEED_TINTS = ("d39a52", "e8c27a", "6aa84f", "4f9a3a", "ff8a5c", "dff1ff", "8a5cc0", "c0392b", "b67cff",

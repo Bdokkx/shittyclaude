@@ -362,6 +362,21 @@ def register(area):
     return area
 
 
+def load_all():
+    """Import every potato/scenery_<area>.py, so each registers its Area."""
+    import glob
+    import importlib
+    import os
+    here = os.path.dirname(os.path.abspath(__file__))
+    for f in sorted(glob.glob(os.path.join(here, "scenery_*.py"))):
+        name = "potato." + os.path.basename(f)[:-3]
+        try:
+            importlib.import_module(name)
+        except Exception as e:                  # one broken area must not stop the others
+            print("WARNING: %s did not load: %s: %s" % (name, type(e).__name__, e))
+    return AREAS
+
+
 def prop_attrs(count=6, smin=0.9, smax=1.3, band="Side", solid=False):
     return dict(Count=int(count), ScaleMin=float(smin), ScaleMax=float(smax), Band=band, Solid=bool(solid))
 

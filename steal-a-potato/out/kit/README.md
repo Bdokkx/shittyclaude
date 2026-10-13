@@ -13,7 +13,7 @@ The pieces so far:
 | Script | Piece |
 |---|---|
 | `BuildPotatoesMeadow.lua` | 4.1, the Meadow Patch potatoes and the six potato clips |
-| `BuildPlotKit.lua` | 4.2, the plot kit: four fence tiers, Soil, UpgradeBoard, Mound, the Seeds (now 18, with 30% bigger toppers; GateArch now 14 wide) |
+| `BuildPlotKit.lua` | 4.2, the plot kit: four fence tiers (GateArch 14 wide), SoilHeap and SoilPatch (instead of Soil), UpgradeBoard, the new Mound, the 18 Seeds |
 | `BuildQuestNpc.lua` | Farmer Spud, the quest NPC, and his four clips |
 | `BuildFuseMachine.lua` | The Fuse Machine |
 | `BuildGuardians1.lua`, `BuildGuardians2.lua`, `BuildGuardians3.lua` | The 18 guardians, six per script, and their Sleep, Wake and Run clips |
@@ -144,10 +144,11 @@ These are in `previews/potatoes/`, rendered in Blender, where studs show as inle
 | `PotatoKit.Fences.Fence_Gold` | 10 slots. Gold posts with cream bands and a round gold knob; gold rails with a cream strip on top. |
 | `PotatoKit.Fences.Fence_Diamond` | 20 slots. White posts with cyan bands and a Neon cyan jewel; cyan and white rails with little diamonds between them. |
 | `PotatoKit.Fences.Fence_Rainbow` | 30 slots. Dark posts with a Neon star; two Neon rails for you to cycle through the rainbow. |
-| `PotatoKit.Soil` | Raised bed 5 × 5: wooden border with corner posts, dirt with two furrows and clods. |
+| `PotatoKit.SoilHeap` | A heap of dug soil 4.5 across and 1 high, for a seed planted in a pen: three Folk Valley rounds stacked in steps, four lumps on its sides and a pebble. 13 parts. |
+| `PotatoKit.SoilPatch` | A flat patch of dug soil 3.6 across and 0.22 high, under a grown potato: a low round with four lumps round its edge and a pebble. 8 parts. |
 | `PotatoKit.UpgradeBoard` | Folk Valley sign, small: legs on stone plinths, a gold header, the dark `Board`, a green `Button` under it and an invisible `Prompt`. |
-| `PotatoKit.Mound` | A heap of dug soil about 5 wide and 1 high, with a dark dent on top, clods and pebbles. |
-| `PotatoKit.Seeds.Seed_Meadow` … `Seed_Cosmic` | Eight seeds, see below. |
+| `PotatoKit.Mound` | The seed bed in the fields, after the owner's photo: a heap of dug soil with a hollow in its top and a lip of six lumps round it, a ring of eight clods (three with a smaller clod on top), three potato-plant leaves drooping over the edge, a little stake with a yellow pennant, a pebble. About 6.5 across; the hollow is 0.84 up and 0.4 deep. 41 parts. |
+| `PotatoKit.Seeds.Seed_Meadow` … `Seed_Olympus` | Eighteen seeds, one per area, see below. |
 
 Each fence tier is a Folder, replaced as a whole. It holds three Models, built the same way in every tier:
 
@@ -167,9 +168,24 @@ Each fence tier is a Folder, replaced as a whole. It holds three Models, built t
 
 **Pivots:**
 
-- **Soil:** the top centre of the dirt, where the potato stands.
-- **Mound:** the top centre of the dent, where the seed goes.
+- **SoilHeap:** the top centre of the heap (Y 1.0), where the seed stands.
+- **SoilPatch:** the top centre of the patch (Y 0.22), where the potato stands.
+- **Mound:** the top centre of the hollow (Y 0.84), where the seed sits.
 - **UpgradeBoard:** on the ground at its centre. `Board` and `Button` face -Z, and `Prompt` is 2.6 in front.
+
+**Tinting the soil, the leaves and the flag.** In SoilHeap, SoilPatch and the Mound every soil brick is named **`Soil`**, every brick of the three leaves (stalks too) **`Leaf`** and the two pennant bricks **`Flag`**. They come in a few close shades so they read as soil and leaves when untouched. Each of them carries a number attribute **`Shade`**: how far its own colour is from its piece's base colour (negative is darker, positive is lighter). Set `part.Color = tint` and the shading flattens out; to keep it, shade each brick by its own Shade:
+
+```lua
+local function shaded(tint, k)
+	if k < 0 then return tint:Lerp(Color3.new(0, 0, 0), -k) end
+	return tint:Lerp(Color3.new(1, 1, 1), k)
+end
+-- for each part p named Soil, Leaf or Flag: p.Color = shaded(areaTint, p:GetAttribute("Shade") or 0)
+```
+
+The stake (`Stake`) and the pebbles (`Pebble`) keep their colours. The map's 252 Mounds come already tinted for their areas this way (see `out/map/README.md`).
+
+**The old Soil.** `PotatoKit.Soil` (the 5 × 5 bed) is no longer built. A Soil left by an earlier run of this script stays where it is, because the script never removes what it does not build: delete it by hand if you like.
 
 **Seeds.** Each seed is an egg about 1.7 wide; 2.4–3.1 tall with its topper (toppers are 30% bigger than in the first cut). Pivot at the bottom. Every brick of the egg is named **`Body`** and is light grey (236, 236, 232) for you to tint. The rest comes coloured:
 
@@ -200,8 +216,10 @@ Each fence tier is a Folder, replaced as a whole. It holds three Models, built t
 
 - `plot_tiers.jpg`: the four tiers side by side.
 - `plot_Fence_<Tier>.jpg`: each tier, with Spud for scale.
-- `plot_misc.jpg`: UpgradeBoard, Mound with a seed in its dent, and Soil with a potato on it.
-- `plot_seeds.jpg`: the eight seeds as built, and tinted.
+- `plot_misc.jpg`: SoilHeap with a seed on it, SoilPatch with a potato on it, the Mound with a seed in its hollow, and the UpgradeBoard.
+- `plot_soil.jpg`: SoilHeap and SoilPatch close up, empty and in use.
+- `plot_mound.jpg`: the Mound with a seed, empty, and tinted for Sandy Dunes and Frost Fields with the `shaded()` code above.
+- `plot_seeds.jpg`: the eighteen seeds as built; `plot_seeds_tinted.jpg`: the same with their bodies tinted.
 
 ---
 

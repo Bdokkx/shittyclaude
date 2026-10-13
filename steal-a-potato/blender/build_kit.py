@@ -24,8 +24,9 @@ import spslib  # noqa: E402
 
 from potato import brickcheck, fuse, guardian_anim, guardians, npc, plotkit, rig, spud_anim, spuds  # noqa: E402,E501
 from potato import roots as ROOTS, roots_anim as RA, rootbricks  # noqa: E402
-from potato import scenery, scenery_clock, scenery_dino, scenery_haunt, scenery_jungle, scenery_reef  # noqa: E402,F401,E501
-from potato import scenery_cloud, scenery_neon, scenery_olympus, scenery_toy, scenery_void  # noqa: E402,F401,E501
+from potato import scenery  # noqa: E402
+
+scenery.load_all()
 
 PIECES = {
     "potatoes_meadow": dict(file="Potatoes_Meadow", title="the Meadow Patch potatoes and their clips"),
@@ -46,6 +47,14 @@ PIECES = {
     "potatoes_cloud": dict(file="Potatoes_Cloud", title="the Cloud Kingdom potatoes", area="Cloud"),
     "potatoes_void": dict(file="Potatoes_Void", title="the Glitch Void potatoes", area="Void"),
     "potatoes_olympus": dict(file="Potatoes_Olympus", title="the Spud Olympus potatoes", area="Olympus"),
+    "scenery_meadow": dict(file="Scenery_Meadow", title="the Meadow Patch hero and props", area="Meadow"),
+    "scenery_dunes": dict(file="Scenery_Dunes", title="the Sandy Dunes hero and props", area="Dunes"),
+    "scenery_marsh": dict(file="Scenery_Marsh", title="the Mushroom Marsh hero and props", area="Marsh"),
+    "scenery_frost": dict(file="Scenery_Frost", title="the Frost Fields hero and props", area="Frost"),
+    "scenery_lava": dict(file="Scenery_Lava", title="the Lava Furrows hero and props", area="Lava"),
+    "scenery_crystal": dict(file="Scenery_Crystal", title="the Crystal Caverns hero and props", area="Crystal"),
+    "scenery_candy": dict(file="Scenery_Candy", title="the Candy Crops hero and props", area="Candy"),
+    "scenery_cosmic": dict(file="Scenery_Cosmic", title="the Cosmic Garden hero and props", area="Cosmic"),
     "scenery_jungle": dict(file="Scenery_Jungle", title="the Jungle Ruins hero and props", area="Jungle"),
     "scenery_reef": dict(file="Scenery_Reef", title="the Coral Cove hero and props", area="Reef"),
     "scenery_haunt": dict(file="Scenery_Haunt", title="the Haunted Hollow hero and props", area="Haunt"),
