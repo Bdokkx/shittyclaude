@@ -123,7 +123,8 @@ def shot_lineup(out, area, w, samples, level=10, ids=None):
         x = -(i - (n - 1) / 2) * sp
         v = ou.world_to_camera_view(scene, scene.camera, __import__("mathutils").Vector(SB.rb2bl((x, -0.9, 0.0))))
         texts.append(((v.x * w, (1 - v.y) * h), k.display))
-    return label(p, texts, size=max(18, w // 60))
+    longest = max(len(k.display) for k in ks)                      # long names shrink so they never touch
+    return label(p, texts, size=max(16, min(w // 60, int(w / n / (longest * 0.68)))))
 
 
 def shot_levels(out, area, w, samples, pid=None):

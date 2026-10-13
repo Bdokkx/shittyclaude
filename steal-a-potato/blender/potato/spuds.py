@@ -560,8 +560,10 @@ from .spuds_marsh import MARSH  # noqa: E402
 from .spuds_frost import FROST  # noqa: E402
 from .spuds_lava import LAVA  # noqa: E402
 from .spuds_crystal import CRYSTAL  # noqa: E402
+from .spuds_candy import CANDY  # noqa: E402
 AREAS["Dunes"] = DUNES
 AREAS["Marsh"] = MARSH
 AREAS["Frost"] = FROST
 AREAS["Lava"] = LAVA
 AREAS["Crystal"] = CRYSTAL
+AREAS["Candy"] = CANDY

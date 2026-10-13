@@ -23,6 +23,7 @@ The pieces so far:
 | `BuildPotatoesFrost.lua` | The Frost Fields potatoes |
 | `BuildPotatoesLava.lua` | The Lava Furrows potatoes |
 | `BuildPotatoesCrystal.lua` | The Crystal Caverns potatoes |
+| `BuildPotatoesCandy.lua` | The Candy Crops potatoes |
 
 ---
 
@@ -570,4 +571,34 @@ The rig, rules and clips are the same as the Meadow Patch six. Each has 41 to 45
 
 - `lineup_Crystal_L10.jpg`
 - `levels_ObsidianOverlord.jpg`
+- `turn_<Id>.jpg` for each of the six
+
+---
+
+## Candy Crops potatoes (`BuildPotatoesCandy.lua`)
+
+| Path | Rarity | What |
+|---|---|---|
+| `PotatoKit.Potatoes.GumdropSpud` | Epic | A green gumdrop: a squat dome, wide at the bottom, coated in sugar |
+| `PotatoKit.Potatoes.LollipopTater` | Legendary | Pink with white facets and a swirl of candy on its head, holding up a big round swirl lollipop |
+| `PotatoKit.Potatoes.CottonCandyMash` | Legendary | A puff of cotton candy, fluffy pink and blue all over, its face peeping out of the fluff |
+| `PotatoKit.Potatoes.ChocolateChip` | Mythic | Dipped all over in milk chocolate: white chocolate drizzled across its top, dark chocolate chips and a wafer stick poking out of its head |
+| `PotatoKit.Potatoes.JawbreakerSpud` | Secret | A round jawbreaker of rainbow layers, red at the bottom up to purple on top, with a shine |
+| `PotatoKit.Potatoes.SugarKing` | Divine | Pastel pink, a peppermint cape striped red and white with a fluffy collar, a candy-cane sceptre and, at level 10, a crown of candy |
+
+The rig, rules and clips are the same as the Meadow Patch six. Each has 43 to 45 parts.
+
+- **Held items:** LollipopTater's lollipop (`Stick` and `Candy` bricks) and SugarKing's candy cane (`Cane` bricks) are held in the **left** hand. The right is free to wave.
+  - Those bricks are children of `HandL`, welded to it, so they move with the hand in every clip.
+  - Hand them the same treatment as a holder's descendants: when `HandL` hides below level 5, hide its BasePart descendants too.
+  - These are the only one-brick features with children.
+- **SugarKing's `Crown`:**
+  - A crown of candy: a pink `Band`, three gumdrop `Point`s and a Neon peppermint `Jewel`.
+  - It still shows only at level 10.
+- **SugarKing's cape and collar** are part of his body (`Extra`), so he wears them at every level.
+
+**Previews:** `previews/potatoes/`
+
+- `lineup_Candy_L10.jpg`
+- `levels_SugarKing.jpg`
 - `turn_<Id>.jpg` for each of the six
