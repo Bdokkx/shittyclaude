@@ -38,6 +38,7 @@ The pieces so far:
 | `BuildSceneryJungle.lua` | The Jungle Ruins hero and props |
 | `BuildSceneryReef.lua` | The Coral Cove hero and props |
 | `BuildSceneryHaunt.lua` | The Haunted Hollow hero and props |
+| `BuildSceneryDino.lua` | The Dino Valley hero and props |
 
 ---
 
@@ -1039,3 +1040,32 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 - `hero_Haunt_corner.jpg`: from the corner
 - `props_Haunt.jpg`: the props in a row
 - `props_Haunt_top.jpg`: the props from above
+
+### Dino Valley (`BuildSceneryDino.lua`)
+
+**`PotatoKit.Heroes.Dino`**: 157 parts, 43.7 wide, 22.3 tall, 29.4 deep.
+
+- **The skeleton:** a huge T-rex standing side-on to the lane on a layered rock dig site. It has a big skull with its jaw open and teeth, a curved neck, a spine with spines along the back, ribs, tiny arms, long legs with clawed feet and a long tail curving down. Two iron posts hold it up.
+- **Behind it:** a small volcano with a glowing crater and two lava runs.
+- **Round about:** cycads, ferns and horsetails, a nest of three spotted eggs, a glowing lump of amber with a mosquito in it, loose bones, a pickaxe, a shovel and a crate.
+- **Solid (26 parts):** the three rock layers, the volcano, and the skeleton's spine, skull, pelvis and leg bones. Players can climb the dig site and jump onto the T-rex's back. Ribs, teeth and arms are decoration.
+- **Glow:** `Lava` (the crater and the two runs) and `Amber` have Flicker and NightLamp.
+
+| `PotatoKit.Props.Dino.<Name>` | Parts | W × H × D | Count | Scale | Band | Solid | What |
+|---|---|---|---|---|---|---|---|
+| `Cycad` | 13 | 8.4 × 7.6 × 7.7 | 8 | 0.85–1.3 | Side | yes | A stout scaly trunk, a crown of nine stiff fronds, a gold cone |
+| `TreeFern` | 13 | 10.3 × 10.4 × 9.2 | 6 | 0.85–1.3 | Side | yes | A tall tree fern, its fronds drooping |
+| `BoneArch` | 28 | 11.6 × 10.4 × 8.3 | 3 | 0.9–1.2 | Side | yes | A giant ribcage you can walk through |
+| `DinoNest` | 17 | 4.9 × 2.6 × 4.8 | 5 | 0.9–1.3 | Any | no | A nest of spotted eggs, one cracked open with a baby dino peeking out |
+| `MiniVolcano` | 12 | 9.6 × 11.2 × 7.5 | 3 | 0.9–1.2 | Edge | yes | A small volcano: a glowing crater, two lava runs (`Lava`: Flicker, NightLamp), smoke (Transparency 0.35) |
+| `AmberRock` | 10 | 6.0 × 4.3 × 5.0 | 5 | 0.85–1.25 | Any | yes | Rocks with glowing amber in them (`Amber`, NightLamp), a mosquito in the biggest piece |
+| `Footprints` | 12 | 10.3 × 0.2 × 5.2 | 6 | 0.9–1.4 | Any | no | A trail of three giant three-toed footprints, flat on the ground |
+| `FossilSkull` | 11 | 7.9 × 4.0 × 5.0 | 3 | 0.9–1.2 | Side | yes | A T-rex skull and jaw half dug out of the earth |
+| `Horsetails` | 12 | 2.7 × 5.3 × 2.7 | 8 | 0.8–1.3 | Any | no | A clump of tall horsetail reeds by a rock |
+
+**Previews:** `previews/scenery/`
+
+- `hero_Dino.jpg`: from the lane
+- `hero_Dino_corner.jpg`: from the corner
+- `props_Dino.jpg`: the props in a row
+- `props_Dino_top.jpg`: the props from above
