@@ -558,6 +558,8 @@ AREAS = {"Meadow": MEADOW}
 from .spuds_dunes import DUNES  # noqa: E402  (the other areas' kinds build on this module)
 from .spuds_marsh import MARSH  # noqa: E402
 from .spuds_frost import FROST  # noqa: E402
+from .spuds_lava import LAVA  # noqa: E402
 AREAS["Dunes"] = DUNES
 AREAS["Marsh"] = MARSH
 AREAS["Frost"] = FROST
+AREAS["Lava"] = LAVA

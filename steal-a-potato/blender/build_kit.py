@@ -30,6 +30,7 @@ PIECES = {
     "potatoes_dunes": dict(file="Potatoes_Dunes", title="the Sandy Dunes potatoes", area="Dunes"),
     "potatoes_marsh": dict(file="Potatoes_Marsh", title="the Mushroom Marsh potatoes", area="Marsh"),
     "potatoes_frost": dict(file="Potatoes_Frost", title="the Frost Fields potatoes", area="Frost"),
+    "potatoes_lava": dict(file="Potatoes_Lava", title="the Lava Furrows potatoes", area="Lava"),
     "plot": dict(file="PlotKit", title="the plot kit (fences, soil, board, mound, seeds)"),
     "questnpc": dict(file="QuestNpc", title="Farmer Spud, the quest NPC, and his clips"),
     "fuse": dict(file="FuseMachine", title="the Fuse Machine"),

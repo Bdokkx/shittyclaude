@@ -21,6 +21,7 @@ The pieces so far:
 | `BuildPotatoesDunes.lua` | The Sandy Dunes potatoes |
 | `BuildPotatoesMarsh.lua` | The Mushroom Marsh potatoes |
 | `BuildPotatoesFrost.lua` | The Frost Fields potatoes |
+| `BuildPotatoesLava.lua` | The Lava Furrows potatoes |
 
 ---
 
@@ -509,4 +510,32 @@ The rig, rules and clips are the same as the Meadow Patch six. Each has 42 to 45
 
 - `lineup_Frost_L10.jpg`
 - `levels_AuroraTuber.jpg`
+- `turn_<Id>.jpg` for each of the six
+
+---
+
+## Lava Furrows potatoes (`BuildPotatoesLava.lua`)
+
+| Path | Rarity | What |
+|---|---|---|
+| `PotatoKit.Potatoes.CharredChip` | Rare | A chunky square-cut chip burnt black, its cut end crusted with ash, orange embers glowing all over it and a wisp of smoke; wide white eyes in its sooty face and a glowing mouth |
+| `PotatoKit.Potatoes.MagmaMash` | Epic | A lump of dark rock with rocks heaped on its head, split by glowing lava cracks that run on round its corners; its eyes and mouth glow like the lava |
+| `PotatoKit.Potatoes.PepperPotato` | Epic | A tall, glossy red chilli narrowing to a point that curls away behind it, a star-shaped green calyx on top and its stem alight like a fuse |
+| `PotatoKit.Potatoes.EmberImp` | Legendary | A red imp: two black horns, a pointed tail with a black spade tip, one brow cocked and a lopsided grin with two teeth |
+| `PotatoKit.Potatoes.VolcanoSpud` | Mythic | A brown volcano: sloping flanks up to a crater full of lava, lava running down both flanks and bubbles of it jumping out of the top |
+| `PotatoKit.Potatoes.InfernoTuber` | Secret | Made of blue flame: its whole body glows, a mane of blue and white flame leaps up behind its crown, flames lick up its sides and its eyes glow white |
+
+The rig, rules and clips are the same as the Meadow Patch six. Each has 42 to 45 parts.
+
+- **Neon parts:** the embers, cracks, lava, bubbles and flames. Also:
+  - CharredChip's and MagmaMash's mouths
+  - MagmaMash's and InfernoTuber's eyes
+  - InfernoTuber's `Body` and all of its flames, so it glows with no light of yours
+- **CharredChip's eyes:** white, with a dark `Pupil` each where the others have a `Glint`.
+- **Above the crown at level 10:** PepperPotato's flame, VolcanoSpud's lava bubbles, EmberImp's horns and InfernoTuber's flames all stand clear of it.
+
+**Previews:** `previews/potatoes/`
+
+- `lineup_Lava_L10.jpg`
+- `levels_InfernoTuber.jpg`
 - `turn_<Id>.jpg` for each of the six
