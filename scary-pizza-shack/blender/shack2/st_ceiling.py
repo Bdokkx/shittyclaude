@@ -37,7 +37,7 @@ def ceiling_lamp(k, name, x, z):
     pivot(c, CF((x, CY, z)))
     moving(m, "Cord", "optional sway: the Cord is the anchored root (pivot on the ceiling hook); Shade and Bulb are "
                       "welded to it, so tilting the pivot a few degrees swings the whole lamp")
-    k.lamp(m, b, "Shack", "Spot", 16.0, 1.0, (255, 196, 132), angle=120.0, on_model=False)
+    k.lamp(m, b, IP.CIRCUIT.get(name, "Shack"), "Spot", 16.0, 1.0, (255, 196, 132), angle=120.0, on_model=False)
     k.attr(m, "Sway", 3.0)
     stand(k, m, x, z + 1.5, N)
     k.mark_used("CeilingLampPendant")
@@ -95,18 +95,30 @@ def fan(k, parent):
     weld_all(k, hub, [blades])
     pivot(hub, CF((x, CY - 1.35, z)))
     k.attr(hub, "Spin", 120.0)                   # degrees a second about the Hub's own Y (up): slow
+    # the pull chain from the switch housing under the motor, on the axis (inside the blades'
+    # roots): a Model the player pulls (Pull = true); the game toggles the fan
+    pc = k.sc.model(m, "PullChain")
+    k.attr(pc, "Pull", True)
+    ch = G.Geo()
+    ch.add(rod((0, 0, 0), (0, -1.3, 0), 0.075, 4))
+    k.mesh(pc, "Chain", "Fan__Chain", ch, CF((x, CY - 1.6, z)), "brass", shadow=False)
+    bob = k.mesh(pc, "Bob", "Fan__ChainBob", G.sphere(0.16, 8, 5, (1.0, 1.4, 1.0)), CF((x, CY - 3.0, z)), "wood_light",
+                 shadow=False)
+    pc.p["primary"] = bob
+    pivot(bob, CF((x, CY - 1.6, z)))
     k.mark_used("CeilingFan")
     return m
 
 
 def work_lamps(k, parent):
     for name, (x, z, kind) in IP.WORK_LAMPS.items():
+        grp = IP.CIRCUIT.get(name, "Shack")
         if kind == "tube":
-            tube_lamp(k, parent, name, x, z, length=4.0, flicker=0.25 if name == "PrepLamp3" else 0.0)
+            tube_lamp(k, parent, name, x, z, length=4.0, flicker=0.25 if name == "PrepLamp3" else 0.0, group=grp)
         elif kind == "pendant":
-            pendant_lamp(k, parent, name, x, z, drop=2.4)
+            pendant_lamp(k, parent, name, x, z, drop=2.4, group=grp)
         elif kind == "cage":
-            cage_lamp(k, parent, name, (x, CY - 0.55, z), wall=(0, -1, 0))
+            cage_lamp(k, parent, name, (x, CY - 0.55, z), wall=(0, -1, 0), group=grp)
 
 
 def conduit(k, parent):

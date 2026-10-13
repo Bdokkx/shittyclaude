@@ -641,7 +641,7 @@ def lights(sc):
             for k in ("LampGroup", "LampKind", "LampRange", "LampBrightness", "LampColor"):
                 if k not in a:
                     probs.append("%s: no %s" % (n.path(), k))
-            if a.get("LampGroup") not in ("Shack", "Street", "Always"):
+            if a.get("LampGroup") not in ("Shack", "ShackFront", "ShackBack", "Street", "Always"):
                 probs.append("%s: LampGroup %r" % (n.path(), a.get("LampGroup")))
     return probs
 

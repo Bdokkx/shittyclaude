@@ -68,6 +68,12 @@ WORK_LAMPS = {
     "SinkLamp": (-15.0, 7.6, "cage"),         # over the basin (X -16..-14)
     "DoorLamp": (-16.0, -7.6, "cage"),
 }
+# the two switched circuits (the light switches by the back door); everything else on the
+# fuse box's "Shack" circuit
+CIRCUIT = {"PrepLamp1": "ShackBack", "PrepLamp2": "ShackBack", "PrepLamp3": "ShackBack", "PrepLamp4": "ShackBack",
+           "SinkLamp": "ShackBack", "DoorLamp": "ShackBack", "CeilingLamp1": "ShackBack",
+           "WindowLamp1": "ShackFront", "WindowLamp2": "ShackFront", "TillLamp": "ShackFront",
+           "CeilingLamp2": "ShackFront"}
 
 
 def wall_rect(wall):

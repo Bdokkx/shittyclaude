@@ -18,7 +18,7 @@ import numpy as np  # noqa: E402
 import spslib  # noqa: E402
 from spsgeo import CF  # noqa: E402
 
-from . import forest, layout as L, props_in, props_out, shell, terrain  # noqa: E402,F401
+from . import forest, layout as L, props_in, props_insides, props_out, shell, terrain  # noqa: E402,F401
 from .kit import Kit  # noqa: E402
 
 BLOCKOUT_GREY = (176, 176, 172)

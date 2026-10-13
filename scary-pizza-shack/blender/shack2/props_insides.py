@@ -364,3 +364,15 @@ def can_row(rng):
 def bottle_row(rng):
     from .items2 import bottle_parts
     return _row(bottle_parts, 2, 0.8, 0.65)
+
+
+@prop("TicketSpike")
+def ticket_spike(rng):
+    """The order spike on the pass: a weighted base, the steel Spike, done tickets on it."""
+    base = ccyl(0.35, 0.2, 10, "y", (0, 0.1, 0), 0.05)
+    spike = G.Geo()
+    spike.add(rod((0, 0.2, 0), (0, 1.3, 0), 0.075, 5))
+    tickets = G.Geo()
+    for i in range(5):
+        tickets.add(bevel_box(0.55, 0.15, 0.85, 0.03, c=(0.02 * (i % 2), 0.3 + 0.16 * i, 0.1)).xf(RY(17 * i - 30)))
+    return [("Base", "black", base), ("Spike", "steel_light", spike), ("Tickets", "paper", tickets)]

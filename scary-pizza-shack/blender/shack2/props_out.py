@@ -225,15 +225,25 @@ def ice_chest(rng):
 @prop("VendingMachine")
 def vending(rng):
     """A drinks machine: red body, the lit front panel, a column of buttons, the can slot."""
-    body = bevel_box(3.0, 6.0, 2.4, 0.15, c=(0, 3.15, 0))
+    body = G.Geo()                                   # built round the pickup recess (X -1.2..0.4, Y 0.65..1.3)
+    body.add(bevel_box(3.0, 4.85, 2.4, 0.15, c=(0, 3.725, 0)))
+    body.add(bevel_box(3.0, 0.5, 2.4, 0.1, c=(0, 0.4, 0)))
+    body.add(bevel_box(0.3, 0.65, 2.4, 0.06, c=(-1.35, 0.975, 0)))
+    body.add(bevel_box(1.1, 0.65, 2.4, 0.06, c=(0.95, 0.975, 0)))
+    body.add(bevel_box(1.6, 0.65, 1.95, 0.06, c=(-0.4, 0.975, -0.225)))
     front = bevel_box(1.9, 4.2, 0.15, 0.04, c=(-0.4, 3.6, 1.2))
     btns = G.Geo()
     for i in range(6):
         btns.add(bevel_box(0.35, 0.3, 0.15, 0.04, c=(1.0, 2.6 + 0.5 * i, 1.22)))
-    slot = bevel_box(1.6, 0.6, 0.4, 0.06, c=(-0.4, 0.95, 1.05))
+    # the pickup tray: a dark recess (floor, sides, back) under a Flap hinged on its top edge
+    tray = G.Geo()
+    tray.add(bevel_box(1.6, 0.15, 0.45, 0.04, c=(-0.4, 0.725, 0.975)))
+    flap = G.Geo()
+    flap.add(bevel_box(1.7, 0.66, 0.15, 0.04, c=(-0.4, 0.95, 1.27)))
+    flap.add(bevel_box(0.8, 0.15, 0.2, 0.04, c=(-0.4, 0.75, 1.42)))
     plinth = bevel_box(2.8, 0.3, 2.2, 0.05, c=(0, 0.15, 0))
     return [("Body", "vending_red", body), ("Front", (255, 236, 210), front, NEON), ("Buttons", "steel_light", btns),
-            ("Slot", "black", slot), ("Plinth", "charcoal", plinth)]
+            ("Slot", "black", tray), ("Flap", "charcoal", flap), ("Plinth", "charcoal", plinth)]
 
 
 @prop("BugZapper")

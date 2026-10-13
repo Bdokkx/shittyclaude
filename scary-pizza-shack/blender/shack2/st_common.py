@@ -42,6 +42,21 @@ def weld_all(k, root, parts):
         k.sc.weld(root, p, "Weld")
 
 
+def light_switch(k, parent, name, cf_, circuit):
+    """A wall light switch (a Model): a cream plate and its toggle Lever, pivot at the plate's
+    centre (flip it about the pivot's X: up = on). Circuit names the LampGroup it switches."""
+    m = k.sc.model(parent, name)
+    k.attr(m, "Circuit", circuit)
+    k.mesh(m, "Plate", "LightSwitch__Plate", bevel_box(0.6, 0.8, 0.15, 0.04, c=(0, 0, 0.075)), cf_, "cream",
+           shadow=False)
+    lev = bevel_box(0.2, 0.36, 0.15, 0.03, c=(0, 0.12, 0.0))
+    lv = k.mesh(m, "Lever", "LightSwitch__Lever", lev.xf(G.M(G.rx(-20))), cf_ * CF((0, 0, 0.2)), "cream_dark",
+                shadow=False)
+    pivot(lv, cf_ * CF((0, 0, 0.2)))
+    k.mark_used("LightSwitch")
+    return m
+
+
 def board(k, parent, size, cf_, color, text="", text_color=(30, 30, 30), name="Board", font="Arcade", **kw):
     """A flat part named Board for a piece of text (the game puts a SurfaceGui on its Front
     face, -Z). The text it should carry is in the attributes BoardText / BoardTextColor /

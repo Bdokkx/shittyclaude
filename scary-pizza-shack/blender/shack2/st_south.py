@@ -133,10 +133,11 @@ def register(k):
             keys.add(bevel_box(0.4, 0.15, 0.3, 0.04, c=(-0.75 + 0.5 * i, 0.0, 0.35 * j)))
     k.mesh(m, "Keys", "Register__Keys", keys.xf(G.M(G.rx(-31))), CF((txc, W_ + 1.32, tz0 + 0.75)), "cream",
            shadow=False)
-    k.mesh(m, "Display", "Register__Display", bevel_box(1.6, 0.6, 0.4, 0.06), CF((txc, W_ + 2.4, tz0 + 1.6)),
+    k.mesh(m, "DisplayCase", "Register__Display", bevel_box(1.6, 0.6, 0.4, 0.06), CF((txc, W_ + 2.4, tz0 + 1.6)),
            "black", solid=True)
-    k.part(m, "DisplayGlow", (1.2, 0.3, 0.15), CF((txc, W_ + 2.42, tz0 + 1.38)), (110, 230, 140), material="Neon",
-           grid=False, shadow=False)
+    # the Display: its glowing readout is a Board (the game writes the total on it)
+    board(k, m, (1.2, 0.3, 0.15), CF((txc, W_ + 2.42, tz0 + 1.38)), (40, 70, 50), text="0.00",
+          text_color=(130, 255, 150), name="Display", material="Neon", font="Code")
     drawer = k.mesh(m, "Drawer", "Register__Drawer", bevel_box(tx1 - tx0 - 0.4, 0.5, tz1 - tz0 - 0.25, 0.05),
                     CF((txc, W_ + 0.45, (tz0 + tz1) / 2 - 0.1)), "mustard", solid=True)
     cash = G.Geo()
@@ -203,12 +204,18 @@ def serving_window(k):
     # desk bell, napkins, the pen on its chain
     bc = (-4.4, W_, FRONT + 0.8)
     bell = G.outward(G.lathe([(0, 0.15), (0.42, 0.15), (0.4, 0.25), (0.3, 0.45), (0.12, 0.55), (0, 0.57)], 12))
-    bell.add(ccyl(0.08, 0.2, 6, "y", (0, 0.65, 0), 0.02))
     k.mesh(m, "Bell", "ServingWindow__Bell", bell, CF(bc), "mustard", shadow=False)
+    pl = G.Geo()
+    pl.add(ccyl(0.08, 0.2, 6, "y", (0, 0.65, 0), 0.02))
+    pl.add(ccyl(0.14, 0.15, 8, "y", (0, 0.78, 0), 0.03))
+    plg = k.mesh(m, "Plunger", "ServingWindow__Plunger", pl, CF(bc), "steel_light", shadow=False)
+    pivot(plg, CF((bc[0], bc[1] + 0.57, bc[2])))
+    moving(m, "Plunger", "the desk bell's plunger: push the pivot 0.15 down (-Y) and let it spring back")
     k.mesh(m, "BellBase", "ServingWindow__BellBase", ccyl(0.48, 0.15, 12, "y", (0, 0.075, 0), 0.03), CF(bc), "black",
            shadow=False)
     k.prop(m, "NapkinBox", CF((-4.4, W_, FRONT + 2.1)), name="Napkins")
     k.prop(m, "PenOnChain", CF((-4.4, W_, FRONT + 3.3)), name="PenOnChain")
+    k.prop(m, "TicketSpike", CF((0.45, W_, FRONT + 2.7)), name="TicketSpike")         # the pass's spike
     # ticket printer (a Model, as batch 1): a narrow kitchen printer on the counter's east end, the
     # cook's side of the handover, its paper curling towards the room
     tp = k.sc.model(m, "TicketPrinter")
@@ -343,6 +350,8 @@ def cctv_desk(k):
             knobs.add(ccyl(0.1, 0.15, 6, "z", (dx, 0, 0), 0.02))
         k.mesh(mon, "Knobs", "CCTVDesk__Knobs", knobs, CF((xc - 0.1, base_y + 0.2, FRONT + 1.12)), "black",
                shadow=False)
+        k.part(mon, "PowerLed", (0.2, 0.2, 0.15), CF((xc - 0.95, base_y + 0.25, FRONT + 1.34)), (90, 255, 120),
+               material="Neon", grid=False, shadow=False)
     k.prop(m, "VCRStack", CF((x0 + 1.6, W_, FRONT + 2.4)), name="VCRs")
     # switch box (a Model, as batch 1)
     sb = k.sc.model(m, "SwitchBox")
@@ -382,8 +391,9 @@ def cctv_desk(k):
     for sy in (-1, 1):
         hs.add(bevel_box(0.32, 0.36, 0.44, 0.08, c=(0, sy * 0.62, -0.12)))
     hsp = k.mesh(ph, "Handset", "Phone__Handset", hs, CF((px + 0.68, 6.35, SZ - 0.5)), "red", solid=False)
-    pivot(hsp, hsp.p["cf"])
-    moving(ph, "Handset", "free part: lift it off the hook (move it where you like); pivot at its centre")
+    pivot(hsp, CF((px + 0.68, 6.35 + 0.62, SZ - 0.5)))
+    moving(ph, "Handset", "lift it off the cradle: the pivot is where its top hangs on the hook (rotate about X to "
+                          "lift it towards the room, or move it free)")
     cord = G.tube([(px + 0.55, 5.55, SZ - 0.4), (px + 0.6, 4.9, SZ - 0.35), (px + 0.75, 4.7, SZ - 0.4),
                    (px + 0.82, 5.1, SZ - 0.42), (px + 0.72, 5.8, SZ - 0.45)], 0.075, 5)
     k.mesh(ph, "Cord", "Phone__Cord", cord, CF(), "black", shadow=False)
@@ -411,8 +421,12 @@ def radio(k, m, base):
     k.mesh(r, "Body", "Radio__Body", bevel_box(1.6, 0.9, 0.6, 0.12), base * CF((0, 0.45, 0)), "charcoal", solid=True)
     k.mesh(r, "Speaker", "Radio__Speaker", ccyl(0.3, 0.15, 10, "z", (0, 0, 0), 0.03), base * CF((-0.4, 0.42, -0.33)),
            "black", shadow=False)
-    k.mesh(r, "Dial", "Radio__Dial", bevel_box(0.6, 0.3, 0.15, 0.03), base * CF((0.35, 0.55, -0.33)), "cream",
+    k.mesh(r, "Dial", "Radio__Dial", bevel_box(0.6, 0.3, 0.15, 0.03), base * CF((0.35, 0.6, -0.33)), "cream",
            shadow=False)
+    # the Knob (tuning / volume): turn it about the pivot's Z (its own axis, out of the front)
+    kn = k.mesh(r, "Knob", "Radio__Knob", ccyl(0.13, 0.15, 8, "z", (0, 0, 0), 0.03), base * CF((0.35, 0.25, -0.36)),
+                "steel_light", shadow=False)
+    pivot(kn, base * CF((0.35, 0.25, -0.36)))
     k.mesh(r, "Handle", "Radio__Handle", G.tube([(-0.6, 0.9, 0), (-0.5, 1.15, 0), (0.5, 1.15, 0), (0.6, 0.9, 0)],
                                                  0.075, 4), base, "steel_dark", shadow=False)
     k.mesh(r, "Aerial", "Radio__Aerial", rod((0.6, 0.9, 0), (1.2, 2.2, -0.1), 0.075, 4), base, "steel_light",
@@ -453,8 +467,24 @@ def sink(k):
     tap.add(ccyl(0.22, 0.15, 8, "y", (0, 0.075, 0), 0.03))
     for sx in (-1, 1):
         tap.add(bevel_box(0.4, 0.15, 0.15, 0.03, c=(sx * 0.4, 0.4, 0.05)))
-    k.mesh(m, "Faucet", "Sink__Tap", tap, CF(((hx0 + hx1) / 2, L.WORK, SZ - 0.55)), "steel_light", shadow=False)
-    k.prop(m, "MopBucket", C.wcf("S", -15.6, 0.9, 1.9), name="MopBucket")
+    fc = ((hx0 + hx1) / 2, L.WORK, SZ - 0.55)
+    fau = k.mesh(m, "Faucet", "Sink__Tap", tap, CF(fc), "steel_light", shadow=False)
+    k.sc.attachment(fau, "Fx_Water", CF((fc[0], fc[1] + 0.85, fc[2] - 0.85)))     # the spout
+    # the Tap: a lever on the faucet's neck; turn it about the pivot's Y (towards the room) to run the water
+    tl = G.Geo()
+    tl.add(ccyl(0.16, 0.2, 8, "y", (0, 0.0, 0), 0.03))
+    tl.add(rod((0, 0.05, 0), (0, 0.22, -0.55), 0.08, 6))
+    tl.add(G.sphere(0.13, 8, 4, c=(0, 0.24, -0.6)))
+    tp = k.mesh(m, "Tap", "Sink__Lever", tl, CF((fc[0], fc[1] + 0.62, fc[2] + 0.15)), "red", shadow=False)
+    pivot(tp, CF((fc[0], fc[1] + 0.62, fc[2] + 0.15)))
+    moving(m, "Tap", "the mixer lever: swing the pivot about its Y up to 60 deg either way to run the water "
+                     "(Fx_Water on the Faucet, at the spout)")
+    # a little standing water in the basin (the game raises it while the tap runs)
+    k.part(m, "Water", (hx1 - hx0 - 0.5, 0.15, hz1 - hz0 - 0.5), CF(((hx0 + hx1) / 2, L.WORK + 0.02 - 1.2 + 0.15 + 0.075,
+                                                                 (hz0 + hz1) / 2)), (120, 150, 160), material="Glass",
+           transparency=0.4, grid=False, shadow=False)
+    mb = k.prop(m, "MopBucket", C.wcf("S", -15.6, 0.9, 1.9), name="MopBucket")
+    k.attr(mb, "Loose", True)                         # the game may wheel it out
     # under the basin: its pipework, the bleach and a sprung mouse trap
     k.prop(m, "SinkTrap", C.wcf("S", (hx0 + hx1) / 2, 0.9, SZ - (hz0 + hz1) / 2), name="SinkTrap")
     k.prop(m, "BleachJug", C.wcf("S", x1 - 0.9, 0.9, 2.6, G.ry(-15)), name="BleachJug")

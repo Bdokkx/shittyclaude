@@ -259,7 +259,12 @@ def fuse_box(k):
     for dx in (-0.5, 0.0, 0.5):
         cond.add(rod((x + dx, 6.8, z0 + 0.3), (x + dx, L.CEIL, z0 + 0.3), 0.1, 6))
     k.mesh(m, "Conduit", "FuseBox__Conduit", cond, CF(), "steel_dark", shadow=False)
-    k.prop(m, "LightSwitch", C.wcf("N", x, 3.6, 0.0), name="LightSwitch")
+    # the two light switches for the room's switched circuits, by the back door
+    from .st_common import light_switch
+    light_switch(k, m, "LightSwitchBack", C.wcf("N", x - 0.35, 3.6, 0.0), "ShackBack")
+    light_switch(k, m, "LightSwitchFront", C.wcf("N", x + 0.35, 3.6, 0.0), "ShackFront")
+    board(k, m, (1.4, 0.3, 0.15), C.wcf("N", x, 4.25, 0.075, G.ry(180)), "tape", text="BACK   FRONT",
+          text_color=(40, 40, 40), name="SwitchLabel")
     stand(k, m, x, z0 + 2.4, N)
     return m
 

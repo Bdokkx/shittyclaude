@@ -70,6 +70,9 @@ def days_since(k, f):
     for dx in (-0.4, 0.4):
         hooks.add(G.tube([(dx, 0.15, 0.0), (dx, 0.15, 0.2), (dx, 0.3, 0.28)], 0.075, 5))
     k.mesh(m, "Hooks", "Dress__DaysHooks", hooks, fr * CF((0.0, -0.5, 0.35)), "steel_dark", shadow=False)
+    # the number card in the slot: a Board for the number alone (the game writes it)
+    text(k, m, fr * CF((0.0, -0.64, 0.2)), 0.0, 0.0, 0.2, (1.4, 0.5), "paper", text="0", text_color=(30, 30, 30),
+         name="Number")
     k.mark_used("DaysSinceSign")
 
 
@@ -126,11 +129,15 @@ def wall_clock(k, f):
         t = bevel_box(0.15, 0.26 if big else 0.16, 0.04, 0.015, c=(0, 0.5, 0.38))
         ticks.add(t.xf(G.M(G.rz(30.0 * i))))
     k.mesh(m, "Ticks", "Dress__ClockTicks", ticks, fr, "black", shadow=False)
-    hands = G.Geo()
-    for ang, ln in ((60.0, 0.36), (-60.0, 0.52)):                     # ten past ten
-        hands.add(bevel_box(0.15, ln, 0.04, 0.015, c=(0, ln / 2 - 0.05, 0.42)).xf(G.M(G.rz(ang))))
-    hands.add(ccyl(0.1, 0.06, 8, "z", (0, 0, 0.42), 0.02))
-    k.mesh(m, "Hands", "Dress__ClockHands", hands, fr, "black", shadow=False)
+    # HourHand and MinuteHand: each its own part, pivot at the centre with its Y out of the
+    # face (as the SecondHand), so the game sets the time by turning them about Y; ten past ten
+    axis = fr * CF((0, 0, 0.42), G.rx(90))            # local -Z points to twelve
+    for nm, ln, ang, zoff in (("HourHand", 0.36, -60.0, 0.0), ("MinuteHand", 0.52, 60.0, 0.03)):
+        hg = G.Geo()
+        hg.add(bevel_box(0.15, 0.04, ln, 0.015, c=(0, zoff, -ln / 2 + 0.05)))
+        hg.add(ccyl(0.1, 0.04, 8, "y", (0, zoff, 0), 0.015))
+        hp = k.mesh(m, nm, "Dress__Clock" + nm, hg.xf(G.M(G.ry(ang))), axis, "black", shadow=False)
+        hp.p["pivot"] = hp.p["cf"].inv() * axis
     sec = G.Geo()                                                     # its own Y is the clock's axis
     sec.add(bevel_box(0.15, 0.04, 1.1, 0.015))
     sec.add(ccyl(0.08, 0.06, 8, "y", (0, 0, 0), 0.02))
@@ -174,6 +181,7 @@ def wet_floor_sign(k, f):
     ready for when the rain comes in: out of the way in (the door is never blocked) and of the
     locker doors, its words to the room."""
     m = k.sc.model(f, "WetFloorSign")
+    k.attr(m, "Loose", True)                          # the game may knock it about
     base = CF((L.IN_X0 + 0.6, L.FLOOR, -7.4), G.ry(90) @ G.rx(-10))          # top leaning on the west wall
     ang, h = 2.0, 2.2
     top = h * math.cos(math.radians(ang))

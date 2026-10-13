@@ -64,7 +64,11 @@ def forecourt(k, f, gr, rng):
     board(k, m.get("IceChest"), (2.2, 0.5, 0.15), ic * CF((0, 2.1, 1.01), G.ry(180)), "label_blue", text="ICE",
           text_color=(250, 250, 250), name="Sign")
     vm = CF((fp["Vending"][0], 0.0, fp["Vending"][1] + 0.6), face_road)
-    k.prop(m, "VendingMachine", vm, where="outside", name="VendingMachine")
+    vmm = k.prop(m, "VendingMachine", vm, where="outside", name="VendingMachine")
+    # the pickup Flap: hinged on its top edge, it swings out and up to take the can
+    from_prop(k, vmm, "Flap", ["Flap"], vm * CF((-0.4, 1.28, 1.345)), "Swing", "Metal", angle=-70.0, axis="X",
+              label="Take")
+    stash(k, vmm, vm * CF((-0.4, 0.8, 1.05), G.facing((0, 0, 1))), (1.3, 0.5, 0.45), behind="Flap")
     board(k, m.get("VendingMachine"), (1.7, 0.7, 0.15), vm * CF((-0.4, 5.55, 1.29), G.ry(180)), "vending_red",
           text="ICE COLD", text_color=(250, 240, 220), name="Header")
     lamp = k.sc.model(m.get("VendingMachine"), "Glow")
