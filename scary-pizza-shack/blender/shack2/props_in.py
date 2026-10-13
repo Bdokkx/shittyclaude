@@ -37,18 +37,37 @@ def _blob(r, scale, seed, c=(0, 0, 0), n=9, rings=5, jitter=0.1, flat=None):
 
 @prop("FlourBin")
 def flour_bin(rng):
-    """White flour bin with its lid hinged open against the wall, flour heaped inside, a scoop."""
-    tub = _lathe_loop([(0.0, 0.0), (0.62, 0.0), (0.68, 1.2), (0.76, 1.24), (0.76, 1.36), (0.6, 1.36),
-                       (0.56, 0.1), (0.0, 0.1)], 12)
-    flour = G.outward(G.lathe([(0.0, 0.9), (0.58, 0.9), (0.62, 1.05), (0.36, 1.22), (0.0, 1.3)], 12))
-    lid = ccyl(0.8, 0.15, 12, "y", (0, 0, 0.8), 0.04).xf(RX(-22)).xf(T(0, 1.38, -0.8))   # propped open
-    hinge = rod((-0.3, 1.35, -0.8), (0.3, 1.35, -0.8), 0.08, 6)
+    """A white ingredient bin on castors (the kind that rolls under a bench): flour heaped
+    inside, a scoop on it; a fixed lid strip at the back and a clear front lid that slides
+    back over it (the station makes LidFront + LidGrip its openable Lid)."""
+    w, d, h = 1.3, 2.2, 1.6
+    body = G.Geo()
+    body.add(bevel_box(w, 0.15, d, 0.04, c=(0, 0.3, 0)))                              # floor
+    for sx in (-1, 1):
+        body.add(bevel_box(0.15, h - 0.2, d, 0.04, c=(sx * (w / 2 - 0.075), 0.2 + (h - 0.2) / 2, 0)))
+    for sz in (-1, 1):
+        body.add(bevel_box(w, h - 0.2, 0.15, 0.04, c=(0, 0.2 + (h - 0.2) / 2, sz * (d / 2 - 0.075))))
+    body.add(bevel_box(w + 0.1, 0.15, d + 0.1, 0.04, c=(0, h - 0.075, 0)).xf(S(1, 1, 1)))     # the rim
+    flour = G.outward(G.lathe([(0.0, 0.0), (0.5, 0.0), (0.5, 0.05), (0.3, 0.25), (0.0, 0.32)], 10)).xf(
+        S(1.0, 1.0, 1.7)).xf(T(0, 1.05, 0))
+    flour.add(bevel_box(w - 0.3, 0.6, d - 0.3, 0.04, c=(0, 0.75, 0)))
     scoop = G.Geo()
     scoop.add(_lathe_loop([(0.0, -0.18), (0.24, -0.16), (0.27, 0.06), (0.2, 0.06), (0.19, -0.08), (0.0, -0.1)], 8))
-    scoop.add(rod((0.24, 0.0, 0), (0.62, 0.12, 0), 0.08, 6))
-    scoop = scoop.xf(T(0.15, 1.3, 0.15) @ RY(30) @ RZ(18))
-    return [("Bin", "label_white", tub), ("Flour", "flour", flour), ("Lid", "label_white", lid),
-            ("Hinge", "steel_dark", hinge), ("Scoop", "steel", scoop)]
+    scoop.add(rod((0.24, 0.0, 0), (0.55, 0.1, 0), 0.08, 6))
+    scoop = scoop.xf(T(-0.1, 1.38, 0.35) @ RY(60))
+    rear = bevel_box(w + 0.1, 0.15, 0.8, 0.04, c=(0, h + 0.075, -d / 2 + 0.4))
+    front = G.Geo()
+    front.add(bevel_box(w + 0.1, 0.15, 1.55, 0.04, c=(0, h + 0.225, d / 2 - 0.725)))
+    front.add(bevel_box(w + 0.1, 0.2, 0.15, 0.03, c=(0, h + 0.1, d / 2 + 0.05)))        # its front lip
+    grip = bevel_box(0.6, 0.15, 0.2, 0.04, c=(0, h + 0.35, d / 2 - 0.25))
+    cast = G.Geo()
+    for sx in (-1, 1):
+        for sz in (-1, 1):
+            cast.add(ccyl(0.12, 0.15, 8, "x", (sx * (w / 2 - 0.2), 0.12, sz * (d / 2 - 0.25)), 0.03))
+            cast.add(bevel_box(0.2, 0.15, 0.2, 0.03, c=(sx * (w / 2 - 0.2), 0.245, sz * (d / 2 - 0.25))))
+    return [("Bin", "label_white", body), ("Flour", "flour", flour), ("Scoop", "steel", scoop),
+            ("LidRear", "label_white", rear), ("LidFront", "glass", front, {"material": "Glass", "transparency": 0.35}),
+            ("LidGrip", "label_blue", grip), ("Castors", "black", cast)]
 
 
 @prop("Scale")

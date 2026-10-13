@@ -152,25 +152,26 @@ def oven(k):
         k.mesh(m, "Rivets", "Oven__Rivets%d" % int(yf * 10), _rivets(yf, ys, yc), CF((X0, 0, 0)), "steel_dark",
                shadow=False)
     # ---- the doors: drop-down, hinged on the bottom edge; a frame, a porthole, the handle
+    from .opens import hinge, opener
     for i, (yf, ys, yc) in enumerate(DECKS):
-        door = k.mesh(m, "Door%d" % (i + 1), "Oven__Door%d" % (i + 1), _door(yf, ys, yc), CF((X0, 0, 0)), "iron",
-                      solid=True)
+        # an openable Model: pivot on the bottom edge, its X along the hinge; +90 about X drops
+        # the door open towards the room, flush with the deck floor
+        dm = opener(k, m, "Door%d" % (i + 1), "Swing", "Metal", angle=90.0, axis="X")
+        door = k.mesh(dm, "Door", "Oven__Door%d" % (i + 1), _door(yf, ys, yc), CF((X0, 0, 0)), "iron",
+                      solid=False)
         zc = (MZ[0] + MZ[1]) / 2
         py = yf + 0.45
-        port = k.part(m, "Porthole", (0.15, 0.8, 0.8), CF((X0 + 0.02, py, zc)), "glass_hot", material="Glass",
+        port = k.part(dm, "Porthole", (0.15, 0.8, 0.8), CF((X0 + 0.02, py, zc)), "glass_hot", material="Glass",
                       transparency=0.35, shape="Cylinder", grid=False, shadow=False)
-        rim = k.mesh(m, "PortRim", "Oven__PortRim", G.torus(0.43, 0.09, 12, 4, "x", (0, 0, 0)),
+        rim = k.mesh(dm, "PortRim", "Oven__PortRim", G.torus(0.43, 0.09, 12, 4, "x", (0, 0, 0)),
                      CF((X0 - 0.04, py, zc)), "steel_light", shadow=False)
         hg = G.Geo()
         hg.add(rod((0, 0, -1.4), (0, 0, 1.4), 0.11, 8))
         for dz in (-1.25, 1.25):
             hg.add(rod((0, 0, dz), (0.42, 0, dz), 0.09, 6))
-        hdl = k.mesh(m, "DoorHandle", "Oven__DoorHandle", hg, CF((X0 - 0.45, ys + 0.1, zc)), "steel_light",
-                     solid=True)
-        weld_all(k, door, [port, rim, hdl])
-        pivot(door, CF((X0 + 0.4, yf, zc)))
-        moving(m, "Door%d" % (i + 1), "drop-down door hinged on its bottom edge; rotate the pivot +90 deg about Z "
-                                      "and it falls open towards the room, ending flush with the deck floor")
+        k.mesh(dm, "DoorHandle", "Oven__DoorHandle", hg, CF((X0 - 0.45, ys - 0.25, zc)), "steel_light")
+        # hinged along the front of its bottom edge: nothing dips into the sill as it drops open
+        hinge(dm, door, CF((X0 - 0.15, yf + 0.06, zc), G.ry(-90)))
     # ---- the log store in the base
     k.mesh(m, "Logs", "Oven__Logs", _logs(rng), CF((X0 + 0.15, LOGS[0], (MZ[0] + MZ[1]) / 2)), "wood", solid=True)
     k.mesh(m, "LogEnds", "Oven__LogEnds", _log_ends(rng), CF((X0 + 0.15, LOGS[0], (MZ[0] + MZ[1]) / 2)),
@@ -289,9 +290,10 @@ def _rivets(yf, ys, yc):
 
 
 def _door(yf, ys, yc):
-    """A door filling the mouth (inset 0.06), 0.4 thick with a raised frame on its face."""
+    """A door filling the mouth (inset 0.06), a 0.2 plate with a raised frame on its face (thin
+    enough to drop open about its front bottom edge without its top catching the arch)."""
     outline = _mouth_outline(MZ[0] + 0.06, MZ[1] - 0.06, yf, ys, yc - 0.06, n=10)
-    g = G.extrude(outline, 0.4, "x", (0.2, 0, 0))
+    g = G.extrude(outline, 0.2, "x", (0.1, 0, 0))
     # the raised frame, as segments (left, right, bottom, arch band)
     g.add(G.extrude([(MZ[0] + 0.12, yf + 0.06), (MZ[0] + 0.4, yf + 0.06), (MZ[0] + 0.4, ys),
                      (MZ[0] + 0.12, ys)], 0.15, "x", (-0.075, 0, 0)))
@@ -434,7 +436,8 @@ def cut_table(k):
     m = station(k, "CutTable")
     z0, z1 = CUT
     C.counter(k, m, "E", z0, z1, 4.0, top="wood", fronts=[(2, "drawers"), (3, "doors2"), (2, "door")],
-              end_left=True, end_right=False, owner="CutTable")
+              insides={0: ["Spatulas", "CutleryTray"], 2: ["LittlePapa"]}, noshelf=(2,),
+              end_left=True, end_right=True, owner="CutTable")     # an end panel by the wall: a door clears it
     zw = z0 + 1.9
     k.prop(m, "RoundBoard", CF((15.0, L.WORK, zw), G.ry(90)), name="Board")
     spot(k, m, "Work", 15.0, L.WORK + 0.4, zw, E)

@@ -52,7 +52,7 @@ def main(outdir):
             problems.append("%s: %d" % (key, len(rep[key])))
     if rep["item_markers"][1]:
         problems.append("item markers off their surface: %s" % rep["item_markers"][1])
-    miss, kind = rep["contract"]
+    miss, kind, _moved, _opened = rep["contract"]
     if miss or kind:
         problems.append("contract: missing %s, kind changed %s" % (miss, kind))
     seen = {}

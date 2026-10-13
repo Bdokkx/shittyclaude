@@ -158,32 +158,68 @@ def payphone(rng):
 
 @prop("NewsBox")
 def news_box(rng):
-    """A newspaper vending box on four legs: blue body, a window on the front, a coin slot."""
-    body = bevel_box(1.8, 2.0, 1.4, 0.12, c=(0, 2.0, 0))
+    """A newspaper vending box on four legs: blue body, the papers stacked inside, a window in
+    the front door that drops open (site.py makes DoorFrame + Window its openable Door), a coin
+    slot on the panel under it."""
+    w, d = 1.8, 1.4
+    body = G.Geo()
+    body.add(bevel_box(w, 0.15, d, 0.04, c=(0, 1.075, 0)))                            # floor
+    body.add(bevel_box(w, 0.15, d, 0.04, c=(0, 2.925, 0)))                            # top
+    for sx in (-1, 1):
+        body.add(bevel_box(0.15, 1.7, d, 0.04, c=(sx * (w / 2 - 0.075), 2.0, 0)))
+    body.add(bevel_box(w, 1.7, 0.15, 0.04, c=(0, 2.0, -d / 2 + 0.075)))              # back
+    body.add(bevel_box(w, 0.55, 0.15, 0.04, c=(0, 1.425, d / 2 - 0.075)))            # the panel under the door
     lid = bevel_box(1.9, 0.2, 1.5, 0.05, c=(0, 3.1, 0))
     legs = G.Geo()
     for sx in (-1, 1):
         for sz in (-1, 1):
             legs.add(bevel_box(0.15, 1.0, 0.15, 0.03, c=(sx * 0.75, 0.5, sz * 0.55)))
-    window = bevel_box(1.3, 0.9, 0.15, 0.03, c=(0, 2.35, 0.68))
-    paper = bevel_box(1.1, 0.7, 0.15, 0.02, c=(0, 2.3, 0.6))
-    slot = bevel_box(0.3, 0.3, 0.15, 0.03, c=(0.6, 1.45, 0.72))
+    fr = G.Geo()
+    fh = 2.85 - 1.72
+    for (cx, cy, sx, sy) in ((0, 1.72 + 0.1, w - 0.2, 0.2), (0, 2.85 - 0.1, w - 0.2, 0.2),
+                             (-(w - 0.2) / 2 + 0.1, 1.72 + fh / 2, 0.2, fh), ((w - 0.2) / 2 - 0.1, 1.72 + fh / 2, 0.2, fh)):
+        fr.add(bevel_box(sx, sy, 0.15, 0.04, c=(cx, cy, d / 2 - 0.075)))
+    fr.add(bevel_box(0.5, 0.15, 0.2, 0.04, c=(0, 2.75, d / 2 + 0.1)))                # pull
+    window = bevel_box(w - 0.5, fh - 0.3, 0.15, 0.03, c=(0, 1.72 + fh / 2, d / 2 - 0.1))
+    papers = G.Geo()
+    for i in range(5):
+        papers.add(bevel_box(1.3, 0.15, 1.0, 0.03, c=(0.02 * (i % 2), 1.225 + 0.1 * i, -0.05)).xf(RY(3 * (i % 3) - 3)))
+    paper = bevel_box(1.1, 0.7, 0.15, 0.02, c=(0, 2.06, 0.35)).xf(RX(-6))      # stood on the stack, leaning on the glass
+    slot = bevel_box(0.3, 0.3, 0.15, 0.03, c=(0.6, 1.45, d / 2 + 0.02))
     return [("Body", "label_blue", body), ("Lid", "label_blue", lid), ("Legs", "black", legs),
-            ("Paper", "paper_old", paper), ("Window", "glass", window, GLASS), ("Slot", "steel_light", slot)]
+            ("Papers", "paper", papers), ("Paper", "paper_old", paper), ("DoorFrame", "label_blue", fr),
+            ("Window", "glass", window, GLASS), ("Slot", "steel_light", slot)]
 
 
 @prop("IceChest")
 def ice_chest(rng):
-    """An ICE chest freezer outside the shop: white, a blue band, frost on the lid seal."""
-    body = bevel_box(3.6, 2.6, 1.8, 0.15, c=(0, 1.45, 0))
+    """An ICE chest freezer outside the shop: white, a blue band, frost on the lid seal. Hollow,
+    bags of ice inside; its Lid hinges at the back (site.py makes it the openable Lid)."""
+    w, h, d = 3.6, 2.6, 1.8
+    body = G.Geo()
+    body.add(bevel_box(w, 0.25, d, 0.08, c=(0, 0.275, 0)))                              # floor
+    for sx in (-1, 1):
+        body.add(bevel_box(0.25, h - 0.25, d, 0.08, c=(sx * (w / 2 - 0.125), 0.15 + 0.25 + (h - 0.25) / 2 - 0.125, 0)))
+    for sz in (-1, 1):
+        body.add(bevel_box(w, h - 0.25, 0.25, 0.08, c=(0, 0.15 + 0.25 + (h - 0.25) / 2 - 0.125, sz * (d / 2 - 0.125))))
     lid = bevel_box(3.7, 0.3, 1.9, 0.1, c=(0, 2.9, 0))
-    band = bevel_box(3.65, 0.6, 1.85, 0.05, c=(0, 2.1, 0))
+    band = G.Geo()
+    for sz in (-1, 1):
+        band.add(bevel_box(3.65, 0.6, 0.15, 0.04, c=(0, 2.1, sz * d / 2)))
+    for sx in (-1, 1):
+        band.add(bevel_box(0.15, 0.6, 1.85, 0.04, c=(sx * w / 2, 2.1, 0)))
     feet = G.Geo()
     for sx in (-1, 1):
         feet.add(bevel_box(0.4, 0.15, 1.6, 0.04, c=(sx * 1.5, 0.075, 0)))
-    hinge = bevel_box(0.5, 0.2, 0.15, 0.04, c=(1.2, 2.8, -0.97))
+    hinge = G.Geo()
+    for x in (-1.2, 1.2):
+        hinge.add(bevel_box(0.5, 0.3, 0.15, 0.04, c=(x, 2.75, -0.97)))
+    ice = G.Geo()
+    for i in range(5):
+        ice.add(G.blob(0.5, 8, 5, (1.2, 0.55, 0.9), 0.15, 40 + i, (-1.2 + 0.6 * i, 1.75 + 0.1 * (i % 2), -0.2 + 0.25 * (i % 3) - 0.2),
+                       flat_bottom=-0.2))
     return [("Body", "label_white", body), ("Lid", "label_white", lid), ("Band", "label_blue", band),
-            ("Feet", "black", feet), ("Latch", "steel", hinge)]
+            ("Feet", "black", feet), ("Hinges", "steel", hinge), ("IceBags", "liner", ice)]
 
 
 @prop("VendingMachine")

@@ -63,10 +63,12 @@ def back_door(k):
     for sx in (-1, 1):
         bar.add(bevel_box(0.4, 0.5, 0.35, 0.06, c=(sx * 1.6, 0, 0.18)))
     parts.append(k.mesh(m, "PushBar", "BackDoor__PushBar", bar, CF((xc, 3.0, zi)), "steel_dark"))
-    weld_all(k, door, parts)
+    # an openable Model "Door": hinged on its west edge (outer face), +90 about Y swings it out
+    # into the yard; the slab is its Leaf
+    from .opens import adopt
+    door.name = "Leaf"
     pivot(door, CF((x0, 3.8, zd)))
-    moving(m, "Door", "hinged on its west edge (outer face); rotate the pivot +90 deg about Y to swing it OUT into "
-                      "the yard (north). Window, wire, kick plate, levers and push bar are welded to it")
+    adopt(k, m, "Door", door, parts, "Swing", "Metal", angle=90.0)
     # the frame: a jamb liner in the opening, the head casing inside, a threshold
     k.box(m, "Threshold", (x0, 0.2, L.OUT_Z0), (x1, y0, zi), "steel_dark", solid=True)
     k.mesh(m, "HeadTrim", "BackDoor__Head", bevel_box(4.0, 0.4, 0.3, 0.06), CF((xc, y1 + 0.2, zi + 0.15)), "beam")
@@ -102,7 +104,8 @@ def back_door(k):
 # ---------------------------------------------------------------- fridge
 
 def fridge(k):
-    """Open-fronted multideck chiller (no doors, as batch 1): charcoal cabinet with steel
+    """Reach-in chiller with two glass doors (FridgeDoor1/2, hinged at the outer edges, opening
+    out into the room): charcoal cabinet with steel
     edges and a red stripe, cool-white liner with shelf standards, four steel shelves with
     blue price strips, the red canopy (COLD badge, thermometer, air-curtain grille, the night
     blind rolled up under it, the cold strip light), a kick grille at the foot, and a slow
@@ -167,6 +170,31 @@ def fridge(k):
     bulb = k.part(lm, "Bulb", (3.0, 0.2, 0.4), CF((xc, 7.25, z1 - 1.5)), (220, 240, 255), material="Neon",
                   grid=False, shadow=False)
     k.lamp(lm, bulb, "Shack", "Surface", 7.0, 0.8, (210, 232, 255), shadows=False)
+    # the two glass doors: steel frames, a glass pane, a long bar handle by the meeting edges
+    from .opens import hinge, opener
+    dy0, dy1 = 1.3, 7.3
+    dz = z1 + 0.12                                     # the doors' back face, clear of the price strips
+    half = (x1 - x0 - 1.0) / 2
+    for j, (ha, hb) in enumerate(((x0 + 0.5, xc), (xc, x1 - 0.5))):
+        left = j == 0
+        hu = ha + 0.03 if left else hb - 0.03
+        dw, dh = half - 0.06, dy1 - dy0
+        dc = ((ha + hb) / 2, (dy0 + dy1) / 2, dz + 0.1)
+        op = opener(k, m, "FridgeDoor%d" % (j + 1), "Swing", "Fridge", angle=-90.0 if left else 90.0)
+        fr = G.Geo()
+        for (cx, cy, sx, sy) in ((0, dh / 2 - 0.15, dw, 0.3), (0, -dh / 2 + 0.2, dw, 0.4),
+                                 (-dw / 2 + 0.15, 0, 0.3, dh), (dw / 2 - 0.15, 0, 0.3, dh)):
+            fr.add(bevel_box(sx, sy, 0.2, 0.05, c=(cx, cy, 0)))
+        leaf = k.mesh(op, "Frame", "Fridge__DoorFrame", fr, CF(dc), "steel_light", material="SmoothPlastic")
+        k.part(op, "Glass", (dw - 0.5, dh - 0.6, 0.15), CF((dc[0], dc[1] - 0.05, dc[2])), "glass", material="Glass",
+               transparency=0.55, grid=False, shadow=False)
+        hx = (hb - 0.3) if left else (ha + 0.3)
+        hg = G.Geo()
+        hg.add(rod((0, -1.2, 0.3), (0, 1.2, 0.3), 0.1, 6))
+        for yy in (-1.05, 1.05):
+            hg.add(rod((0, yy, 0.0), (0, yy, 0.3), 0.08, 6))
+        k.mesh(op, "Handle", "Fridge__DoorHandle", hg, CF((hx, 4.2, dz + 0.2)), "steel_dark")
+        hinge(op, leaf, CF((hu, (dy0 + dy1) / 2, dz + 0.2)))
     # the drain tray drips: a puddle on the floor in front of the kick grille
     k.mesh(m, "Puddle", "Fridge__Puddle", chamfer_slab([(-0.8, -0.3), (-0.2, -0.55), (0.6, -0.4), (0.9, 0.1),
                                                          (0.3, 0.45), (-0.5, 0.35)], 0.04, 0.015),
@@ -204,7 +232,12 @@ def dough_station(k):
     xc = (x0 + x1) / 2
     _counter(k, m, x0, x1, fronts=[(2.4, "open"), (1.6, "drawers3")], end_left=True, end_right=False,
              owner="DoughStation")
-    k.prop(m, "FlourBin", C.wcf("N", x0 + 1.25, 0.9, 3.4), name="FlourBin")
+    fcf = C.wcf("N", x0 + 1.25, 0.9, 3.4)
+    fb = k.prop(m, "FlourBin", fcf, name="FlourBin")
+    from .opens import from_prop, stash
+    from_prop(k, fb, "Lid", ["LidFront", "LidGrip"], fcf * CF((0.0, 1.75, 1.1)), "Slide", "Lid",
+              offset=(0.0, 0.0, -1.0), label="Slide lid")
+    stash(k, m, fcf * CF((0.0, 1.37, 0.6), G.facing((0, 0, 1))), (0.9, 0.35, 0.8), behind="FlourBin/Lid")
     # dough board on the bench
     wx = xc + 0.2
     k.mesh(m, "Board", "DoughStation__Board", bevel_box(3.6, 0.4, 3.6, 0.08), CF((wx, L.WORK + 0.2, WZ)),
@@ -257,6 +290,7 @@ def sauce_station(k):
     x0, x1 = -5.0, 3.0
     xs, xch = x0 + 2.0, x0 + 6.0
     _counter(k, m, x0, x1, fronts=[(4, "doors2"), (4, "doors2")], end_left=False, end_right=False,
+             notes={0: "STOCK CHECK:\n14 TINS. 13 TINS.\n14 TINS??"},
              owner="SauceStation")
     spot(k, m, "WorkSauce", xs, L.WORK, WZ + 0.3, N)     # a pizza here clears the burner behind
     spot(k, m, "WorkCheese", xch, L.WORK, WZ, N)
@@ -297,7 +331,8 @@ def chop_station(k):
     m = station(k, "ChopStation")
     x0, x1 = 3.0, 7.0
     xc = (x0 + x1) / 2
-    _counter(k, m, x0, x1, fronts=[(2, "door"), (2, "open")], ajar=(0,), end_left=False, end_right=False,
+    _counter(k, m, x0, x1, fronts=[(2, "door"), (2, "open")], end_left=False, end_right=False,
+             insides={0: ["OneShoe", "|", "PlateStack"]},
              owner="ChopStation")
     k.prop(m, "VegCrate", C.wcf("N", x1 - 1.0, 0.9, 3.2, G.ry(90)), name="VegCrate")
     k.prop(m, "ChopBoard", CF((xc, L.WORK, WZ)), name="Board")
@@ -320,7 +355,7 @@ def topping_rail(k):
     brackets over the rail only (no post anywhere near Tub1), tongs on the rail's lip."""
     m = station(k, "ToppingRail")
     x0, x1 = 7.0, 12.0                               # a hand's gap to the hot oven
-    _counter(k, m, x0, x1, top="steel", door="steel", fronts=[(2.5, "door"), (2.5, "door")], end_left=False,
+    _counter(k, m, x0, x1, top="steel", door="steel", fronts=[(5, "slide2")], end_left=False,
              end_right=True, owner="ToppingRail")
     y0, y1 = L.WORK, L.WORK + 0.8                  # the well's rim at 4.2
     z0, z1 = NZ, NZ + 1.9
@@ -345,19 +380,21 @@ def topping_rail(k):
         cx = 7.15 + 0.82 * i                        # six slimmer tubs in the shorter rail
         k.mesh(m, "Tub", "ToppingRail__Tub", tub, CF((cx, y1 - th + 0.05, zc)), "steel_light", shadow=False)
         spot(k, m, "Tub%d" % (i + 1), cx, y1 - th + 0.05 + 0.15, zc, N)
-    # hinged lid standing open against the wall, behind the tubs
-    k.mesh(m, "Lid", "ToppingRail__Lid", bevel_box(W_ - 0.2, 1.6, 0.2, 0.06), CF(((x0 + x1) / 2 - 0.3, y1 + 0.8, NZ + 0.3)),
-           "steel", shadow=False)
-    # glass guard on two wall brackets at the rail's ends, over the tubs only
-    gy = y1 + 2.2
-    k.part(m, "Guard", (x1 - x0, 0.15, 1.6), CF(((x0 + x1) / 2, gy, NZ + 0.85), G.rx(-10)), "glass", material="Glass",
-           transparency=0.6, grid=False, shadow=False)
-    for x in (x0 + 0.3, x1 - 0.3):
-        br = G.Geo()
-        br.add(rod((0, -0.25, 0.0), (0, -0.25, 1.55), 0.09, 6))                 # the guard rests on it
-        br.add(rod((0, -0.95, 0.0), (0, -0.3, 1.2), 0.09, 6))
-        k.mesh(m, "GuardBracket", "ToppingRail__Bracket", br, CF((x, gy - 0.1, NZ)), "steel_light", shadow=False)
-    k.prop(m, "Tongs", CF((x1 - 0.6, y1, z1 + 0.2), G.ry(160)), name="Tongs")
+    # the rail's steel lid, shut over the tubs: hinged along its back edge, it lifts up to stand
+    # against the wall (the openable Model "Lid")
+    from .opens import hinge, opener
+    lid_m = opener(k, m, "Lid", "Swing", "Lid", angle=-90.0, axis="X")
+    lz0, lz1 = NZ + 0.3, z1 + 0.1
+    lid = G.Geo()
+    lw_ = W_ - 0.4                                   # clear of the chop station's board
+    lid.add(bevel_box(lw_, 0.2, lz1 - lz0, 0.06, c=(0, 0.1, 0)))
+    lid.add(bevel_box(lw_, 0.3, 0.15, 0.04, c=(0, 0.0, (lz1 - lz0) / 2 - 0.075)))      # the front lip
+    lc = ((x0 + x1) / 2 - 0.3, y1 + 0.1, (lz0 + lz1) / 2)
+    leaf = k.mesh(lid_m, "Leaf", "ToppingRail__LidShut", lid, CF(lc), "steel", material="SmoothPlastic")
+    k.mesh(lid_m, "Grip", "ToppingRail__LidGrip", bevel_box(1.2, 0.15, 0.2, 0.04),
+           CF((lc[0], y1 + 0.28, lz1 - 0.25)), "steel_dark", shadow=False)
+    hinge(lid_m, leaf, CF((lc[0], y1 + 0.3, lz0)))
+    k.prop(m, "Tongs", CF((x1 - 0.75, L.WORK, z1 + 0.9), G.ry(160)), name="Tongs")      # on the top, by the lid
     spot(k, m, "Work", (x0 + x1) / 2 - 0.5, L.WORK, WZ + 0.4, N)
     stand(k, m, (x0 + x1) / 2 - 0.5, SZ, N)
     return m

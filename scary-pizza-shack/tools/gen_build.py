@@ -118,6 +118,8 @@ def main(src, dst, config="map"):
             stats["Marker"] += 1
             f = flags({"anchored": n.get("anchored", True), "massless": n.get("massless", False)}, {})
             lines.append("K %d %s %s %d %d" % (par, name, pos(n["cf"]), tb.rot(n["cf"][1]), f))
+            for ak, av in (n.get("attrs") or {}).items():
+                post.append(("T", me, ak, av))
         elif k == "MeshPart":
             me = new(n)
             stats["MeshPart"] += 1
@@ -174,6 +176,8 @@ def main(src, dst, config="map"):
                 lines.append("T %d %s b %s" % (me, key, "1" if val else "0"))
             elif isinstance(val, (int, float)):
                 lines.append("T %d %s n %s" % (me, key, num(val, 4)))
+            elif isinstance(val, (list, tuple)) and len(val) == 3:
+                lines.append("T %d %s v %s %s %s" % (me, key, num(val[0], 4), num(val[1], 4), num(val[2], 4)))
             else:
                 lines.append("T %d %s s %s" % (me, key, lua_name(str(val))))
 
@@ -554,6 +558,8 @@ for line in string.gmatch(DATA, "[^\n]+") do
 			o:SetAttribute(f[3], tonumber(v))
 		elseif t == "b" then
 			o:SetAttribute(f[3], v == "1")
+		elseif t == "v" then
+			o:SetAttribute(f[3], Vector3.new(tonumber(f[5]), tonumber(f[6]), tonumber(f[7])))
 		else
 			o:SetAttribute(f[3], nm(v))
 		end

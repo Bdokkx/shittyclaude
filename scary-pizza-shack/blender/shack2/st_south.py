@@ -58,9 +58,9 @@ def plushie_shelf(k):
           text="PLUSHIES $4.99", text_color=(150, 30, 24), name="PriceCard")
     # a strip light under the shelf: it lights the cut table below (no lamp hangs in front of the shelf)
     lm = k.sc.model(m, "ShelfLight")
-    k.mesh(lm, "Housing", "PlushieShelf__LightHousing", bevel_box(2.6, 0.3, 0.5, 0.06),
+    k.mesh(lm, "Housing", "PlushieShelf__LightHousing", bevel_box(1.6, 0.3, 0.5, 0.06),
            CF(((x0 + x1) / 2, y - 0.55, SZ - 1.2)), "charcoal", shadow=False)
-    bulb = k.part(lm, "Bulb", (2.4, 0.15, 0.3), CF(((x0 + x1) / 2, y - 0.775, SZ - 1.2)), (255, 236, 200),
+    bulb = k.part(lm, "Bulb", (1.4, 0.15, 0.3), CF(((x0 + x1) / 2, y - 0.775, SZ - 1.2)), (255, 236, 200),
                   material="Neon", grid=False, shadow=False)
     k.lamp(lm, bulb, "Shack", "Spot", 12.0, 1.2, (255, 214, 160), angle=120.0, shadows=False)
     stand(k, m, x1 - 0.5, STZ - 0.2, S_)
@@ -93,7 +93,7 @@ def rules_board(k):
     k.mesh(m, "Chalk", "RulesBoard__Chalk", chalk, CF((xc, yc - 2.25, zf - 0.45)), "paper", shadow=False)
     for x in (x0 + 0.3, x1 - 0.3):
         k.part(m, "Pin", (0.4, 0.4, 0.4), CF((x, yc + 2.05, zf - 0.25)), "red", shape="Ball", grid=False)
-    st = np.array((xc + 0.4, L.FLOOR, 4.9))           # at the bay's mouth, not in it
+    st = np.array((xc, L.FLOOR, 4.9))                 # at the bay's mouth, not in it
     d = np.array((xc, L.FLOOR, zf)) - st
     k.sc.marker(m, "Stand", CF(st, G.facing(d / np.linalg.norm(d))))
     return m
@@ -107,14 +107,23 @@ def register(k):
     TipJar out on the ledge where the customers are."""
     m = station(k, "Register")
     _counter(k, m, REGISTER[0], REGISTER[1], fronts=[(1.5, "drawers3"), (1.5, "door")], end_left=False,
+             stock="office", insides={0: ["Pens", "Odds", "Badges"], 1: ["LunchBox", "|", "Carton"]},
+             notes={1: "WHOEVER KEEPS\nLEAVING ONE SHOE\nIN THE CUPBOARDS:\nSTOP.  - MGMT"},
              end_right=True, owner="Register")
     x0, x1 = TILL
     tx0, tx1 = x0, x1
     tz0, tz1 = FRONT + 1.4, FRONT + 3.4
     txc = (tx0 + tx1) / 2
     W_ = WORK = L.WORK
-    k.mesh(m, "TillBase", "Register__Base", bevel_box(tx1 - tx0, 0.9, tz1 - tz0, 0.08),
-           CF((txc, W_ + 0.45, (tz0 + tz1) / 2)), "charcoal", solid=True)
+    # the base is a hollow box the cash drawer slides out of
+    bw_, bd_ = tx1 - tx0, tz1 - tz0
+    base_g = G.Geo()
+    base_g.add(bevel_box(bw_, 0.15, bd_, 0.04, c=(0, 0.075, 0)))                       # bottom
+    base_g.add(bevel_box(bw_, 0.15, bd_, 0.04, c=(0, 0.825, 0)))                       # top
+    for sx in (-1, 1):
+        base_g.add(bevel_box(0.15, 0.6, bd_, 0.04, c=(sx * (bw_ / 2 - 0.075), 0.45, 0)))
+    base_g.add(bevel_box(bw_, 0.6, 0.15, 0.04, c=(0, 0.45, bd_ / 2 - 0.075)))          # back
+    k.mesh(m, "TillBase", "Register__BaseShell", base_g, CF((txc, W_, (tz0 + tz1) / 2)), "charcoal", solid=True)
     body = G.Geo()
     body.add(G.extrude([(0, 0), (2.0, 0), (2.0, 0.6), (0.9, 1.2), (0, 1.2)], tx1 - tx0, "x", (0, 0, 0)))
     k.mesh(m, "TillTop", "Register__Top", body, CF((txc, W_ + 0.9, tz0)), "till_cream", solid=True)
@@ -128,8 +137,8 @@ def register(k):
            "black", solid=True)
     k.part(m, "DisplayGlow", (1.2, 0.3, 0.15), CF((txc, W_ + 2.42, tz0 + 1.38)), (110, 230, 140), material="Neon",
            grid=False, shadow=False)
-    drawer = k.mesh(m, "Drawer", "Register__Drawer", bevel_box(tx1 - tx0 - 0.4, 0.5, tz1 - tz0 - 0.1, 0.05),
-                    CF((txc, W_ + 0.45, (tz0 + tz1) / 2 - 0.06)), "mustard", solid=True)
+    drawer = k.mesh(m, "Drawer", "Register__Drawer", bevel_box(tx1 - tx0 - 0.4, 0.5, tz1 - tz0 - 0.25, 0.05),
+                    CF((txc, W_ + 0.45, (tz0 + tz1) / 2 - 0.1)), "mustard", solid=True)
     cash = G.Geo()
     for i in range(3):
         cash.add(bevel_box(0.6, 0.15, 1.1, 0.03, c=(-0.75 + 0.75 * i, 0, 0)))
@@ -137,9 +146,11 @@ def register(k):
                 shadow=False)
     pull = k.mesh(m, "DrawerPull", "Register__Pull", bevel_box(0.8, 0.15, 0.15, 0.04),
                   CF((txc, W_ + 0.45, tz0 - 0.08)), "black", shadow=False)
-    weld_all(k, drawer, [cm, pull])
+    # the till's Drawer: an openable Model sliding straight out towards the player, cash and all
+    from .opens import adopt
+    drawer.name = "Tray"
     pivot(drawer, CF((txc, W_ + 0.45, tz0 - 0.1)))
-    moving(m, "Drawer", "slides straight out towards the player (-Z) by 1.2; the cash inside is welded to it")
+    adopt(k, m, "Drawer", drawer, [cm, pull], "Slide", "Drawer", offset=(0.0, 0.0, -1.2))
     # the tip jar (a Model as batch 1) with coins and a curling TIPS label
     tj = k.sc.model(m, "TipJar")
     c = (3.6, W_, L.OUT_Z1 + 1.6)                   # on the ledge outside
@@ -152,7 +163,8 @@ def register(k):
     k.mesh(tj, "Coins", "TipJar__Coins", coins, CF(c), "mustard", shadow=False)
     board(k, tj, (0.6, 0.4, 0.15), CF((c[0], c[1] + 0.55, c[2] - 0.46), G.rx(8)), "paper", text="TIPS",
           text_color=(40, 40, 40), name="Board")
-    k.prop(m, "CardImprinter", CF(((x0 + x1) / 2, W_, FRONT + 0.6), G.ry(180)), name="CardMachine")
+    # the card imprinter out on the ledge by the tip jar (the till's drawer needs the counter in front of it)
+    k.prop(m, "CardImprinter", CF((1.6, W_, L.OUT_Z1 + 1.6)), name="CardMachine")
     stand(k, m, x0 + 0.4, STZ, S_)
     return m
 
@@ -166,7 +178,8 @@ def serving_window(k):
     roll-down Shutter in its housing outside, and the invisible PlayerBlock in the opening."""
     m = station(k, "ServingWindow")
     x0, x1 = L.WIN_X0, L.WIN_X1                   # -5..5, the opening
-    _counter(k, m, WIN_COUNTER[0], WIN_COUNTER[1], fronts=[(4, "doors2"), (2, "drawers")],
+    _counter(k, m, WIN_COUNTER[0], WIN_COUNTER[1], fronts=[(2, "drawers"), (4, "doors2")], stock="front",
+             insides={1: ["ToolBox", "|", "Carton"]}, notes={1: "BELL AFTER CLOSING?\nIT'S THE WIND.\nDON'T LOOK."},
              end_left=False, end_right=False, owner="ServingWindow")
     W_ = L.WORK
     # the hatch's steel lining: jambs and head line the opening right through the wall, a raised
@@ -250,7 +263,7 @@ def serving_window(k):
     k.part(m, "PlayerBlock", (x1 - x0, L.WIN_Y1 - W_, 1.0), CF((0.0, (W_ + L.WIN_Y1) / 2, (SZ + L.OUT_Z1) / 2)),
            (255, 255, 255), transparency=1.0, solid=True, shadow=False, collide=True, touch=False, query=False,
            grid=False)
-    stand(k, m, 0.0, STZ, S_)
+    stand(k, m, HANDOVER_X, STZ, S_)
     return m
 
 
@@ -305,14 +318,18 @@ def cctv_desk(k):
     k.box(m, "Top", (x0, top - 0.4, FRONT), (x1, top, SZ), "wood_dark", solid=True)
     k.mesh(m, "TopEdge", "CCTVDesk__Edge", bevel_box(6.0, 0.4, 0.2, 0.06), CF(((x0 + x1) / 2, top - 0.2, FRONT - 0.05)),
            "wood", shadow=False)
-    for (a, b) in ((x0, x0 + 2), (x1 - 2, x1)):
-        k.mesh(m, "Pedestal", "CCTVDesk__Pedestal", bevel_box(2.0, top - 0.4 - L.FLOOR, SZ - FRONT - 0.4, 0.06),
-               CF(((a + b) / 2, (L.FLOOR + top - 0.4) / 2, (FRONT + 0.4 + SZ) / 2)), "wood", solid=True)
+    # two hollow pedestals, two drawers each that slide out (the badges, the paperwork, odds)
+    from .insides import fill_drawer
+    pd = SZ - FRONT - 0.4
+    wants = (("Paperwork", "Pens"), ("Odds", "Paperwork"))
+    for pi, (a, b) in enumerate(((x0, x0 + 2), (x1 - 2, x1))):
+        C._carcass(k, m, "S", a, b, L.FLOOR, top - 0.4, pd, "wood", "CCTVDesk")
+        C.wbox(k, m, "Blocker", "S", a, b, L.FLOOR, top - 0.4, pd - 0.3, pd, "black", solid=True, transparency=1.0,
+               query=False, touch=False, shadow=False, grid=False)
         for i, (ya, yb) in enumerate(((0.5, 1.2), (1.3, 2.1))):
-            k.mesh(m, "DrawerFront", "CCTVDesk__Drawer%d" % i, C.door_geo(1.8, yb - ya - 0.06, frame=0.18),
-                   CF(((a + b) / 2, (ya + yb) / 2, FRONT + 0.4), G.ry(180)), "wood_light", shadow=False)
-            k.mesh(m, "Pull", "Counter__Pull6", C.pull_geo(0.6), CF(((a + b) / 2, yb - 0.25, FRONT + 0.2), G.ry(180)),
-                   "steel_light", shadow=False)
+            op, floor, inside = C.drawer_model(k, m, "S", a, b, ya, yb, pd, pd - 0.6, "wood_light", owner="CCTVDesk",
+                                               box_col="wood")
+            fill_drawer(k, op, floor, inside, wants[pi][1 - i], "S")
     k.box(m, "Modesty", (x0 + 2, 0.6, SZ - 1), (x1 - 2, top - 0.4, SZ), "wood", solid=True)
     W_ = top
     for i, (a, b, base_y) in enumerate(((x0 + 0.3, x0 + 2.9, W_ + 1.2), (x1 - 2.9, x1 - 0.3, W_))):
@@ -370,7 +387,7 @@ def cctv_desk(k):
     cord = G.tube([(px + 0.55, 5.55, SZ - 0.4), (px + 0.6, 4.9, SZ - 0.35), (px + 0.75, 4.7, SZ - 0.4),
                    (px + 0.82, 5.1, SZ - 0.42), (px + 0.72, 5.8, SZ - 0.45)], 0.075, 5)
     k.mesh(ph, "Cord", "Phone__Cord", cord, CF(), "black", shadow=False)
-    k.prop(m, "SwivelStool", CF((x0 + 1.0, L.FLOOR, FRONT - 0.75), G.ry(25)), name="Stool")
+    k.prop(m, "SwivelStool", CF(((x0 + x1) / 2, L.FLOOR, FRONT + 1.2)), name="Stool")    # pushed in under the desk
     # the desk's lamp: an enamel pendant over the monitors
     pendant_lamp(k, m, "DeskLamp", -9.5, 8.4, drop=2.2, bright=0.9, rng=11.0)
     stand(k, m, (x0 + x1) / 2, STZ, S_)
@@ -427,7 +444,7 @@ def sink(k):
     m = station(k, "Sink")
     x0, x1 = -17.0, -13.0                             # the sink's own bay; a cupboard runs on into the corner
     hx0, hx1, hz0, hz1 = x0 + 1.0, x1 - 1.0, FRONT + 1.0, SZ - 1.0
-    _counter(k, m, L.IN_X0, x1, fronts=[(x0 - L.IN_X0, "doors2"), (4, "open")], end_left=False, end_right=True,
+    _counter(k, m, L.IN_X0, x1, fronts=[(x0 - L.IN_X0, "blind"), (4, "open")], end_left=False, end_right=True,
              owner="Sink", top_name="Top", top_hole=(hx0, hx1, SZ - hz1, SZ - hz0))
     k.mesh(m, "Basin", "Sink__Basin", _basin(hx1 - hx0, hz1 - hz0), CF(((hx0 + hx1) / 2, L.WORK + 0.02, (hz0 + hz1) / 2)),
            "steel_light", solid=True)
@@ -437,14 +454,18 @@ def sink(k):
     for sx in (-1, 1):
         tap.add(bevel_box(0.4, 0.15, 0.15, 0.03, c=(sx * 0.4, 0.4, 0.05)))
     k.mesh(m, "Faucet", "Sink__Tap", tap, CF(((hx0 + hx1) / 2, L.WORK, SZ - 0.55)), "steel_light", shadow=False)
-    k.prop(m, "MopBucket", C.wcf("S", -15.0, 0.9, 1.9), name="MopBucket")
+    k.prop(m, "MopBucket", C.wcf("S", -15.6, 0.9, 1.9), name="MopBucket")
+    # under the basin: its pipework, the bleach and a sprung mouse trap
+    k.prop(m, "SinkTrap", C.wcf("S", (hx0 + hx1) / 2, 0.9, SZ - (hz0 + hz1) / 2), name="SinkTrap")
+    k.prop(m, "BleachJug", C.wcf("S", x1 - 0.9, 0.9, 2.6, G.ry(-15)), name="BleachJug")
+    k.prop(m, "MouseTrap", C.wcf("S", x1 - 0.6, 0.9, 1.0, G.ry(30)), name="MouseTrap")
     k.prop(m, "DryingRack", CF((x1 - 0.55, L.WORK, FRONT + 1.6), G.ry(90)), name="DryingRack")
     k.prop(m, "SoapDispenser", C.wcf("S", x0 + 1.0, 5.0, 0.0), name="Soap")
     k.prop(m, "TowelDispenser", C.wcf("S", x0 + 2.6, 5.6, 0.0), name="PaperTowels")
     wall_board(k, m, "S", x0 + 2.2, 7.6, (1.6, 1.2), "paper", text="EMPLOYEES MUST WASH HANDS",
                text_color=(30, 60, 140), name="HandWashNotice")
     k.prop(m, "FirstAid", C.wcf("S", x1 - 0.55, 7.4, 0.0), name="FirstAid")
-    stand(k, m, (x0 + x1) / 2 + 1.2, STZ, S_)
+    stand(k, m, (x0 + x1) / 2 + 0.6, STZ, S_)
     return m
 
 
@@ -501,33 +522,40 @@ def box_station(k):
     board(k, m, (3.0, 0.45, 0.15), CF(((x0 + x1) / 2, 0.9 + 7 * 0.17 + 0.35, zb - 1.8 - 0.08), FACE["N"]), "cardboard",
           text="PAPA STUD'S PIZZA", text_color=(170, 32, 26), name="BoxPrint")
     spot(k, m, "Work", BOX_WORK_X, L.WORK, zc, S_)
-    k.prop(m, "StickerRoll", CF((REGISTER[0] + 0.4, L.WORK, FRONT + 0.45), G.ry(90)), name="StickerRoll")
+    # the sticker roll on a little bracket screwed to the till counter's end, facing the bay (the
+    # till's drawer needs the counter top)
+    k.mesh(m, "StickerShelf", "BoxStation__StickerShelf", bevel_box(1.0, 0.2, 1.0, 0.05),
+           CF((REGISTER[1] + 0.5, 2.3, FRONT + 1.2)), "wood", solid=True)
+    k.prop(m, "StickerRoll", CF((REGISTER[1] + 0.5, 2.4, FRONT + 1.2), G.ry(90)), name="StickerRoll")
     stand(k, m, BOX_WORK_X, STZ, S_)
     return m
 
 
 def kitchen_bin(k):
     """Pedal bin standing in the back corner of the open bay, out of every way; its Lid is
-    hinged at the back (the wall side)."""
+    hinged at the back of its top, low enough to stand up under the rules board."""
     m = station(k, "Bin")
-    c = (BAY[0] + 0.85, L.FLOOR, SZ - 0.85)
-    body = G.outward(G.lathe([(0, 0.0), (0.62, 0.0), (0.7, 0.1), (0.76, 2.1), (0, 2.1)], 12))
+    sc_ = 0.75                                          # a smaller bin than batch 1's
+    c = (BAY[0] + 0.8, L.FLOOR, SZ - 0.8)
+    S_c = G.S(sc_)
+    body = G.outward(G.lathe([(0, 0.0), (0.62, 0.0), (0.7, 0.1), (0.76, 2.1), (0, 2.1)], 12)).xf(S_c)
     k.mesh(m, "Body", "Bin__Body", body, CF(c), "steel_dark", solid=True)
-    k.mesh(m, "Band", "Bin__Band", G.ring(0.8, 0.7, 0.3, 12, c=(0, 1.95, 0)), CF(c), "red", shadow=False)
-    k.mesh(m, "Foot", "Bin__Foot", G.ring(0.7, 0.5, 0.15, 12, c=(0, 0.075, 0)), CF(c), "black", shadow=False)
-    lid = G.outward(G.lathe([(0, 0.0), (0.82, 0.0), (0.82, 0.15), (0.6, 0.35), (0, 0.42)], 12))
-    lid.add(bevel_box(0.3, 0.15, 0.4, 0.04, c=(0.82, 0.1, 0)))
-    lidp = k.mesh(m, "Lid", "Bin__Lid", lid, CF((c[0], c[1] + 2.1, c[2]), G.ry(-90)), "steel", solid=True)
-    pivot(lidp, CF((c[0], c[1] + 2.1, c[2] + 0.8), G.ry(-90)))
-    moving(m, "Lid", "hinged at the back (wall side); rotate the pivot -90 deg about its Z to flip it up")
+    k.mesh(m, "Band", "Bin__Band", G.ring(0.8, 0.7, 0.3, 12, c=(0, 1.95, 0)).xf(S_c), CF(c), "red", shadow=False)
+    k.mesh(m, "Foot", "Bin__Foot", G.ring(0.7, 0.5, 0.2, 12, c=(0, 0.1, 0)).xf(S_c), CF(c), "black", shadow=False)
+    lid = G.outward(G.lathe([(0, 0.0), (0.82, 0.0), (0.82, 0.2), (0.6, 0.35), (0, 0.42)], 12))
+    lid.add(bevel_box(0.3, 0.2, 0.4, 0.04, c=(0.82, 0.1, 0)))
+    lid = lid.xf(S_c)
+    top = 2.1 * sc_
+    from .opens import hinge, opener
+    lm = opener(k, m, "Lid", "Swing", "Lid", angle=90.0, axis="X", label="Lift lid")
+    lidp = k.mesh(lm, "Leaf", "Bin__Lid", lid, CF((c[0], c[1] + top, c[2]), G.ry(-90)), "steel")
+    hinge(lm, lidp, CF((c[0], c[1] + top + 0.42 * sc_, c[2] + 0.8 * sc_)))   # the back of its top (wall side)
     ped = G.Geo()
-    ped.add(bevel_box(0.5, 0.15, 0.7, 0.04, c=(-0.95, 0.2, 0)))
-    ped.add(rod((-0.7, 0.2, 0), (-0.55, 0.35, 0), 0.08, 4))
-    k.mesh(m, "Pedal", "Bin__Pedal", ped, CF(c, G.ry(-90)), "black", shadow=False)
+    ped.add(bevel_box(0.5, 0.2, 0.7, 0.04, c=(-0.95, 0.2, 0)))
+    ped.add(rod((-0.7, 0.2, 0), (-0.55, 0.35, 0), 0.1, 4))
+    k.mesh(m, "Pedal", "Bin__Pedal", ped.xf(S_c), CF(c, G.ry(-90)), "black", shadow=False)
     k.prop(m, "LitterFloor", CF((c[0] + 1.4, L.FLOOR, c[2] - 0.2)), name="Litter")
-    st = np.array((c[0], L.FLOOR, 4.9))                # at the bay's mouth
-    d = np.array((c[0], L.FLOOR, c[2])) - st
-    k.sc.marker(m, "Stand", CF(st, G.facing(d / np.linalg.norm(d))))
+    stand(k, m, c[0], 4.6, S_)                          # at the bay's mouth, square to the wall
     return m
 
 

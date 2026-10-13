@@ -404,6 +404,9 @@ def main():
     h = w * 9 // 16
     samples = int(opts.get("samples", 24))
     sc = build(which)
+    if "open" in opts:                                   # open=all or open=Fridge,CabinetDoor (path fragments)
+        from shack2 import opens
+        opens.apply_open(sc, opts["open"])
     views = views_for(sc, which)
     # extra cameras for close looks: cams=name:x,y,z:tx,ty,tz;... (inside=1 lights them as inside)
     if "cams" in opts:

@@ -608,10 +608,21 @@ def contract(sc, old):
         return out
     want = names(old)
     have = names(sc)
-    missing = sorted(k for k in want if k not in have and not k.startswith("Markers/Car_Path"))
+    # V3: a moving part became an openable Model of the same name, or rides inside one
+    from . import opens as O
+    opened = {n.path().split("/Stations/", 1)[-1] for n in sc.nodes("Model") if O.is_openable(n)}
+    opened = {"Stations/" + p for p in opened}
+    missing, moved = [], []
+    for k in sorted(want):
+        if k in have or k.startswith("Markers/Car_Path"):
+            continue
+        head_, _, leaf = k.rpartition("/")
+        alt = [o + "/" + leaf for o in opened if o.rpartition("/")[0] == head_ and (o + "/" + leaf) in have]
+        (moved if alt else missing).append(k if not alt else "%s -> %s" % (k, alt[0]))
     kind = sorted(k for k in want if k in have and have[k] != want[k] and
-                  {have[k], want[k]} != {"Part", "MeshPart"})
-    return missing, kind
+                  {have[k], want[k]} != {"Part", "MeshPart"} and k not in opened)
+    now_open = sorted(k for k in want if k in opened)
+    return missing, kind, moved, now_open
 
 
 def lights(sc):
@@ -649,7 +660,7 @@ SIDE = 4.0                         # clear floor a Stand needs on at least two s
 
 
 FLOORISH = ("Mat", "Tile", "Floor", "Puddle", "Drain", "Threshold", "Skirting")
-CONTAINERS = ("Tub", "DeckLining", "Hearth", "StoreFloor", "Liner", "Back")
+CONTAINERS = ("Tub", "DeckLining", "Hearth", "StoreFloor", "Liner", "Back", "Leaf", "Grip")   # (a shut lid over a Tub)
 
 
 def _not_floor(n):
@@ -812,6 +823,105 @@ def zfight(sc, boxes=None):
     return out
 
 
+# ---------------------------------------------------------------- openables
+
+KEEP_CLEAR = {}         # name -> (lo, hi) world boxes no open door may stand in (filled in openings())
+# sweep hits that are box artefacts, checked by hand. The oven doors' plates are arched and the
+# surround's band is an arc: their boxes overlap round the arch while the shapes do not (a
+# 0.35 plate dropping open about its front bottom edge rises at most 0.054 at its crown, and
+# it is inset 0.06 from the mouth all round).
+SWEEP_OK = {("Oven/Door", "Oven/Surround"), ("Oven/Door", "Oven/Rivets")}
+
+
+def openings(sc):
+    """Everything that opens, swept from shut to open (a quarter at a time) through what is
+    around it, then left open: it may not stand in another open door, a Stand's body, the way
+    out of the back door or the floor in front of the oven. Also: a Model that says it opens
+    must have a PrimaryPart with a pivot, and only parts that move."""
+    from . import opens as O, st_east as OE
+    out = []
+    bv = Boxes(sc, keep=lambda n: n.p["transparency"] < 0.99)
+    ops = [m for m in sc.nodes("Model") if O.is_openable(m)]
+    clear_zones = {
+        "BackDoorWay": (np.array((L.DOOR_X0, 0.6, L.IN_Z0)), np.array((L.DOOR_X1, 7.0, L.IN_Z0 + 3.0))),
+        "OvenApron": (np.array((OE.X0 - OE.APRON, 0.6, OE.MZ[0] - 0.3)), np.array((OE.X0 - 0.4, 6.0, OE.MZ[1] + 0.3))),
+    }
+    KEEP_CLEAR.update(clear_zones)
+    bodies_ = []
+    for st in sc.root.get("Stations").children:
+        for n in st.walk():
+            if n.kind == "Marker" and n.name.startswith("Stand"):
+                R = _flat(n.p["cf"].R)
+                bodies_.append((st.name, n.p["cf"].p + np.array((0.0, BODY[1] / 2 + 0.3, 0.0)), R,
+                                np.array(BODY) / 2))
+    opened = []
+    for m in ops:
+        a = m.p["attrs"]
+        name = m.path().replace("PizzaShack/", "")
+        if m.p.get("primary") is None or m.p["primary"].p.get("pivot") is None:
+            out.append(("no pivot", name, []))
+            continue
+        own = {id(n) for n in m.walk()}
+        idx = [i for i, n in enumerate(bv.nodes) if id(n) in own]
+        hits = set()
+        # what a piece already touches shut (a frame it sits in; boxes round curved pieces) is
+        # the pierce check's business: only what the moving piece runs into on the way counts
+        rest = {i: set(_hits_obb(bv, bv.C[i], bv.R[i], bv.H[i], skip=own, depth=0.06)) for i in idx}
+        for f in (0.25, 0.5, 0.75, 1.0):
+            T_ = O.open_tf(m, f)
+            for i in idx:
+                C_ = T_.R @ bv.C[i] + T_.p
+                R_ = T_.R @ bv.R[i]
+                for h in _hits_obb(bv, C_, R_, bv.H[i], skip=own, depth=0.06):
+                    if h not in rest[i] and not any(a_ in name and b_ in h for a_, b_ in SWEEP_OK):
+                        hits.add(h)
+                if f == 1.0:
+                    opened.append((m, name, C_, R_, bv.H[i]))
+        if hits:
+            out.append(("sweep", name, sorted(hits)[:4]))
+    # a swing door's hinge is its edge away from its station's nearest Stand
+    for m in ops:
+        a = m.p["attrs"]
+        if a["Opens"] != "Swing" or a.get("OpenAxis") == "X" or m.parent.kind != "Model":
+            continue
+        st_ = m.parent
+        sts = [n.p["cf"].p for n in st_.walk() if n.kind == "Marker" and n.name.startswith("Stand")]
+        leaf = m.p["primary"]
+        if not sts or leaf.name != "Leaf":
+            continue
+        P = O.world_pivot(m).p
+        c = leaf.p["cf"].p
+        sp = min(sts, key=lambda p: np.hypot(*(p - c)[[0, 2]]))
+        ax = leaf.p["cf"].R[:, 0]                       # along the leaf's width
+        free = 2 * c - P
+        if abs(np.dot(sp - P, ax)) + 0.05 < abs(np.dot(sp - free, ax)):
+            out.append(("hinge toward its Stand", m.path().replace("PizzaShack/", ""), []))
+    # left open: other open doors, bodies at Stands, the keep-clear floor
+    seen = set()
+    for j, (m, name, C_, R_, H_) in enumerate(opened):
+        for (m2, name2, C2, R2, H2) in opened[j + 1:]:
+            if m2 is m or (name, name2) in seen:
+                continue
+            if np.any(np.abs(C_ - C2) > (np.abs(R_) @ H_ + np.abs(R2) @ H2)):
+                continue
+            if sat_depth(C_, R_, H_, C2, R2, H2) > 0.06:
+                seen.add((name, name2))
+                out.append(("open vs open", name, [name2]))
+        for (stn, Cb, Rb, Hb) in bodies_:
+            if (name, stn) in seen or m.parent.name == stn or m.parent.parent.name == stn:
+                continue                     # its own Stand: the hinge rule (away from it) is checked below
+            if sat_depth(C_, R_, H_, Cb, Rb, Hb) > 0.06:
+                seen.add((name, stn))
+                out.append(("in a Stand", name, [stn]))
+        for zn, (lo, hi) in clear_zones.items():
+            if (name, zn) in seen or (zn == "OvenApron" and "/Oven/" in name):
+                continue                     # the oven's own doors drop open into its apron, as they should
+            if sat_depth(C_, R_, H_, (lo + hi) / 2, np.eye(3), (hi - lo) / 2) > 0.06:
+                seen.add((name, zn))
+                out.append(("in the way", name, [zn]))
+    return out
+
+
 # ---------------------------------------------------------------- report
 
 def run(sc, old=None, quick=False):
@@ -827,6 +937,7 @@ def run(sc, old=None, quick=False):
     rep["pierce"] = pierce(sc, b)
     rep["clear"] = clear(sc)
     rep["bodies"] = bodies(sc)
+    rep["openings"] = openings(sc)
     if not quick:
         rep["planes"] = planes(sc, b)
         rep["horizon"] = horizon(sc, b)
@@ -866,6 +977,10 @@ def show(rep, limit=25):
     print(len(rep["bodies"]))
     for r in rep["bodies"][:limit * 2]:
         print("  ", r)
+    head("openables: swept, left open")
+    print(len(rep["openings"]))
+    for r in rep["openings"][:limit * 3]:
+        print("  ", r)
     head("clear boxes at markers")
     print(len(rep["clear"]))
     for k, v in rep["clear"][:limit]:
@@ -887,9 +1002,12 @@ def show(rep, limit=25):
         print(ok, "ok;", len(bad), "bad", bad[:limit])
     if "contract" in rep:
         head("contract: missing / kind changed")
-        miss, kind = rep["contract"]
+        miss, kind, moved, now_open = rep["contract"]
         print(len(miss), miss[:60])
         print(len(kind), kind[:limit])
+        head("contract: V3 changes (a moving part is now an openable Model, its parts inside it)")
+        print(len(now_open), now_open)
+        print(len(moved), moved)
 
 
 if __name__ == "__main__":

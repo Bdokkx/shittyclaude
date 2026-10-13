@@ -170,11 +170,11 @@ def posters(k, f):
 
 
 def wet_floor_sign(k, f):
-    """The yellow A-frame folded shut and leant against the lockers, ready for when the rain
-    comes in at the back door: out of the way in (the door is never blocked), its words to
-    the room."""
+    """The yellow A-frame folded shut and leant against the wall in the corner by the back door,
+    ready for when the rain comes in: out of the way in (the door is never blocked) and of the
+    locker doors, its words to the room."""
     m = k.sc.model(f, "WetFloorSign")
-    base = CF((L.IN_X0 + 1.8 + 0.53, L.FLOOR, -4.9), G.ry(90) @ G.rx(-10))   # top leaning on a locker door
+    base = CF((L.IN_X0 + 0.6, L.FLOOR, -7.4), G.ry(90) @ G.rx(-10))          # top leaning on the west wall
     ang, h = 2.0, 2.2
     top = h * math.cos(math.radians(ang))
     leaf = G.Geo()

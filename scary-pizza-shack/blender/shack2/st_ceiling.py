@@ -58,10 +58,12 @@ def hatch(k):
     cp = k.mesh(m, "PullCord", "Hatch__Cord", cord, CF(((hx0 + hx1) / 2, CY, hz1 - 0.6)), "jute", shadow=False)
     tog = k.mesh(m, "Toggle", "Hatch__Toggle", ccyl(0.16, 0.6, 8, "y", (0, 0, 0), 0.05),
                  CF(((hx0 + hx1) / 2, CY - 2.9, hz1 - 0.6)), "wood", shadow=False)
-    weld_all(k, door, [rp, cp, tog])
+    # an openable Model "Door": hinged along its north edge, +90 about X swings it down into the
+    # room (the attic is above it); the panel is its Leaf, the pull cord and toggle ride with it
+    from .opens import adopt
+    door.name = "Leaf"
     pivot(door, CF(((hx0 + hx1) / 2, CY, hz0)))
-    moving(m, "Door", "hinged along its north edge; rotate the pivot +90 deg about X and it swings down into the "
-                      "room (a dark attic is above it). The pull cord and its toggle are welded to it")
+    adopt(k, m, "Door", door, [rp, cp, tog], "Swing", "Lid", angle=90.0, axis="X", label="Pull")
     fr = G.Geo()
     w, d = hx1 - hx0, hz1 - hz0
     for (cx, cz, sx, sz) in ((0, -d / 2 - 0.25, w + 1.0, 0.5), (0, d / 2 + 0.25, w + 1.0, 0.5),

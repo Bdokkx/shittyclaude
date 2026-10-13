@@ -50,11 +50,17 @@ def forecourt(k, f, gr, rng):
     board(k, m.get("Payphone"), (1.5, 0.45, 0.15), py * CF((0, 6.65, 0.9), G.ry(180)), "label_blue",
           text="PHONE", text_color=(250, 250, 250), name="Sign")
     nb = CF((fp["NewsBox"][0], 0.0, fp["NewsBox"][1]), face_road)
-    k.prop(m, "NewsBox", nb, where="outside", name="NewsBox")
+    nbm = k.prop(m, "NewsBox", nb, where="outside", name="NewsBox")
+    from .opens import from_prop, stash
+    from_prop(k, nbm, "Door", ["DoorFrame", "Window"], nb * CF((0, 1.72, 0.7)), "Swing", "Metal", angle=75.0,
+              axis="X")
+    stash(k, nbm, nb * CF((0, 1.75, 0.0), G.facing((0, 0, 1))), (1.2, 1.0, 1.0), behind="Door")
     board(k, m.get("NewsBox"), (1.6, 0.4, 0.15), nb * CF((0, 3.42, 0.6), G.ry(180)), "label_white",
           text="THE GAZETTE", text_color=(30, 40, 90), name="Masthead")
-    ic = CF((fp["IceChest"][0], 0.0, fp["IceChest"][1] + 0.4), face_road)
-    k.prop(m, "IceChest", ic, where="outside", name="IceChest")
+    ic = CF((fp["IceChest"][0], 0.0, fp["IceChest"][1] + 1.0), face_road)      # its lid clear of the menu board
+    icm = k.prop(m, "IceChest", ic, where="outside", name="IceChest")
+    from_prop(k, icm, "Lid", ["Lid"], ic * CF((0, 3.05, -0.95)), "Swing", "Lid", angle=-90.0, axis="X")
+    stash(k, icm, ic * CF((1.2, 2.2, 0.3), G.facing((0, 0, 1))), (1.0, 0.5, 0.9), behind="Lid")
     board(k, m.get("IceChest"), (2.2, 0.5, 0.15), ic * CF((0, 2.1, 1.01), G.ry(180)), "label_blue", text="ICE",
           text_color=(250, 250, 250), name="Sign")
     vm = CF((fp["Vending"][0], 0.0, fp["Vending"][1] + 0.6), face_road)
@@ -358,7 +364,10 @@ def lead(k, m):
     lying on the ground, kinked."""
     pts = [(-23.0, 0.12, -29.8), (-19.0, 0.12, -26.5), (-17.5, 0.12, -22.0), (-14.0, 0.12, -18.0),
            (-11.0, 0.12, -14.5), (-9.5, 0.12, -12.6), (-9.5, 1.0, SZ0() - 0.62)]
-    k.mesh(m, "LeadCable", "Yard__Lead", G.tube(pts, 0.1, 5), CF(), "mustard", shadow=False)
+    lead = G.Geo()                                    # one rod a stretch, so each stretch is its own piece
+    for a, b in zip(pts, pts[1:]):
+        lead.add(rod(a, b, 0.1, 5))
+    k.mesh(m, "LeadCable", "Yard__Lead", lead, CF(), "mustard", shadow=False)
 
 
 def SZ0():

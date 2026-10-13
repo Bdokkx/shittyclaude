@@ -440,6 +440,8 @@ def to_json(scene, path):
         if n.kind == "Marker":
             d["anchored"] = p.get("anchored", True)
             d["massless"] = p.get("massless", not p.get("anchored", True))
+            if p.get("attrs"):
+                d["attrs"] = p["attrs"]
         if n.kind == "Part":
             for k in ("color", "shape", "material", "transparency", "anchored", "collide", "touch", "query",
                       "shadow", "massless", "surfaces", "reflectance"):

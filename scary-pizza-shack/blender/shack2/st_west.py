@@ -114,29 +114,44 @@ def _grille(w):
 def lockers(k, parent):
     """Two narrow staff lockers under the south half of the side window (the north half stays
     open: the way in from the back door keeps the door's full width), louvred doors, name-tape
-    labels, a padded cushion on top so they double as the break bench; one door not quite shut."""
+    labels, a padded cushion on top so they double as the break bench. Each opens (LockerDoor1/2,
+    hinged at the outer edges): a shelf, the owner's things, a Stash on the floor; a photo
+    taped inside Deb's door."""
+    from . import insides
+    from .opens import hinge, opener
     m = k.sc.model(parent, "Lockers")
     z0, z1 = -6.0, -2.0
     x0, x1 = WX, WX + 1.6
-    lw = (z1 - z0) / 2                                   # 1.2 a locker
-    k.mesh(m, "Body", "Lockers__Body", bevel_box(x1 - x0, 3.2, z1 - z0, 0.06),
-           CF(((x0 + x1) / 2, L.FLOOR + 1.6, (z0 + z1) / 2)), "locker_grey", solid=True)
+    lw = (z1 - z0) / 2                                   # 2 a locker
+    k.box(m, "Plinth", (x0, 0.2, z0), (x1 - 0.6, 0.6, z1), "black", solid=True)
+    wants = (["LunchBox", "|", "Rags"], ["ToolBox", "|", "Pens"])
     for i, (za, zb) in enumerate(((z0, z0 + lw), (z0 + lw, z1))):
         zc = (za + zb) / 2
+        C._carcass(k, m, "W", za, zb, 0.6, 3.6, x1 - x0, "locker_grey", "Lockers", shelf_y=2.4)
+        C.wbox(k, m, "Blocker", "W", za, zb, 0.6, 3.6, x1 - x0 - 0.3, x1 - x0, "black", solid=True,
+               transparency=1.0, query=False, touch=False, shadow=False, grid=False)
         dg = G.Geo()
         dg.add(bevel_box(0.2, 3.0, lw - 0.1, 0.06, c=(0, 0, 0)))
         for j in range(4):
             dg.add(bevel_box(0.15, 0.15, lw - 0.5, 0.03, c=(0.12, 1.1 - 0.18 * j, 0)))
-        if i == 1:
-            R = G.ry(14)
-            cf = CF((x1 + 0.1, L.FLOOR + 1.6, zb - 0.05)) * CF(R=R) * CF((0, 0, -(lw - 0.1) / 2))
-        else:
-            cf = CF((x1 + 0.1, L.FLOOR + 1.6, zc))
-        k.mesh(m, "LockerDoor", "Lockers__Door", dg, cf, "locker_door", solid=True)
-        k.mesh(m, "Handle", "Lockers__Handle", bevel_box(0.2, 0.5, 0.2, 0.05), cf * CF((0.2, 0.1, -(lw / 2 - 0.3))),
-               "steel_dark", shadow=False)
-        board(k, m, (0.8, 0.3, 0.15), cf * CF((0.18, 1.15, 0.0), G.ry(-90)), "paper",
+        cf = CF((x1 + 0.1, 2.1, zc))
+        north_hinge = True                                # both hinged at the north edge: neither swings into
+                                                          # the cooler's side, nor into the other
+        op = opener(k, m, "LockerDoor%d" % (i + 1), "Swing", "Locker", angle=90.0 if north_hinge else -90.0)
+        leaf = k.mesh(op, "Leaf", "Lockers__Door", dg, cf, "locker_door")
+        free = 1 if north_hinge else -1                   # which way the free edge is from the centre (+Z / -Z)
+        k.mesh(op, "Handle", "Lockers__Handle", bevel_box(0.2, 0.5, 0.2, 0.05),
+               cf * CF((0.2, 0.1, free * (lw / 2 - 0.3))), "steel_dark", shadow=False)
+        board(k, op, (0.8, 0.3, 0.15), cf * CF((0.18, 1.15, 0.0), G.ry(-90)), "paper",
               text=("DEB", "MARCO")[i], text_color=(30, 30, 30), name="NameTape")
+        if i == 0:
+            board(k, op, (0.9, 0.7, 0.15), cf * CF((-0.18, 0.6, 0.0), G.ry(90)), "paper_old",
+                  text="DEB + PAPA\nOPENING DAY\n1987", text_color=(60, 50, 40), name="Photo")
+        hz = (za + 0.05) if north_hinge else (zb - 0.05)
+        hinge(op, leaf, CF((x1 + 0.2, 2.1, hz)))
+        q = dict(w="W", m=m, ia=za + C.PANEL, ib=zb - C.PANEL, d=x1 - x0, shelf_y=2.4, y_body=3.6, insides=wants[i],
+                 stock="office", note=None)
+        insides.fill_cupboard(k, q, [op])
     k.mesh(m, "Cushion", "Lockers__Cushion", bevel_box(x1 - x0, 0.4, z1 - z0, 0.15),
            CF(((x0 + x1) / 2, L.FLOOR + 3.4, (z0 + z1) / 2)), "red_dark", solid=True)
     k.prop(m, "Newspaper", CF(((x0 + x1) / 2 + 0.1, L.FLOOR + 3.6, -4.9), G.ry(20)), name="Newspaper")
@@ -173,17 +188,29 @@ def fuse_box(k):
     m = station(k, "FuseBox")
     x = -14.0                                     # the 2 studs of wall between the door (X -15) and the fridge
     z0 = L.IN_Z0
-    k.mesh(m, "Box", "FuseBox__Box6", bevel_box(1.8, 2.2, 0.6, 0.1), CF((x, 5.7, z0 + 0.3)), "grey", solid=True)
-    k.mesh(m, "Door", "FuseBox__Door", bevel_box(1.4, 1.8, 0.15, 0.05), CF((x - 0.1, 5.7, z0 + 0.65)), "grey_light",
+    k.mesh(m, "Box", "FuseBox__Box", bevel_box(1.8, 2.2, 0.45, 0.1), CF((x, 5.7, z0 + 0.225)), "grey", solid=True)
+    # behind the door: a row of breakers and their hand-written labels
+    br = G.Geo()
+    for i in range(6):
+        br.add(bevel_box(0.15, 0.45, 0.15, 0.03, c=(-0.4 + 0.15 * i, 0.0, 0.0)))
+    k.mesh(m, "Breakers", "FuseBox__Breakers", br, CF((x - 0.3, 6.0, z0 + 0.525)), "black", shadow=False)
+    board(k, m, (1.0, 0.5, 0.15), CF((x - 0.3, 5.3, z0 + 0.525), G.facing((0, 0, 1))),
+          "paper_old", text="OVEN FRDG FRNT\nBACK SIGN ???", text_color=(40, 40, 40), name="FuseLabels")
+    from .opens import hinge, opener
+    dm = opener(k, m, "Door", "Swing", "Metal", angle=-90.0)
+    leaf = k.mesh(dm, "Leaf", "FuseBox__Door", bevel_box(1.1, 1.8, 0.15, 0.05), CF((x - 0.3, 5.7, z0 + 0.675)),
+                  "grey_light", shadow=False)
+    board(k, dm, (0.6, 0.6, 0.15), CF((x - 0.3, 6.1, z0 + 0.825), G.facing((0, 0, 1))), "mustard", text="DANGER",
+          text_color=(20, 20, 20), name="Sticker")
+    k.mesh(dm, "Catch", "FuseBox__Catch", bevel_box(0.15, 0.4, 0.15, 0.03), CF((x + 0.12, 5.7, z0 + 0.825)), "black",
            shadow=False)
-    wall_board(k, m, "N", x - 0.4, 6.25, (0.6, 0.6), "mustard", d=0.78, text="DANGER", text_color=(20, 20, 20),
-               name="Sticker")
-    k.part(m, "Hub", (0.4, 0.8, 0.8), CF((x + 0.5, 5.4, z0 + 0.8), G.ry(90)), "black", shape="Cylinder", grid=False)
+    hinge(dm, leaf, CF((x - 0.85, 5.7, z0 + 0.75)))
+    k.part(m, "Hub", (0.4, 0.8, 0.8), CF((x + 0.55, 5.4, z0 + 0.65), G.ry(90)), "black", shape="Cylinder", grid=False)
     lev = G.Geo()
     lev.add(bevel_box(0.2, 1.2, 0.2, 0.05, c=(0, 0.6, 0)))
     lev.add(G.sphere(0.22, 8, 4, c=(0, 1.25, 0)))
-    lv = k.mesh(m, "Lever", "FuseBox__Lever", lev, CF((x + 0.5, 5.4, z0 + 1.1)), "red", solid=True)
-    pivot(lv, CF((x + 0.5, 5.4, z0 + 1.1), G.ry(-90)))
+    lv = k.mesh(m, "Lever", "FuseBox__Lever", lev, CF((x + 0.55, 5.4, z0 + 0.95)), "red", solid=True)
+    pivot(lv, CF((x + 0.55, 5.4, z0 + 0.95), G.ry(-90)))
     moving(m, "Lever", "pointing up = ON. Rotate the pivot about X (the wall's normal): +120 deg swings it down = OFF")
     cond = G.Geo()
     for dx in (-0.5, 0.0, 0.5):
@@ -204,6 +231,6 @@ def build(k):
     k.prop(dress, "CoatHooks", hk, name="CoatHooks")
     k.prop(dress, "Apron", hk * CF((-0.4, 0.15, 0.3)), name="Apron", seed=1)
     k.prop(dress, "TeaTowel", hk * CF((0.45, 0.15, 0.42)), name="TeaTowel")
-    # the broom leans on the cooler's side by the lockers, out of the way in
-    k.prop(dress, "Broom", CF((WX + 2.55, L.FLOOR, -2.75), G.ry(-90)), name="Broom")
+    # the broom leans in the corner by the back door, clear of the locker doors
+    k.prop(dress, "Broom", CF((WX + 0.85, L.FLOOR, -9.0), G.ry(180)), name="Broom")
     return st

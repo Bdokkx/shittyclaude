@@ -34,6 +34,7 @@ PAL = {
     "paint_grime": (108, 118, 96),
     "pickle": (112, 140, 52), "olive": (58, 60, 40), "pepper_red": (200, 70, 40),
     "jute": (132, 104, 66),
+    "white": (240, 240, 236), "crust": (214, 150, 76), "pepperoni": (170, 44, 34),
     "screed": (78, 70, 60), "adhesive": (58, 52, 44), "rubber_worn": (58, 56, 54),
     "steel": (172, 176, 180), "steel_dark": (126, 130, 136), "steel_light": (200, 204, 206),
     "charcoal": (52, 52, 56), "rubber": (36, 36, 38), "black": (28, 28, 30), "cab_inside": (38, 28, 26),

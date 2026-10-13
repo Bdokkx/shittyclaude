@@ -146,9 +146,10 @@ def dumpster(k, old):
     for z in (-2.0, 0.0, 2.0):
         lid.add(bevel_box(4.3, 0.15, 0.4, 0.05, c=(0, 0.2, z)))
     lid.add(bevel_box(0.3, 0.2, 5.6, 0.06, c=(-2.15, 0.15, 0)))                        # the front lip to lift by
-    lp = k.mesh(m, "Lid", "Dumpster__Lid", lid, base * CF((0.0, 3.25, 0.0)), "bin_black", solid=True)
-    pivot(lp, base * CF((2.25, 3.2, 0.0)))
-    moving(m, "Lid", "hinged along its east (back) edge; rotate the pivot about Z (+ lifts the west lip) up to 100 deg")
+    from .opens import hinge, opener
+    lm = opener(k, m, "Lid", "Swing", "Lid", angle=-95.0, axis="X")     # - lifts the west lip
+    lp = k.mesh(lm, "Leaf", "Dumpster__Lid", lid, base * CF((0.0, 3.25, 0.0)), "bin_black", solid=True)
+    hinge(lm, lp, base * CF((2.25, 3.2, 0.0), G.ry(-90)))     # its X along the east (back) edge (+Z)
     k.sc.attachment(body, "Fx_Flies", base * CF((0.0, 3.8, 0.0)))
     # the wheelie bins, as batch 1 (Models WheelieBin1/2: Body, Lid on a pivot)
     for i, (bx, col) in enumerate(((17.0, "bin_green"), (19.5, "bin_black"))):
@@ -165,10 +166,10 @@ def dumpster(k, old):
         lid2 = G.Geo()
         lid2.add(bevel_box(1.85, 0.2, 1.95, 0.06, c=(0, 0, 0)))
         lid2.add(bevel_box(0.8, 0.15, 0.25, 0.04, c=(0, 0.15, -0.9)))
-        l2 = k.mesh(wb, "Lid", "WheelieBin__Lid", lid2, CF((bx, y0 + 3.0, -26.5)), col, solid=True)
-        pivot(l2, CF((bx, y0 + 3.0, -26.5 + 0.95)))
+        lm2 = opener(k, wb, "Lid", "Swing", "Lid", angle=95.0, axis="X")
+        l2 = k.mesh(lm2, "Leaf", "WheelieBin__Lid", lid2, CF((bx, y0 + 3.0, -26.5)), col, solid=True)
+        hinge(lm2, l2, CF((bx, y0 + 3.0, -26.5 + 0.95)))
         k.mark_used("WheelieBin", "outside")
-    moving(m, "WheelieBin1/2.Lid", "hinged at the back (+Z edge): rotate the pivot about X to flip it open")
     # the TrashBag items exactly as batch 1 (the game picks them up)
     from .build import _copy_tree
     bags = [c for c in old.root.get("Stations").get("Dumpster").children if c.name == "TrashBag"]
@@ -199,7 +200,7 @@ def yard_gate(k):
         k.mesh(m, "GatePost", "YardGate__Post", g, CF((x, y0, z)), "galv", solid=True)
         k.mesh(m, "Footing", "YardGate__Footing", ccyl(0.6, 0.3, 10, "y", (0, -0.1, 0), 0.06), CF((x, y0, z)),
                "concrete_dark", solid=True)
-    x0, x1 = 7.85, 12.15
+    x0, x1 = 8.1, 12.15                         # the frame clear of the hinge post as it swings round it
     w, h, yb = x1 - x0, 5.4, 0.4
     cx = (x0 + x1) / 2
     fr = G.Geo()
@@ -222,10 +223,11 @@ def yard_gate(k):
     pl.add(G.torus(0.14, 0.075, 8, 4, "z", (0, 0.32, 0)))
     lock = k.mesh(m, "Padlock", "YardGate__Padlock", pl, CF((x1 + 0.27, y0 + yb + 2.45, z + 0.2)), "brass",
                   shadow=False)
-    weld_all(k, gate, [b, mesh, latch, lock])
-    pivot(gate, CF((x0, y0 + yb, z)))
-    moving(m, "Gate", "hinged on the west post: rotate the pivot about Y (+90 swings it into the yard); brace, "
-                      "chain-link, latch and padlock are welded to it")
+    # an openable Model "Gate": hung on the west post, +90 about Y swings it into the yard
+    from .opens import adopt
+    gate.name = "Frame"
+    pivot(gate, CF((7.5, y0 + yb, z)))                 # on the post's axis: the frame circles it
+    adopt(k, m, "Gate", gate, [b, mesh, latch, lock], "Swing", "Metal", angle=90.0)
     stand(k, m, 10.0, -44.0, N, y=y0)
     k.mark_used("YardGate", "outside")
     return m

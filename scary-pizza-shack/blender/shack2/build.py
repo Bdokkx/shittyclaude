@@ -197,6 +197,8 @@ def build(items=False, seed=2026):
     built |= {m.name for m in st_out2.build(k, gr)}
     from . import dressing
     dressing.build(k)
+    from . import counters
+    counters.finish(k)              # the cupboard doors and drawers, hinged away from the Stands, and filled
     from . import ext_shack, road_dress, site
     ext_shack.build(k, sc)
     site.build(k, sc)

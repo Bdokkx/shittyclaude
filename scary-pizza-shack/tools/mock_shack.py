@@ -30,6 +30,16 @@ LUA_FLAG = {"anchored": "Anchored", "collide": "CanCollide", "touch": "CanTouch"
             "shadow": "CastShadow", "massless": "Massless"}
 
 
+
+def attr_eq(got, val):
+    """An attribute read back from the mock against map.json (Vector3s arrive as [x, y, z])."""
+    if isinstance(val, (list, tuple)):
+        try:
+            return all(abs(float(a) - float(b)) < 1e-3 for a, b in zip((got.X, got.Y, got.Z), val))
+        except Exception:
+            return False
+    return got == val
+
 def rot_y(deg):
     c, s = math.cos(math.radians(deg)), math.sin(math.radians(deg))
     return np.array(((c, 0, s), (0, 1, 0), (-s, 0, c)))
@@ -200,7 +210,7 @@ def check(m, data, R_geom=np.eye(3), size_map=None, tag=""):
                 if not close(wp, tcf[0]) or not close(wR, tcf[1]):
                     errs.append("%s pivot off: %s vs %s" % (a["name"], wp.round(3), tcf[0].round(3)))
             for key, val in (a.get("attrs") or {}).items():
-                if b.GetAttribute(b, key) != val:
+                if not attr_eq(b.GetAttribute(b, key), val):
                     errs.append("%s attribute %s" % (a["name"], key))
         elif k == "Attachment":
             par = b.Parent
@@ -208,7 +218,7 @@ def check(m, data, R_geom=np.eye(3), size_map=None, tag=""):
             if not close(wp, a["cf"][0]) or not close(wR, a["cf"][1]):
                 errs.append("attachment %s off" % a["name"])
             for key, val in (a.get("attrs") or {}).items():
-                if b.GetAttribute(b, key) != val:
+                if not attr_eq(b.GetAttribute(b, key), val):
                     errs.append("attachment %s attribute %s" % (a["name"], key))
         elif k == "Humanoid":
             if b.RigType.Name != a["rig"] or b.DisplayDistanceType.Name != "None":
@@ -223,7 +233,7 @@ def check(m, data, R_geom=np.eye(3), size_map=None, tag=""):
                 errs.append("light %s enabled" % a["name"])
         elif k in ("Model", "Accessory"):
             for key, val in (a.get("attrs") or {}).items():
-                if b.GetAttribute(b, key) != val:
+                if not attr_eq(b.GetAttribute(b, key), val):
                     errs.append("model %s attribute %s" % (a["name"], key))
 
     walk(nodes[0], root)
