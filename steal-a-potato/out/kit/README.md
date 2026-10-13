@@ -134,7 +134,7 @@ Each fence tier is a Folder, replaced as a whole. It holds three Models, built t
   - An open doorway **14 wide** (local X) and 6.7 high; the player runs through it along Z. The posts are 1.6 square at X = ±7.8.
   - Two posts on plinths and a header beam in the tier's strong colour. Fence_Rainbow's header is six Neon stripes.
   - **`Board`** faces the front (-Z) and **`BoardBack`** the back, **12.2 × 2.8**, framed by trim either side. Both are dark SmoothPlastic, so the owner's name in white reads from either side.
-  - Attribute `OpeningWidth` = 8. Pivot on the ground at the centre.
+  - Attribute `OpeningWidth` = 14. Pivot on the ground at the centre.
 
 **Pivots:**
 
