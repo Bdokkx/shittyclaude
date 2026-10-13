@@ -56,7 +56,7 @@ PIECES = {
     "scenery_cloud": dict(file="Scenery_Cloud", title="the Cloud Kingdom hero and props", area="Cloud"),
     "scenery_void": dict(file="Scenery_Void", title="the Glitch Void hero and props", area="Void"),
     "scenery_olympus": dict(file="Scenery_Olympus", title="the Spud Olympus hero and props", area="Olympus"),
-    "plot": dict(file="PlotKit", title="the plot kit (fences, soil, board, mound, seeds)"),
+    "plot": dict(file="PlotKit", title="the plot kit (fences, soil heap and patch, board, mound, seeds)"),
     "questnpc": dict(file="QuestNpc", title="Farmer Spud, the quest NPC, and his clips"),
     "fuse": dict(file="FuseMachine", title="the Fuse Machine"),
     "rootmonster": dict(file="RootMonster", title="the RootMonster in bricks and its four clips"),

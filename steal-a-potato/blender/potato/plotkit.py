@@ -19,6 +19,7 @@ import numpy as np
 import spsgeo as G
 from spsgeo import CF
 
+from . import scenery as SC
 from .bricks import Bricks, hexc, ori, shade
 
 POST_H = 4.4
@@ -194,56 +195,149 @@ def fence_tier(sc, parent, name):
     return f
 
 
-# ---------------------------------------------------------------- Soil, Mound, UpgradeBoard
+# ---------------------------------------------------------------- SoilHeap, SoilPatch, Mound
 
-SOIL = ("6e4a2c", "5a3a22", "7a5232")
 WOOD = ("9a6238", "a0572b", "6b4226", "c8743a")
+SOIL = "7a4e2e"            # the base colours of the bricks the game tints (named Soil, Leaf, Flag);
+LEAF = "4a9a3c"            # each of those carries Shade, how far its own colour is from the base
+FLAG = "ffcf3a"
+PEBBLE = "b9b4c8"
 
 
-def soil(sc, parent, base=None):
-    """A raised bed 5 x 5: a wooden border with corner posts, dirt in furrows. Pivot at the top
-    centre of the dirt, where the plant stands."""
+def out(h):
+    """The way out from the middle at heading h (degrees): 0 is the front (-Z), 90 is +X."""
+    a = math.radians(h)
+    return np.array((math.sin(a), 0.0, -math.cos(a)))
+
+
+def facing(h):
+    """A turn about Y whose own Z points out(h) and own X runs round the circle."""
+    return G.ry(180.0 - h)
+
+
+def tone(B, name, base_col, k, size, pos, R=None):
+    """A brick the game tints. Its colour is shade(base_col, k) and it carries Shade = k, so a tint
+    keeps the shading as shade(tint, Shade): k < 0 is that much darker, k > 0 that much towards
+    white."""
+    p = B.p(name, size, pos, R, shade(base_col, k))
+    p.p["attrs"]["Shade"] = round(float(k), 2)
+    return p
+
+
+def tone_bar(B, name, base_col, k, a, b, w, t=None, n=None, over=0.0):
+    a, b = np.asarray(a, float), np.asarray(b, float)
+    d = b - a
+    L = float(np.linalg.norm(d))
+    return tone(B, name, base_col, k, (w, L + 2 * over, t if t is not None else w), (a + b) / 2, SC.frame(d, n))
+
+
+def leaflet(B, k, root, d, size):
+    """A flat leaflet from root along d, its broad side up."""
+    d = np.asarray(d, float)
+    d = d / np.linalg.norm(d)
+    return tone(B, "Leaf", LEAF, k, size, np.asarray(root, float) + d * size[1] / 2, SC.frame(d, (0.0, 1.0, 0.0)))
+
+
+def soil_heap(sc, parent, base=None):
+    """A heap of dug soil about 4.5 across and 1 high for a seed planted in a pen: three of Folk
+    Valley's rounds stacked in steps, lumps on its sides and a pebble. Pivot at the top centre,
+    where the seed stands."""
     base = base or CF()
-    b = deco(sc, base)
-    m = sc.model(parent, "Soil")
-    top = 0.62
-    dirt = b.part(m, "Dirt", (4.3, top - 0.02, 4.3), (0, (top - 0.02) / 2, 0), None, SOIL[0])
-    for s in (-1, 1):
-        b.part(m, "Border", (4.4, 0.62, 0.5), (0, 0.33, s * 2.25), None, WOOD[0])
-        b.part(m, "Border", (0.5, 0.6, 4.0), (s * 2.25, 0.32, 0), None, WOOD[1])
-        for t in (-1, 1):
-            b.part(m, "Corner", (0.76, 0.86, 0.76), (s * 2.15, 0.43, t * 2.15), None, WOOD[2])
-    for z in (-1.25, 1.25):
-        b.part(m, "Furrow", (3.7, 0.14, 0.62), (0, top + 0.05, z), None, SOIL[1])
-    for pos, R, sz in (((1.2, top + 0.08, 0.35), ori(0, 20, 6), (0.5, 0.22, 0.42)),
-                       ((-1.35, top + 0.07, -0.4), ori(0, -35, -5), (0.42, 0.2, 0.36)),
-                       ((0.5, top + 0.06, -0.55), ori(0, 50, 4), (0.3, 0.16, 0.3))):
-        b.part(m, "Clod", sz, pos, R, SOIL[2])
-    return finish(m, dirt, base * CF((0, top, 0)))
+    B = SC.Build(sc, parent, "SoilHeap", seed=11)
+    with B.at(base):
+        low = tone(B, "Soil", SOIL, 0.0, (4.5, 0.5, 3.0), (0, 0.25, 0), G.ry(12))
+        tone(B, "Soil", SOIL, 0.0, (3.0, 0.48, 4.5), (0, 0.24, 0), G.ry(12))
+        tone(B, "Soil", SOIL, -0.12, (3.95, 0.46, 3.95), (0, 0.23, 0), G.ry(57))
+        mid = np.array((0.08, 0.6, -0.05))
+        tone(B, "Soil", SOIL, 0.08, (3.3, 0.4, 2.3), mid, G.ry(-6))
+        tone(B, "Soil", SOIL, 0.08, (2.3, 0.38, 3.3), mid, G.ry(-6))
+        tone(B, "Soil", SOIL, -0.06, (2.85, 0.36, 2.85), mid, G.ry(39))
+        tone(B, "Soil", SOIL, 0.18, (2.0, 0.26, 2.0), (0, 0.87, 0), G.ry(20))
+        tone(B, "Soil", SOIL, 0.1, (1.6, 0.24, 1.6), (0, 0.87, 0), G.ry(65))
+        for h, r, s, k in ((30, 1.95, 0.72, 0.16), (128, 2.05, 0.62, -0.2), (212, 1.92, 0.68, 0.1),
+                           (300, 2.0, 0.58, -0.16)):
+            tone(B, "Soil", SOIL, k, (s, s * 0.7, s * 0.86), out(h) * r + (0, 0.42, 0),
+                 SC.turn(B.rng, (8.0, 18.0), heading=180.0 - h))
+        B.p("Pebble", (0.4, 0.3, 0.36), out(250) * 2.45 + (0, 0.12, 0), ori(6, 30, -8), PEBBLE)
+    return finish(B.m, low, base * CF((0, 1.0, 0)))
+
+
+def soil_patch(sc, parent, base=None):
+    """A flat patch of dug soil about 3.6 across under a grown potato: a low round with a few lumps
+    round its edge. Pivot at the top centre, where the potato stands."""
+    base = base or CF()
+    B = SC.Build(sc, parent, "SoilPatch", seed=12)
+    top = 0.22
+    with B.at(base):
+        low = tone(B, "Soil", SOIL, 0.0, (3.6, top, 2.4), (0, top / 2, 0), G.ry(10))
+        tone(B, "Soil", SOIL, 0.0, (2.4, top - 0.01, 3.6), (0, (top - 0.01) / 2, 0), G.ry(10))
+        tone(B, "Soil", SOIL, -0.12, (3.15, top - 0.02, 3.15), (0, (top - 0.02) / 2, 0), G.ry(55))
+        for h, r, s, k in ((20, 1.62, 0.56, 0.16), (105, 1.7, 0.48, -0.18), (200, 1.6, 0.52, 0.1),
+                           (290, 1.68, 0.46, -0.14)):
+            tone(B, "Soil", SOIL, k, (s, s * 0.6, s * 0.85), out(h) * r + (0, 0.14, 0),
+                 SC.turn(B.rng, (6.0, 16.0), heading=180.0 - h))
+        B.p("Pebble", (0.34, 0.24, 0.3), out(150) * 1.95 + (0, 0.08, 0), ori(5, 20, -6), PEBBLE)
+    return finish(B.m, low, base * CF((0, top, 0)))
+
+
+MOUND_FLOOR = 0.84          # the top of the hollow: the seed sits here
+LEAVES = (40.0, 200.0, 300.0)
+STAKE = 140.0
 
 
 def mound(sc, parent, base=None):
-    """A heap of freshly dug soil 5 wide and about 1 high: two of Folk Valley's rounds, the dark
-    dent on top, clods and pebbles round it. Pivot at the top centre of the dent (where the seed
-    goes)."""
+    """The seed bed in the fields, 14 in every area: a heap of dug soil with a hollow in its top, a
+    ring of clods round it, three potato-plant leaves drooping over its edge and a little stake
+    with a flag. The game tints the bricks named Soil, Leaf and Flag. Pivot at the top centre of
+    the hollow, where the seed sits."""
     base = base or CF()
-    b = deco(sc, base)
-    m = sc.model(parent, "Mound")
-    heap = b.part(m, "Heap", (4.3, 0.55, 4.3), (0, 0.275, 0), G.ry(8), SOIL[1])
-    b.part(m, "Heap", (5.0, 0.44, 3.0), (0, 0.22, 0), G.ry(8), SOIL[1])
-    b.part(m, "Heap", (3.0, 0.45, 5.0), (0, 0.225, 0), G.ry(8), SOIL[1])
-    b.part(m, "Heap", (4.1, 0.5, 4.1), (0, 0.25, 0), G.ry(53), SOIL[0])
-    b.part(m, "Top", (3.2, 0.42, 2.2), (0, 0.72, 0), G.ry(-12), SOIL[0])
-    b.part(m, "Top", (2.2, 0.44, 3.2), (0, 0.72, 0), G.ry(-12), SOIL[0])
-    b.part(m, "Top", (2.9, 0.46, 2.9), (0, 0.72, 0), G.ry(33), SOIL[2])
-    b.part(m, "Dent", (1.6, 0.1, 1.6), (0, 0.97, 0), G.ry(20), "4a2f1c")
-    for pos, R, sz, col, nm in (((1.95, 0.62, -1.15), ori(10, 20, 15), (0.55, 0.45, 0.5), SOIL[2], "Clod"),
-                                ((-2.05, 0.5, 0.85), ori(-8, 50, -10), (0.5, 0.4, 0.45), SOIL[0], "Clod"),
-                                ((0.6, 0.55, 2.1), ori(12, -30, 6), (0.45, 0.38, 0.42), SOIL[2], "Clod"),
-                                ((-1.55, 0.5, -1.8), ori(0, 15, 10), (0.36, 0.3, 0.36), "a3adeb", "Pebble"),
-                                ((2.25, 0.46, 1.25), ori(0, 40, 0), (0.42, 0.32, 0.38), "b9b4c8", "Pebble")):
-        b.part(m, nm, sz, pos, R, col)
-    return finish(m, heap, base * CF((0, 0.97, 0)))
+    B = SC.Build(sc, parent, "Mound", seed=5)
+    rng = B.rng
+    fl = MOUND_FLOOR
+    with B.at(base):
+        heap = tone(B, "Soil", SOIL, 0.0, (4.4, 0.6, 3.0), (0, 0.3, 0), G.ry(8))
+        tone(B, "Soil", SOIL, 0.0, (3.0, 0.58, 4.4), (0, 0.29, 0), G.ry(8))
+        tone(B, "Soil", SOIL, -0.1, (3.9, 0.56, 3.9), (0, 0.28, 0), G.ry(53))
+        tone(B, "Soil", SOIL, -0.45, (2.1, fl, 2.1), (0, fl / 2, 0), G.ry(8))              # the hollow
+        tone(B, "Soil", SOIL, -0.4, (2.1, fl - 0.02, 2.1), (0, (fl - 0.02) / 2, 0), G.ry(53))
+        for i in range(6):                                                                  # its rim
+            h = i * 60.0 + 20.0 + rng.uniform(-6, 6)
+            L = 1.45 + rng.uniform(-0.08, 0.1)
+            ht = 0.62 + rng.uniform(-0.06, 0.06)
+            tone(B, "Soil", SOIL, 0.12 if i % 2 else 0.02, (L, ht, 0.8), out(h) * 1.45 + (0, 0.86, 0),
+                 facing(h) @ G.rx(14.0))
+        for j in range(8):                                                                  # the clods
+            h = j * 45.0 + 10.0 + rng.uniform(-8, 8)
+            if abs((h - STAKE + 180.0) % 360.0 - 180.0) < 14.0:
+                h += 16.0
+            r = 2.45 + rng.uniform(-0.12, 0.15)
+            s = rng.uniform(0.85, 1.1)
+            c = out(h) * r + (0, 0.3, 0)
+            tone(B, "Soil", SOIL, -0.18 if j % 2 else 0.14, (s, s * 0.72, s * 0.86), c,
+                 SC.turn(rng, (8.0, 20.0), heading=180.0 - h))
+            if j in (1, 4, 6):
+                t = s * 0.6
+                tone(B, "Soil", SOIL, 0.22, (t, t * 0.8, t), c + out(h) * 0.12 + (0, s * 0.42, 0),
+                     SC.turn(rng, (10.0, 24.0)))
+        for h in LEAVES:                                                                    # the leaves
+            d = out(h)
+            t = np.cross((0.0, 1.0, 0.0), d)
+            o = d * 1.2 + (0, 0.98, 0)
+            p1 = o + d * 0.78 + (0, 0.44, 0)
+            p2 = p1 + d * 0.95 + (0, -0.4, 0)
+            tone_bar(B, "Leaf", LEAF, -0.22, o, p1, 0.2, over=0.06)
+            tone_bar(B, "Leaf", LEAF, -0.22, p1, p2, 0.18, over=0.06)
+            leaflet(B, 0.0, p2 - d * 0.05, d * 0.75 + (0, -0.62, 0), (0.78, 1.15, 0.1))
+            q = (p1 + p2) / 2
+            for s in (-1.0, 1.0):
+                leaflet(B, 0.12, q, s * 0.9 * t + d * 0.2 + (0, -0.36, 0), (0.58, 0.95, 0.09))
+        sp = out(STAKE) * 2.2                                                               # the stake
+        B.p("Stake", (0.22, 2.7, 0.22), sp + (0, 1.15, 0), None, WOOD[2])
+        top = sp + (0, 2.5, 0)
+        tone(B, "Flag", FLAG, 0.0, (0.95, 0.62, 0.07), top + (0.585, -0.31, 0), None)
+        tone(B, "Flag", FLAG, -0.12, (0.44, 0.38, 0.07), top + (1.25, -0.31, 0.02), G.ry(-12))
+        B.p("Pebble", (0.42, 0.32, 0.38), out(250) * 3.0 + (0, 0.12, 0), ori(0, 40, 6), PEBBLE)
+    return finish(B.m, heap, base * CF((0, fl, 0)))
 
 
 def upgrade_board(sc, parent, base=None):
@@ -438,7 +532,8 @@ def build(sc):
     for name in TIER_ORDER:
         f = fence_tier(sc, fences, name)
         f.p["item"] = True
-    soil(sc, sc.root)
+    soil_heap(sc, sc.root)
+    soil_patch(sc, sc.root)
     upgrade_board(sc, sc.root)
     mound(sc, sc.root)
     seeds = sc.container(sc.root, "Seeds")
