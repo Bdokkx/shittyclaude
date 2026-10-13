@@ -83,7 +83,7 @@ def shot_tier(out, w, samples):
         mids = {id(x) for x in m.walk()}
         keep |= {id(n) for n in sc.root.walk() if n.kind == "Part" and id(n) not in mids}
         p = os.path.join(out, "plot_%s.png" % name)
-        render(sc, keep, p, w, int(w * 0.5), samples, (-4.0, 8.5, -24.0), (0.5, 4.0, 0.0), fov=36.0)
+        render(sc, keep, p, w, int(w * 0.5), samples, (-2.0, 10.0, -31.0), (0.5, 4.6, 0.0), fov=38.0)
         restore()
         files.append(RS.label(p, [((w * 0.5, 30), name)]))
     return files
