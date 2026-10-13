@@ -202,17 +202,21 @@ def hero(sc, parent):
 # ==================================================================== props
 
 def pot(B, c, s, cols, band=None, R=None, name="Pot"):
-    """A clay pot: Folk Valley's round for the body, a painted band, a neck and a rim."""
+    """A clay pot: a foot, a wide round belly (Folk Valley's round) with a painted band, a turned
+    shoulder, a neck and a round rim."""
     R = np.eye(3) if R is None else R
     c = np.asarray(c, float)
-    w = 2.2 * s
-    body = c + R @ (0.0, 1.1 * s, 0.0)
-    out = round3(B, name, body, w, w, w, cols, R=R)
+    w = 2.3 * s
+    belly = c + R @ (0.0, 1.3 * s, 0.0)
+    out = [B.p(name, (1.3 * s, 0.32 * s, 1.3 * s), c + R @ (0.0, 0.16 * s, 0.0), R @ G.ry(45), cols[2])]
+    out += round3(B, name, belly, w, 2.0 * s, w, cols, R=R)
     if band:
-        out.append(B.p(name, (w + 0.04, 0.3 * s, w * 0.68 + 0.04), body + R @ (0.0, 0.2 * s, 0.0), R, band))
-        out.append(B.p(name, (w * 0.68 + 0.04, 0.32 * s, w + 0.04), body + R @ (0.0, 0.2 * s, 0.0), R, band))
-    out.append(B.p(name, (0.9 * s, 0.8 * s, 0.9 * s), c + R @ (0.0, 2.45 * s, 0.0), R, cols[1]))
-    out.append(B.p(name, (1.3 * s, 0.3 * s, 1.3 * s), c + R @ (0.0, 2.9 * s, 0.0), R @ G.ry(45), cols[2]))
+        out.append(B.p(name, (w + 0.04, 0.3 * s, w * 0.68 + 0.04), belly + R @ (0.0, 0.25 * s, 0.0), R, band))
+        out.append(B.p(name, (w * 0.68 + 0.04, 0.32 * s, w + 0.04), belly + R @ (0.0, 0.25 * s, 0.0), R, band))
+    out.append(B.p(name, (1.6 * s, 0.45 * s, 1.6 * s), c + R @ (0.0, 2.45 * s, 0.0), R @ G.ry(45), cols[1]))
+    out.append(B.p(name, (0.85 * s, 0.8 * s, 0.85 * s), c + R @ (0.0, 2.9 * s, 0.0), R, cols[0]))
+    out.append(B.p(name, (1.35 * s, 0.3 * s, 1.35 * s), c + R @ (0.0, 3.35 * s, 0.0), R, cols[2]))
+    out.append(B.p(name, (1.3 * s, 0.28 * s, 1.3 * s), c + R @ (0.0, 3.39 * s, 0.0), R @ G.ry(45), cols[2]))
     return out
 
 
@@ -236,10 +240,10 @@ def p_obelisk(sc, parent):
 
 def p_pots(sc, parent):
     B = Build(sc, parent, "ClayPots", seed=412)
-    pot(B, (-0.9, 0.0, 0.3), 1.0, TERRA, band=BLUE[0])
-    pot(B, (1.4, 0.0, -0.2), 0.75, (TERRA[1], TERRA[0], TERRA[2]), band=INK)
-    pot(B, (0.6, 0.62, -2.0), 0.55, (TERRA[2], TERRA[1], TERRA[0]), R=G.ry(-30) @ G.rz(-80))
-    for k, (x, z, a) in enumerate(((-2.4, -1.6, 20.0), (2.8, -1.5, -35.0))):
+    pot(B, (-1.0, 0.0, 0.3), 1.0, TERRA, band=BLUE[0])
+    pot(B, (1.5, 0.0, -0.1), 0.72, (TERRA[1], TERRA[0], TERRA[2]), band=INK)
+    pot(B, (0.4, 0.75, -2.3), 0.5, (TERRA[2], TERRA[1], TERRA[0]), R=G.ry(-30) @ G.rz(-80))
+    for k, (x, z, a) in enumerate(((-2.6, -1.8, 20.0), (2.9, -1.7, -35.0))):
         B.p("Shard", (0.9, 0.16 + 0.02 * k, 0.6), (x, 0.08 + 0.01 * k, z), G.ry(a), TERRA[k])
     return B.finish()
 
@@ -314,19 +318,20 @@ def p_stall(sc, parent):
 
 def p_scarab(sc, parent):
     B = Build(sc, parent, "Scarab", seed=416)
-    B.p("Plinth", (5.6, 1.0, 3.4), (0.0, 0.5, 0.0), None, SANDSTONE[0])
-    B.p("Plinth", (6.0, 0.4, 3.8), (0.0, 1.2, 0.0), None, TRIM)
+    B.p("Plinth", (7.0, 1.0, 3.8), (0.0, 0.5, 0.0), None, SANDSTONE[0])
+    B.p("Plinth", (7.4, 0.4, 4.2), (0.0, 1.2, 0.0), None, TRIM)
     top = 1.4
-    bc = np.array((-1.0, top + 0.95, 0.0))
-    round3(B, "Scarab", bc, 2.8, 1.5, 2.4, SCARAB)
-    B.p("Scarab", (2.6, 0.12, 0.16), bc + (0.0, 0.78, 0.0), None, GOLD[0])
-    B.p("Scarab", (1.0, 0.7, 1.3), bc + (1.65, -0.2, 0.0), None, SCARAB[1])
-    B.p("Scarab", (0.5, 0.3, 1.0), bc + (2.2, -0.05, 0.0), None, GOLD[0])
+    bc = np.array((-1.3, top + 1.35, 0.0))
+    round3(B, "Scarab", bc, 3.6, 1.8, 3.0, SCARAB, lid=(2.6, 0.4, 2.2))
+    B.p("Scarab", (3.0, 0.14, 0.2), bc + (-0.1, 1.27, 0.0), None, GOLD[0])
+    B.p("Scarab", (1.3, 1.3, 2.5), bc + (2.0, -0.1, 0.0), None, SCARAB[1])
+    B.p("Scarab", (0.8, 0.7, 1.7), bc + (2.9, -0.35, 0.0), None, SCARAB[2])
+    B.p("Scarab", (0.4, 0.4, 1.5), bc + (3.4, -0.4, 0.0), None, GOLD[0])
     for sz in (-1, 1):
-        for k, dx in enumerate((-0.9, 0.0, 0.9)):
-            a = bc + (dx, -0.4, sz * 0.9)
-            bar(B, "Leg", a, a + (0.3 * (k - 1) + 0.5 * (k == 2), -(bc[1] - top) + 0.4, sz * 0.8), 0.26, INK)
-    potato(B, (2.3, top + 1.15, 0.0), 2.3, TATER, R=G.ry(-15), name="Potato", glints=True, cheeks=CHEEK)
+        for k, dx in enumerate((-1.1, 0.2, 1.7)):
+            a = bc + (dx, -0.5, sz * 1.1)
+            bar(B, "Leg", a, (a[0] + 0.5 * (k - 1), top, sz * 1.85), 0.3, INK)
+    potato(B, (3.6, top + 1.5, 0.0), 3.0, TATER, R=G.ry(-15), name="Potato", glints=True, cheeks=CHEEK)
     return B.finish()
 
 
