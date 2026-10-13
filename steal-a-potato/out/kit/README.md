@@ -26,6 +26,7 @@ The pieces so far:
 | `BuildPotatoesCandy.lua` | The Candy Crops potatoes |
 | `BuildPotatoesCosmic.lua` | The Cosmic Garden potatoes |
 | `BuildPotatoesJungle.lua` | The Jungle Ruins potatoes |
+| `BuildPotatoesReef.lua` | The Coral Cove potatoes |
 
 ---
 
@@ -660,4 +661,31 @@ The rig, rules and clips are the same as the Meadow Patch six. Each has 42 to 45
 
 - `lineup_Jungle_L10.jpg`
 - `levels_GoldenIdol.jpg`
+- `turn_<Id>.jpg` for each of the six
+
+---
+
+## Coral Cove potatoes (`BuildPotatoesReef.lua`)
+
+| Path | Rarity | What |
+|---|---|---|
+| `PotatoKit.Potatoes.SandySpud` | Uncommon | A sandy beach: speckled with sand, a pink starfish on its front, a little spiral shell on its head |
+| `PotatoKit.Potatoes.BubbleTater` | Rare | Aqua, blowing bubbles: see-through bubbles float round it, one just leaving its pursed mouth |
+| `PotatoKit.Potatoes.ClamChip` | Epic | Pink, a big scallop shell standing up behind its head like a crest, white ridges running out from it; at level 10 its crown's jewel is a pearl |
+| `PotatoKit.Potatoes.PufferPotato` | Epic | A pufferfish puffed up round: yellow with spines sticking out all over and a little pout |
+| `PotatoKit.Potatoes.CaptainSpud` | Legendary | A pirate captain: a black tricorn with a white skull, a patch over one eye, a bushy ginger beard, a red coat's sleeves and a silver hook for a left hand |
+| `PotatoKit.Potatoes.KrakenTuber` | Mythic | A deep red-purple kraken with great tentacles curling out from under it, paler at their tips |
+
+The rig, rules and clips are the same as the Meadow Patch six. Each has 43 to 45 parts.
+
+- **BubbleTater's bubbles** are Plastic at Transparency 0.45, like PrismPotato's glass.
+- **CaptainSpud's hook** (two `Hook` bricks) is held in the left hand like the Candy Crops' lollipop:
+  - The bricks are children of `HandL`, welded to it.
+  - Hide them with it below level 5.
+- **CaptainSpud's tricorn, eye patch and beard** are part of his body (`Extra`), so he wears them at every level. His crown sits on top of the hat.
+
+**Previews:** `previews/potatoes/`
+
+- `lineup_Reef_L10.jpg`
+- `levels_KrakenTuber.jpg`
 - `turn_<Id>.jpg` for each of the six

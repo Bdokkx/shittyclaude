@@ -563,6 +563,7 @@ from .spuds_crystal import CRYSTAL  # noqa: E402
 from .spuds_candy import CANDY  # noqa: E402
 from .spuds_cosmic import COSMIC  # noqa: E402
 from .spuds_jungle import JUNGLE  # noqa: E402
+from .spuds_reef import REEF  # noqa: E402
 AREAS["Dunes"] = DUNES
 AREAS["Marsh"] = MARSH
 AREAS["Frost"] = FROST
@@ -571,3 +572,4 @@ AREAS["Crystal"] = CRYSTAL
 AREAS["Candy"] = CANDY
 AREAS["Cosmic"] = COSMIC
 AREAS["Jungle"] = JUNGLE
+AREAS["Reef"] = REEF
