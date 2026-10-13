@@ -35,6 +35,7 @@ The pieces so far:
 | `BuildPotatoesCloud.lua` | The Cloud Kingdom potatoes |
 | `BuildPotatoesVoid.lua` | The Glitch Void potatoes |
 | `BuildPotatoesOlympus.lua` | The Spud Olympus potatoes |
+| `BuildSceneryJungle.lua` | The Jungle Ruins hero and props |
 
 ---
 
@@ -909,3 +910,65 @@ The rig, rules and clips are the same as the Meadow Patch six. Each has 44 or 45
 - `lineup_Olympus_L10.jpg`
 - `levels_ZeusSpud.jpg`
 - `turn_<Id>.jpg` for each of the six
+
+---
+
+## Heroes and props of the ten new areas
+
+Each area gets one script, `BuildScenery<Area>.lua`. It builds:
+
+- `PotatoKit.Heroes.<AreaId>`: the hero, one Model.
+- `PotatoKit.Props.<AreaId>.<Name>`: the props, one Model each.
+
+**The hero**
+
+- It stands against a wall of the corridor, front (-Z) to the lane. Its footprint is at most 46 along X and 30 deep, and its pivot is the middle of that footprint on the ground.
+- The parts a player can stand on are solid: CanCollide and CanQuery on, CanTouch off.
+- Everything else is decoration: anchored, with CanCollide, CanTouch and CanQuery off.
+- No part under 2.5 studs casts a shadow.
+
+**The props**
+
+- Each is 10 to 40 parts of decoration. Its pivot is the middle of its footprint on the ground, front -Z.
+- Each carries the scatter attributes: `Count`, `ScaleMin`, `ScaleMax`, `Band` and `Solid`.
+- `Solid = true` marks the props players should bump into. Their parts are built non-colliding like all decoration, so turn CanCollide on for the big ones when you scatter them.
+
+**Attributes on parts**
+
+- `Flicker` (how much it flickers) on Neon fires, gems and lamps.
+- `NightLamp = true` on everything to light at night.
+- `Spin` (degrees a second about the part's own Y). Every part of a spinning thing is centred on its axle with its own Y along it, so spinning each part about its own Y turns the whole thing.
+
+**Previews.** In the hero pictures, the yellow and blue figure is a 5-stud player and the potato is Spud at level 10. They are there for scale and are not in the scripts.
+
+### Jungle Ruins (`BuildSceneryJungle.lua`)
+
+**`PotatoKit.Heroes.Jungle`**: 211 parts, 44.4 wide, 28.5 tall, 29.5 deep.
+
+- **The temple:** four stone tiers getting lighter upwards, with carved potato faces on the first two.
+- **The stairs:** a staircase of 16 one-stud steps climbs the front from the lane to the top platform, between two ramps.
+- **The shrine:** on the platform, with a dark doorway and a roof comb.
+- **The idol:** in front of the shrine sits a gold potato with a feather crown and a glowing emerald set in its gold band. It is on a pedestal, with gold spilled at its feet.
+- **The braziers:** four, with fires: two at the foot of the stairs and two beside the idol.
+- **The jungle:** moss, vines, bushes and ferns all over it, and palms growing out of the back corners.
+- **Solid (39 parts):** the tiers, the steps and ramps, the shrine and its roof, the pedestal and the brazier posts. Players can climb to the idol and walk round the terraces.
+- **Glow:** the four `Flame` fires have Flicker 0.2 and NightLamp; the `Emerald` has Flicker 0.12 and NightLamp.
+
+| `PotatoKit.Props.Jungle.<Name>` | Parts | W × H × D | Count | Scale | Band | Solid | What |
+|---|---|---|---|---|---|---|---|
+| `JunglePalm` | 20 | 11.9 × 15.6 × 12.3 | 8 | 0.85–1.25 | Side | yes | A tall palm bending over: seven fronds, coconuts, grass at its foot |
+| `BananaPlant` | 16 | 9.0 × 9.9 × 7.8 | 6 | 0.9–1.3 | Side | no | A thick stalk, seven big paddle leaves, a bunch of bananas and a purple bud hanging below |
+| `BigFern` | 14 | 5.8 × 2.7 × 5.5 | 12 | 0.8–1.4 | Any | no | Two layers of fronds |
+| `RuinPillar` | 15 | 7.4 × 7.8 × 4.5 | 5 | 0.9–1.3 | Side | yes | A broken stone column, its drums knocked askew, the capital fallen beside it; moss and vines |
+| `StoneHead` | 17 | 6.7 × 7.0 × 6.7 | 3 | 0.9–1.2 | Edge | yes | A giant carved potato head in a stone helmet, mossy, a vine down its face |
+| `TikiTotem` | 31 | 3.5 × 10.3 × 3.5 | 4 | 0.9–1.2 | Side | yes | Three carved wooden faces stacked, a fire on top (`Flame`: Flicker, NightLamp) |
+| `MossyRocks` | 14 | 8.1 × 3.3 × 5.7 | 6 | 0.8–1.3 | Any | yes | Three mossy rocks and a tuft of grass |
+| `FallenLog` | 17 | 8.4 × 4.1 × 4.8 | 4 | 0.9–1.2 | Side | yes | An eight-sided log with cut ends, a broken branch, red mushrooms, moss and a fern |
+| `JungleFlower` | 16 | 5.6 × 1.3 × 5.6 | 8 | 0.8–1.3 | Any | no | A giant red flower with white spots, flat on the ground on four leaves |
+
+**Previews:** `previews/scenery/`
+
+- `hero_Jungle.jpg`: from the lane
+- `hero_Jungle_corner.jpg`: from the corner
+- `props_Jungle.jpg`: the props in a row
+- `props_Jungle_top.jpg`: the props from above

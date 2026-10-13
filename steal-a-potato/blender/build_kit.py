@@ -24,6 +24,7 @@ import spslib  # noqa: E402
 
 from potato import brickcheck, fuse, guardian_anim, guardians, npc, plotkit, rig, spud_anim, spuds  # noqa: E402,E501
 from potato import roots as ROOTS, roots_anim as RA, rootbricks  # noqa: E402
+from potato import scenery, scenery_jungle  # noqa: E402,F401
 
 PIECES = {
     "potatoes_meadow": dict(file="Potatoes_Meadow", title="the Meadow Patch potatoes and their clips"),
@@ -44,6 +45,7 @@ PIECES = {
     "potatoes_cloud": dict(file="Potatoes_Cloud", title="the Cloud Kingdom potatoes", area="Cloud"),
     "potatoes_void": dict(file="Potatoes_Void", title="the Glitch Void potatoes", area="Void"),
     "potatoes_olympus": dict(file="Potatoes_Olympus", title="the Spud Olympus potatoes", area="Olympus"),
+    "scenery_jungle": dict(file="Scenery_Jungle", title="the Jungle Ruins hero and props", area="Jungle"),
     "plot": dict(file="PlotKit", title="the plot kit (fences, soil, board, mound, seeds)"),
     "questnpc": dict(file="QuestNpc", title="Farmer Spud, the quest NPC, and his clips"),
     "fuse": dict(file="FuseMachine", title="the Fuse Machine"),
@@ -391,6 +393,12 @@ def main():
                 fr = c.bake()
                 print("           %-5s %.2f s %s %3d keys  joints %s" % (c.name, c.length, "loop" if c.loop else "once",
                                                                       len(fr), sorted(rig.moving(fr))))
+    elif piece.startswith("scenery_"):
+        sc = spslib.Scene("PotatoKit")
+        hero, props = scenery.build_area(sc, cfg["area"])
+        errs = scenery.check(hero, props)
+        for m in [hero] + props:
+            print("  " + scenery.summary(m))
     elif piece == "plot":
         sc = spslib.Scene("PotatoKit")
         plotkit.build(sc)
