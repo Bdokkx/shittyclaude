@@ -26,7 +26,7 @@ from spsgeo import CF  # noqa: E402
 import render_spuds as RS  # noqa: E402
 from render_roots import runner  # noqa: E402
 from potato import scenery, spuds  # noqa: E402
-from potato import scenery_jungle  # noqa: E402,F401
+from potato import scenery_jungle, scenery_reef  # noqa: E402,F401
 
 
 def hexrgb(c):

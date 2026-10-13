@@ -14,6 +14,7 @@ it, so turning each part about its own Y turns the whole thing.
 
 Every Model's pivot is the middle of its footprint on the ground (Y 0 in the frame it is built in).
 """
+import contextlib
 import math
 
 import numpy as np
@@ -54,6 +55,16 @@ class Build:
         if lamp:
             at["NightLamp"] = True
         return part
+
+    @contextlib.contextmanager
+    def at(self, cf_):
+        """Build inside a frame: positions and turns given inside the block are in cf_."""
+        old = (self.deco.base, self.hard.base)
+        self.deco.base, self.hard.base = old[0] * cf_, old[1] * cf_
+        try:
+            yield
+        finally:
+            self.deco.base, self.hard.base = old
 
     def plate(self, name, size, pos, R=None, col=INK, **kw):
         """A flat plate that carries a face or a mark: SmoothPlastic, Smooth faces, no shadow."""

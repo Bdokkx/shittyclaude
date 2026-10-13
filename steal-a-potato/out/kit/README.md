@@ -36,6 +36,7 @@ The pieces so far:
 | `BuildPotatoesVoid.lua` | The Glitch Void potatoes |
 | `BuildPotatoesOlympus.lua` | The Spud Olympus potatoes |
 | `BuildSceneryJungle.lua` | The Jungle Ruins hero and props |
+| `BuildSceneryReef.lua` | The Coral Cove hero and props |
 
 ---
 
@@ -972,3 +973,36 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 - `hero_Jungle_corner.jpg`: from the corner
 - `props_Jungle.jpg`: the props in a row
 - `props_Jungle_top.jpg`: the props from above
+
+### Coral Cove (`BuildSceneryReef.lua`)
+
+**`PotatoKit.Heroes.Reef`**: 200 parts, 44.4 wide, 26.7 tall, 25.0 deep.
+
+- **The ship:** a pirate ship run aground on a sand bank, listing towards the lane so its deck shows, bow up.
+- **The hull:** planked in two browns, with brass portholes, three cannons run out, a hole stove in near the stern, barnacles and weed.
+- **The stern castle:** lit windows and a lantern on a post.
+- **The masts:** the main mast has a crow's nest, a torn sail and the Jolly Roger, and its top is snapped. The foremast is broken and lies across the deck.
+- **The gangplank:** it runs from the rail down to the sand, so players can walk aboard.
+- **The captain:** a potato on deck in a pirate hat with a skull, an eyepatch, a cutlass and a parrot on his shoulder.
+- **On the sand:** an open treasure chest with two glowing gems, coral, kelp, starfish, shells and barrels.
+- **Solid (27 parts):** the sand bank, the hull, the deck and rails, the stern castle and the gangplank.
+- **Glow:** the castle `Window`s have NightLamp; the `Lantern` and the chest's gems have Flicker 0.1 and NightLamp.
+
+| `PotatoKit.Props.Reef.<Name>` | Parts | W × H × D | Count | Scale | Band | Solid | What |
+|---|---|---|---|---|---|---|---|
+| `BeachPalm` | 23 | 11.4 × 14.7 × 10.8 | 8 | 0.85–1.25 | Side | yes | A palm on a sand mound, coconuts, a starfish at its foot |
+| `CoralTree` | 17 | 4.6 × 8.7 × 5.0 | 8 | 0.8–1.3 | Side | no | Two branching corals, pink-gold and purple, on a rock |
+| `BrainCoral` | 15 | 6.1 × 2.5 × 3.6 | 6 | 0.8–1.3 | Any | no | A pink dome of brain coral, two sponges, a purple anemone |
+| `Kelp` | 19 | 3.4 × 8.4 × 3.2 | 8 | 0.8–1.3 | Side | no | Four tall bent fronds of kelp with leaves, on a stone |
+| `Anchor` | 16 | 9.0 × 9.3 × 4.2 | 3 | 0.9–1.2 | Side | yes | A big iron anchor stuck in the sand, its chain hanging from the ring |
+| `TreasureChest` | 13 | 5.7 × 3.6 × 5.2 | 4 | 0.9–1.2 | Any | yes | An open chest heaped with gold, two glowing gems (Flicker, NightLamp), coins spilled |
+| `GiantClam` | 12 | 5.8 × 4.3 × 5.4 | 5 | 0.8–1.3 | Any | yes | An open clam with a glowing pearl (`Pearl`: Flicker, NightLamp) |
+| `BarrelStack` | 22 | 5.9 × 4.7 × 4.9 | 4 | 0.9–1.2 | Side | yes | Three barrels stacked, one on its side, and a crate |
+| `DockPosts` | 20 | 6.8 × 6.0 × 2.2 | 4 | 0.9–1.2 | Edge | yes | Three dock posts roped together, a lifebuoy, a gull on top |
+
+**Previews:** `previews/scenery/`
+
+- `hero_Reef.jpg`: from the lane
+- `hero_Reef_corner.jpg`: from the corner
+- `props_Reef.jpg`: the props in a row
+- `props_Reef_top.jpg`: the props from above
