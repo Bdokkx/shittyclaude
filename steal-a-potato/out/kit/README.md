@@ -25,6 +25,7 @@ The pieces so far:
 | `BuildPotatoesCrystal.lua` | The Crystal Caverns potatoes |
 | `BuildPotatoesCandy.lua` | The Candy Crops potatoes |
 | `BuildPotatoesCosmic.lua` | The Cosmic Garden potatoes |
+| `BuildPotatoesJungle.lua` | The Jungle Ruins potatoes |
 
 ---
 
@@ -630,4 +631,33 @@ The rig, rules and clips are the same as the Meadow Patch six. Each has 43 to 45
 
 - `lineup_Cosmic_L10.jpg`
 - `levels_GalacticOverlord.jpg`
+- `turn_<Id>.jpg` for each of the six
+
+---
+
+## Jungle Ruins potatoes (`BuildPotatoesJungle.lua`)
+
+**About the new 60.** Your order gave only their names, worst to best. I drew each from its name and its area.
+- The rarities in these tables are my own labels: each kind's place in your list and its area's place along the corridor (Uncommon to Mythic here, rising to Divine by Spud Olympus).
+- They show only in the previews. No model carries a rarity, so use yours.
+
+| Path | Rarity | What |
+|---|---|---|
+| `PotatoKit.Potatoes.VineSpud` | Uncommon | A brown potato wrapped in green jungle vines, leaves sprouting from them |
+| `PotatoKit.Potatoes.BananaTater` | Rare | A yellow banana peeled at the top: the cream fruit showing, three strips of peel flopping open round it, brown spots |
+| `PotatoKit.Potatoes.ParrotPotato` | Rare | A red parrot: white patches round its eyes, a hooked beak, a crest of red, yellow and blue feathers, blue wings tipped yellow, a long tail |
+| `PotatoKit.Potatoes.MonkeyMash` | Epic | A brown monkey: a tan face, big round ears with tan middles and a curly tail |
+| `PotatoKit.Potatoes.TikiTuber` | Legendary | A carved wooden tiki: a heavy brow over wide white eyes, a broad nose, a big toothy grin, painted bands and a headdress of palm fronds |
+| `PotatoKit.Potatoes.GoldenIdol` | Mythic | Solid gold: a carved headband set with a glowing red gem, gold discs in its ears, glowing green gem eyes and glints |
+
+The rig, rules and clips are the same as the Meadow Patch six. Each has 42 to 45 parts.
+
+- **ParrotPotato's `Mouth`** is its beak (three `Beak` bricks).
+- **TikiTuber's mouth and eyes:** its `Mouth` has `Mouth` and `Teeth` plates. Its eyes are white with a dark `Pupil` each.
+- **GoldenIdol's eyes** glow (Neon).
+
+**Previews:** `previews/potatoes/`
+
+- `lineup_Jungle_L10.jpg`
+- `levels_GoldenIdol.jpg`
 - `turn_<Id>.jpg` for each of the six
