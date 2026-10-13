@@ -25,7 +25,7 @@ import spslib  # noqa: E402
 from potato import brickcheck, fuse, guardian_anim, guardians, npc, plotkit, rig, spud_anim, spuds  # noqa: E402,E501
 from potato import roots as ROOTS, roots_anim as RA, rootbricks  # noqa: E402
 from potato import scenery, scenery_clock, scenery_dino, scenery_haunt, scenery_jungle, scenery_reef  # noqa: E402,F401,E501
-from potato import scenery_cloud, scenery_neon, scenery_toy, scenery_void  # noqa: E402,F401
+from potato import scenery_cloud, scenery_neon, scenery_olympus, scenery_toy, scenery_void  # noqa: E402,F401,E501
 
 PIECES = {
     "potatoes_meadow": dict(file="Potatoes_Meadow", title="the Meadow Patch potatoes and their clips"),
@@ -55,6 +55,7 @@ PIECES = {
     "scenery_neon": dict(file="Scenery_Neon", title="the Neon City hero and props", area="Neon"),
     "scenery_cloud": dict(file="Scenery_Cloud", title="the Cloud Kingdom hero and props", area="Cloud"),
     "scenery_void": dict(file="Scenery_Void", title="the Glitch Void hero and props", area="Void"),
+    "scenery_olympus": dict(file="Scenery_Olympus", title="the Spud Olympus hero and props", area="Olympus"),
     "plot": dict(file="PlotKit", title="the plot kit (fences, soil, board, mound, seeds)"),
     "questnpc": dict(file="QuestNpc", title="Farmer Spud, the quest NPC, and his clips"),
     "fuse": dict(file="FuseMachine", title="the Fuse Machine"),

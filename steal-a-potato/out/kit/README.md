@@ -44,6 +44,7 @@ The pieces so far:
 | `BuildSceneryNeon.lua` | The Neon City hero and props |
 | `BuildSceneryCloud.lua` | The Cloud Kingdom hero and props |
 | `BuildSceneryVoid.lua` | The Glitch Void hero and props |
+| `BuildSceneryOlympus.lua` | The Spud Olympus hero and props |
 
 ---
 
@@ -1230,3 +1231,33 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 - `hero_Void_corner.jpg`: from the corner
 - `props_Void.jpg`: the props in a row
 - `props_Void_top.jpg`: the props from above
+
+### Spud Olympus (`BuildSceneryOlympus.lua`)
+
+**`PotatoKit.Heroes.Olympus`**: 146 parts, 42.9 wide, 28.0 tall, 27.9 deep.
+
+- **The temple:** marble, on three steps, rising out of clouds.
+- **The columns:** six across the front with gold capitals (the middle pair set wide apart) and two more down each side.
+- **Above them:** an architrave and a frieze with gold squares, then a stepped pediment with a glowing thunderbolt in it, gold ornaments at its corners and a low roof. The cella wall with a dark doorway stands behind.
+- **The potato Zeus:** on a pedestal between the middle columns. He has warm skin, a great white beard, moustache, brows and hair, and a gold laurel crown, and he raises a glowing thunderbolt in his right hand.
+- **Round the foot:** gold braziers with fires on the steps, two olive trees and clouds.
+- **Solid (54 parts):** the steps, the columns, the cella, the beams, the pediment, the roof and Zeus's pedestal. Players can climb the steps and walk the colonnade.
+- **Glow:** both `Thunderbolt`s and the brazier `Flame`s have Flicker and NightLamp.
+
+| `PotatoKit.Props.Olympus.<Name>` | Parts | W × H × D | Count | Scale | Band | Solid | What |
+|---|---|---|---|---|---|---|---|
+| `BrokenColumn` | 10 | 8.8 × 6.3 × 6.3 | 6 | 0.85–1.3 | Side | yes | A broken marble column, one drum and its gold capital fallen beside it |
+| `OliveTree` | 12 | 8.3 × 12.3 × 8.1 | 6 | 0.85–1.25 | Side | yes | A silvery-green olive tree with olives |
+| `Amphora` | 12 | 3.4 × 5.7 × 3.4 | 6 | 0.8–1.3 | Any | yes | A terracotta amphora with black bands and handles |
+| `GoldBrazier` | 10 | 3.4 × 6.4 × 3.4 | 5 | 0.9–1.2 | Side | no | A gold brazier on three legs with a fire burning (`Flame`, `Ember`: NightLamp) |
+| `HeroStatue` | 15 | 5.2 × 7.9 × 4.0 | 3 | 0.9–1.2 | Side | yes | A marble potato athlete with a gold crown and discus, on a plinth |
+| `LaurelBush` | 10 | 5.4 × 3.6 × 4.1 | 8 | 0.8–1.3 | Any | no | A laurel bush with gold berries |
+| `Fountain` | 10 | 7.8 × 5.4 × 7.8 | 3 | 0.9–1.2 | Side | yes | A marble fountain with water falling into its basin (Transparency 0.3) |
+| `GoldenLyre` | 11 | 3.4 × 6.0 × 2.2 | 3 | 0.9–1.2 | Side | yes | A golden lyre on a marble plinth |
+
+**Previews:** `previews/scenery/`
+
+- `hero_Olympus.jpg`: from the lane
+- `hero_Olympus_corner.jpg`: from the corner
+- `props_Olympus.jpg`: the props in a row
+- `props_Olympus_top.jpg`: the props from above
