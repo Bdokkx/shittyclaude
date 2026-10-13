@@ -41,6 +41,7 @@ The pieces so far:
 | `BuildSceneryDino.lua` | The Dino Valley hero and props |
 | `BuildSceneryToy.lua` | The Toy Town hero and props |
 | `BuildSceneryClock.lua` | The Clockwork Yard hero and props |
+| `BuildSceneryNeon.lua` | The Neon City hero and props |
 
 ---
 
@@ -1135,3 +1136,35 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 - `hero_Clock_corner.jpg`: from the corner
 - `props_Clock.jpg`: the props in a row
 - `props_Clock_top.jpg`: the props from above
+
+### Neon City (`BuildSceneryNeon.lua`)
+
+**`PotatoKit.Heroes.Neon`**: 156 parts (48 of them Neon), 44.0 wide, 22.8 tall, 28.6 deep.
+
+- **The stage:** raised, with glowing cyan and magenta edges and steps up at both sides.
+- **The screen:** a big screen behind the stage with a seven-bar equaliser across it (`Equaliser`, Flicker 0.25), framed in neon tubes.
+- **The truss:** it carries four spotlights throwing cyan, magenta, yellow and green beams onto the stage, and a disco ball that turns.
+  - Each `Beam` is see-through Neon (Transparency 0.65, Flicker 0.15).
+  - The four `Disco` parts have `Spin` = 40.
+- **The music:** speaker stacks on both sides and two more on the floor in front. The DJ booth has two records that turn (`Record`, `Spin` = 90) and the potato DJ in headphones and glowing glasses.
+- **In front:** a dance floor of dark tiles with a grid of glowing lines, a crowd barrier and two uplights. Two neon palms stand by the stage.
+- **Solid (9 parts):** the stage, its steps, the screen and the dance floor.
+- **Glow:** every Neon part has NightLamp. The beams, spotlights, equaliser and stage edges also have Flicker.
+
+| `PotatoKit.Props.Neon.<Name>` | Parts | W × H × D | Count | Scale | Band | Solid | What |
+|---|---|---|---|---|---|---|---|
+| `NeonSign` | 14 | 8.6 × 9.7 × 0.9 | 5 | 0.9–1.2 | Edge | yes | A dark board on posts with a glowing potato outline and face in neon tube |
+| `CyberLamp` | 10 | 5.4 × 11.6 × 2.3 | 8 | 0.95–1.15 | Side | no | A tall street lamp with a glowing head, a neon strip down the pole and a glowing panel |
+| `SpeakerStack` | 12 | 5.5 × 5.3 × 2.5 | 4 | 0.9–1.2 | Side | yes | Three speaker boxes stacked |
+| `ArcadeMachine` | 12 | 3.2 × 6.7 × 3.7 | 4 | 0.95–1.15 | Side | yes | A purple arcade cabinet with a glowing screen and marquee, buttons and a joystick |
+| `VendingMachine` | 14 | 3.7 × 7.3 × 2.8 | 4 | 0.95–1.15 | Side | yes | A red drinks machine with a lit window of coloured cans |
+| `NeonPalm` | 13 | 9.3 × 12.5 × 9.1 | 6 | 0.85–1.25 | Side | yes | A dark palm with glowing pink and cyan fronds in a lit pot |
+| `Hologram` | 10 | 4.8 × 5.4 × 4.8 | 3 | 0.9–1.2 | Any | no | A projector throwing a see-through potato head that turns (`Holo`, `Spin` = 30) |
+| `HoverBike` | 10 | 6.6 × 4.6 × 2.2 | 4 | 0.9–1.2 | Any | no | A hover bike floating over a glow, with a see-through shadow under it |
+
+**Previews:** `previews/scenery/`
+
+- `hero_Neon.jpg`: from the lane
+- `hero_Neon_corner.jpg`: from the corner
+- `props_Neon.jpg`: the props in a row
+- `props_Neon_top.jpg`: the props from above

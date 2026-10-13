@@ -25,7 +25,7 @@ import spslib  # noqa: E402
 from potato import brickcheck, fuse, guardian_anim, guardians, npc, plotkit, rig, spud_anim, spuds  # noqa: E402,E501
 from potato import roots as ROOTS, roots_anim as RA, rootbricks  # noqa: E402
 from potato import scenery, scenery_clock, scenery_dino, scenery_haunt, scenery_jungle, scenery_reef  # noqa: E402,F401,E501
-from potato import scenery_toy  # noqa: E402,F401
+from potato import scenery_neon, scenery_toy  # noqa: E402,F401
 
 PIECES = {
     "potatoes_meadow": dict(file="Potatoes_Meadow", title="the Meadow Patch potatoes and their clips"),
@@ -52,6 +52,7 @@ PIECES = {
     "scenery_dino": dict(file="Scenery_Dino", title="the Dino Valley hero and props", area="Dino"),
     "scenery_toy": dict(file="Scenery_Toy", title="the Toy Town hero and props", area="Toy"),
     "scenery_clock": dict(file="Scenery_Clock", title="the Clockwork Yard hero and props", area="Clock"),
+    "scenery_neon": dict(file="Scenery_Neon", title="the Neon City hero and props", area="Neon"),
     "plot": dict(file="PlotKit", title="the plot kit (fences, soil, board, mound, seeds)"),
     "questnpc": dict(file="QuestNpc", title="Farmer Spud, the quest NPC, and his clips"),
     "fuse": dict(file="FuseMachine", title="the Fuse Machine"),
