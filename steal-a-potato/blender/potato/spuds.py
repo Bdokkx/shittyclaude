@@ -571,6 +571,7 @@ from .spuds_clock import CLOCK  # noqa: E402
 from .spuds_neon import NEON  # noqa: E402
 from .spuds_cloud import CLOUD  # noqa: E402
 from .spuds_void import VOID_KINDS  # noqa: E402
+from .spuds_olympus import OLYMPUS  # noqa: E402
 AREAS["Dunes"] = DUNES
 AREAS["Marsh"] = MARSH
 AREAS["Frost"] = FROST
@@ -587,3 +588,4 @@ AREAS["Clock"] = CLOCK
 AREAS["Neon"] = NEON
 AREAS["Cloud"] = CLOUD
 AREAS["Void"] = VOID_KINDS
+AREAS["Olympus"] = OLYMPUS

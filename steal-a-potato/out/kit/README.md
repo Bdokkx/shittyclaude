@@ -34,6 +34,7 @@ The pieces so far:
 | `BuildPotatoesNeon.lua` | The Neon City potatoes |
 | `BuildPotatoesCloud.lua` | The Cloud Kingdom potatoes |
 | `BuildPotatoesVoid.lua` | The Glitch Void potatoes |
+| `BuildPotatoesOlympus.lua` | The Spud Olympus potatoes |
 
 ---
 
@@ -882,4 +883,29 @@ The rig, rules and clips are the same as the Meadow Patch six. Each has 38 to 45
 
 - `lineup_Void_L10.jpg`
 - `levels_KingNull.jpg`
+- `turn_<Id>.jpg` for each of the six
+
+## Spud Olympus potatoes (`BuildPotatoesOlympus.lua`)
+
+| Path | Rarity | What |
+|---|---|---|
+| `PotatoKit.Potatoes.MarbleSpud` | Legendary | A statue in white marble: grey veins through the stone and a gold circlet with a Greek key round its head |
+| `PotatoKit.Potatoes.LaurelTater` | Mythic | A Greek champion: a wreath of laurel leaves round its head and the torch held high, its flame glowing |
+| `PotatoKit.Potatoes.HeroFry` | Secret | A hero of old: a bronze helmet with cheek guards and a tall red horsehair crest, a red cape and a round bronze shield |
+| `PotatoKit.Potatoes.PegasusSpud` | Divine | Pegasus: white, great feathered wings tipped gold, a pale blue mane down the back of its head and gold hooves |
+| `PotatoKit.Potatoes.PoseidonTuber` | Divine | The god of the sea: sea green, dark teal hair, white brows, a beard and moustache of surf and a golden trident |
+| `PotatoKit.Potatoes.ZeusSpud` | Divine | The king of the gods: white hair, bushy white brows, a great white beard and moustache, gold sandals and a glowing thunderbolt |
+
+The rig, rules and clips are the same as the Meadow Patch six. Each has 44 or 45 parts.
+
+- **The held things are in the left hand:** LaurelTater's torch (`Torch` bricks), HeroFry's shield (`Shield` bricks), PoseidonTuber's trident (`Trident` bricks) and ZeusSpud's thunderbolt (`Thunderbolt` bricks).
+  - They are children of `HandL`, welded to it, so they move with the hand in every clip.
+  - Hide them with it below level 5.
+- **The torch flame and the thunderbolt glow** (Neon).
+- **On the body:** the wreath, HeroFry's helmet, crest and cape, Pegasus's wings and mane, and the gods' hair, beards and moustaches are body `Extra` bricks. They show at every level.
+
+**Previews:** `previews/potatoes/`
+
+- `lineup_Olympus_L10.jpg`
+- `levels_ZeusSpud.jpg`
 - `turn_<Id>.jpg` for each of the six
