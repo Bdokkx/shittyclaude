@@ -41,6 +41,7 @@ PIECES = {
     "potatoes_toy": dict(file="Potatoes_Toy", title="the Toy Town potatoes", area="Toy"),
     "potatoes_clock": dict(file="Potatoes_Clock", title="the Clockwork Yard potatoes", area="Clock"),
     "potatoes_neon": dict(file="Potatoes_Neon", title="the Neon City potatoes", area="Neon"),
+    "potatoes_cloud": dict(file="Potatoes_Cloud", title="the Cloud Kingdom potatoes", area="Cloud"),
     "plot": dict(file="PlotKit", title="the plot kit (fences, soil, board, mound, seeds)"),
     "questnpc": dict(file="QuestNpc", title="Farmer Spud, the quest NPC, and his clips"),
     "fuse": dict(file="FuseMachine", title="the Fuse Machine"),

@@ -32,6 +32,7 @@ The pieces so far:
 | `BuildPotatoesToy.lua` | The Toy Town potatoes |
 | `BuildPotatoesClock.lua` | The Clockwork Yard potatoes |
 | `BuildPotatoesNeon.lua` | The Neon City potatoes |
+| `BuildPotatoesCloud.lua` | The Cloud Kingdom potatoes |
 
 ---
 
@@ -830,4 +831,29 @@ The rig, rules and clips are the same as the Meadow Patch six. Each has 41 to 45
 
 - `lineup_Neon_L10.jpg`
 - `levels_CyberOverlord.jpg`
+- `turn_<Id>.jpg` for each of the six
+
+---
+
+## Cloud Kingdom potatoes (`BuildPotatoesCloud.lua`)
+
+| Path | Rarity | What |
+|---|---|---|
+| `PotatoKit.Potatoes.CloudPuff` | Epic | A little white cloud: puff upon soft puff, a face peeping out of the middle |
+| `PotatoKit.Potatoes.RainySpud` | Legendary | Dressed for the rain: a yellow raincoat with its hood up, blue wellies, a red umbrella held up in its left hand and raindrops falling |
+| `PotatoKit.Potatoes.SunnyTater` | Mythic | A little sun: warm yellow, glowing rays fanned round its head and shoulders |
+| `PotatoKit.Potatoes.RainbowFry` | Secret | A tall fry under its own rainbow: a glowing arc of seven colours over its head, a little cloud at each end |
+| `PotatoKit.Potatoes.ThunderTuber` | Secret | A thundercloud: dark storm grey, piled with dark cloud, glowing yellow eyes and bolts of lightning striking down beside it |
+| `PotatoKit.Potatoes.SeraphSpud` | Divine | An angel: soft white, a glowing gold halo over its head and white feathered wings |
+
+The rig, rules and clips are the same as the Meadow Patch six. Each has 42 to 45 parts.
+
+- **RainySpud's umbrella** (`Umbrella` bricks) is held in the left hand: children of `HandL`, welded to it. Hide them with it below level 5.
+- **Glowing (Neon):** SunnyTater's rays, RainbowFry's rainbow, ThunderTuber's eyes and lightning, and SeraphSpud's halo.
+- **SeraphSpud's halo** is part of its body (`Extra`), so it wears it at every level. It floats above the crown at level 10.
+
+**Previews:** `previews/potatoes/`
+
+- `lineup_Cloud_L10.jpg`
+- `levels_SeraphSpud.jpg`
 - `turn_<Id>.jpg` for each of the six
