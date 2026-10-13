@@ -28,6 +28,7 @@ The pieces so far:
 | `BuildPotatoesJungle.lua` | The Jungle Ruins potatoes |
 | `BuildPotatoesReef.lua` | The Coral Cove potatoes |
 | `BuildPotatoesHaunt.lua` | The Haunted Hollow potatoes |
+| `BuildPotatoesDino.lua` | The Dino Valley potatoes |
 
 ---
 
@@ -717,4 +718,31 @@ The rig, rules and clips are the same as the Meadow Patch six. Each has 39 to 45
 
 - `lineup_Haunt_L10.jpg`
 - `levels_ReaperTuber.jpg`
+- `turn_<Id>.jpg` for each of the six
+
+---
+
+## Dino Valley potatoes (`BuildPotatoesDino.lua`)
+
+| Path | Rarity | What |
+|---|---|---|
+| `PotatoKit.Potatoes.FossilFry` | Epic | A tall lump of fossil stone: a dinosaur bone stuck in its head, an ammonite's coil and a little bone set in its front |
+| `PotatoKit.Potatoes.DinoEggSpud` | Epic | A speckled dinosaur egg, round-topped, cracked down one side, a piece of shell perched on top like a cap |
+| `PotatoKit.Potatoes.RaptorTater` | Legendary | A velociraptor: green with dark stripes down its back, yellow slit eyes, a toothy grin, a crest of red quills and a long stiff tail |
+| `PotatoKit.Potatoes.TriceraTot` | Mythic | A triceratops: teal, a great orange frill fanned up behind its head with knobs round its edge, two long horns and a little one on its nose |
+| `PotatoKit.Potatoes.PteroSpud` | Secret | A pterodactyl: rusty orange, great pointed wings spread behind it, a long crest sweeping back from its head and a long pointed beak |
+| `PotatoKit.Potatoes.RexOverlord` | Secret | Tyrannosaurus rex: big and dark green, a great jaw of teeth, tiny arms, spikes down its back, a heavy tail and a bigger gold crown |
+
+The rig, rules and clips are the same as the Meadow Patch six. Each has 42 to 45 parts.
+
+- **Reptile eyes:** RaptorTater's and RexOverlord's `Eyes` are yellow or orange with a dark slit `Pupil`.
+- **Toothy mouths:** RaptorTater's and RexOverlord's `Mouth` carry white `Tooth` plates.
+- **PteroSpud's `Mouth`** is its beak (two `Beak` bricks).
+- **RexOverlord's arms** are the usual `ArmL`, `ArmR`, `HandL` and `HandR`, only tiny.
+- **RexOverlord's crown** is the usual gold `Crown`, 1.2 times the size.
+
+**Previews:** `previews/potatoes/`
+
+- `lineup_Dino_L10.jpg`
+- `levels_RexOverlord.jpg`
 - `turn_<Id>.jpg` for each of the six

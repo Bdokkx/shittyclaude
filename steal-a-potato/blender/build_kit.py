@@ -37,6 +37,7 @@ PIECES = {
     "potatoes_jungle": dict(file="Potatoes_Jungle", title="the Jungle Ruins potatoes", area="Jungle"),
     "potatoes_reef": dict(file="Potatoes_Reef", title="the Coral Cove potatoes", area="Reef"),
     "potatoes_haunt": dict(file="Potatoes_Haunt", title="the Haunted Hollow potatoes", area="Haunt"),
+    "potatoes_dino": dict(file="Potatoes_Dino", title="the Dino Valley potatoes", area="Dino"),
     "plot": dict(file="PlotKit", title="the plot kit (fences, soil, board, mound, seeds)"),
     "questnpc": dict(file="QuestNpc", title="Farmer Spud, the quest NPC, and his clips"),
     "fuse": dict(file="FuseMachine", title="the Fuse Machine"),
