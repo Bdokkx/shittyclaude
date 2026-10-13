@@ -68,8 +68,8 @@ class Spud:
         self.welds = []         # (part0, part1)
 
     # ---------------------------------------------------------------- pieces
-    def core(self, size, pos, R=None, color=None):
-        self.body = self.b.part(self.m, "Body", size, pos, R, color)
+    def core(self, size, pos, R=None, color=None, material="Plastic"):
+        self.body = self.b.part(self.m, "Body", size, pos, R, color, material=material)
         self.motors.append(("Body", self.root, self.body, CF()))
         return self.body
 
@@ -121,7 +121,7 @@ class Spud:
 
 # ==================================================================== body shapes
 
-def octo(sp, y0, y1, w, d, front, chamfer, cols, x=0.0, z=0.0, R=None, core=False):
+def octo(sp, y0, y1, w, d, front, chamfer, cols, x=0.0, z=0.0, R=None, core=False, material="Plastic"):
     """An octagonal prism from four slabs (Folk Valley's tower trick): a slab long in Z whose
     end is the flat front (width `front`), a slab long in X for the sides, and two slabs along
     the diagonals whose ends are the chamfers (`chamfer` along each axis). cols = (front, sides,
@@ -132,8 +132,8 @@ def octo(sp, y0, y1, w, d, front, chamfer, cols, x=0.0, z=0.0, R=None, core=Fals
     side = d - 2 * chamfer                     # depth of the side faces
     out = []
     mk = sp.core if core else sp.extra
-    out.append(mk((front, h, d), c, R, cols[0]))
-    out.append(sp.extra((w, h * 0.985, side), c, R, cols[1]))
+    out.append(mk((front, h, d), c, R, cols[0], material=material))
+    out.append(sp.extra((w, h * 0.985, side), c, R, cols[1], material=material))
     # chamfer: from the front edge (front/2, d/2) to the side edge (w/2, side/2)
     ax, az = (w - front) / 2, (d - side) / 2
     ln = math.hypot(ax, az)
@@ -145,7 +145,7 @@ def octo(sp, y0, y1, w, d, front, chamfer, cols, x=0.0, z=0.0, R=None, core=Fals
     for s, kh in ((-1, 0.97), (1, 0.955)):
         a = math.degrees(math.atan2(nrm[1], nrm[0]))
         Rs = R @ G.ry(s * a)                   # local X along the normal (mirrored for the other diagonal)
-        out.append(sp.extra((2 * dist, h * kh, ln), c, Rs, cols[2]))
+        out.append(sp.extra((2 * dist, h * kh, ln), c, Rs, cols[2], material=material))
     return out
 
 
@@ -557,5 +557,7 @@ AREAS = {"Meadow": MEADOW}
 
 from .spuds_dunes import DUNES  # noqa: E402  (the other areas' kinds build on this module)
 from .spuds_marsh import MARSH  # noqa: E402
+from .spuds_frost import FROST  # noqa: E402
 AREAS["Dunes"] = DUNES
 AREAS["Marsh"] = MARSH
+AREAS["Frost"] = FROST

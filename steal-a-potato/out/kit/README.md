@@ -20,6 +20,7 @@ The pieces so far:
 | `BuildRootMonster.lua` | 4.3, the RootMonster in bricks with its four clips |
 | `BuildPotatoesDunes.lua` | The Sandy Dunes potatoes |
 | `BuildPotatoesMarsh.lua` | The Mushroom Marsh potatoes |
+| `BuildPotatoesFrost.lua` | The Frost Fields potatoes |
 
 ---
 
@@ -484,4 +485,28 @@ The rig, rules and clips are the same as the Meadow Patch six. Each has 44 or 45
 
 - `lineup_Marsh_L10.jpg`
 - `levels_HydraTuber.jpg`
+- `turn_<Id>.jpg` for each of the six
+
+---
+
+## Frost Fields potatoes (`BuildPotatoesFrost.lua`)
+
+| Path | Rarity | What |
+|---|---|---|
+| `PotatoKit.Potatoes.SnowballSpud` | Uncommon | A round white snowball with a carrot nose, coal buttons and a twig on its head; twig arms with red mittens, blue boots |
+| `PotatoKit.Potatoes.FrostbiteFry` | Rare | A tall icy-blue fry with icicles hanging over its eyes and frost specks, in a red woolly hat with a white pompom |
+| `PotatoKit.Potatoes.PenguinPotato` | Epic | A black potato with a white front: an orange beak, flat black flippers, orange feet and a red bow tie |
+| `PotatoKit.Potatoes.YetiYam` | Legendary | Shaggy white fur in tufts, a pale blue face and two little blue horns; big grey-blue feet |
+| `PotatoKit.Potatoes.GlacierSpud` | Mythic | A light blue ice crystal: sharp facets, a faceted crown of ice and crystal shards on top, Neon light along its facets and a glint |
+| `PotatoKit.Potatoes.AuroraTuber` | Secret | Dark teal like the polar night, glowing green and purple aurora ribbons swirling round it (Neon), a star glint |
+
+The rig, rules and clips are the same as the Meadow Patch six. Each has 42 to 45 parts.
+
+- PenguinPotato's `Mouth` is its beak, and its arms (`ArmL`, `ArmR`) are flat flippers.
+- SnowballSpud's arms are twigs.
+
+**Previews:** `previews/potatoes/`
+
+- `lineup_Frost_L10.jpg`
+- `levels_AuroraTuber.jpg`
 - `turn_<Id>.jpg` for each of the six
