@@ -26,7 +26,7 @@ def stick(sp, a, b, w, col, n=(0.0, 0.0, -1.0), t=0.1, material="Neon"):
     return sp.extra((w, L, t), (a + b) / 2, np.column_stack((x, y, z)), col, material=material)
 
 
-def crack(sp, pts, n, w=0.13, col=EMBER[0], out=0.03):
+def crack(sp, pts, n, w=0.13, col=EMBER[0], out=0.03, material="Neon"):
     """A jagged glowing crack through the points (on a face whose outward normal is n), each bar a
     hair further out than the last so the joints never fight."""
     n = np.asarray(n, float)
@@ -34,7 +34,7 @@ def crack(sp, pts, n, w=0.13, col=EMBER[0], out=0.03):
         o = n * (out + 0.012 * (i % 2))
         a, b = np.asarray(pts[i], float), np.asarray(pts[i + 1], float)
         e = (b - a) / np.linalg.norm(b - a) * (w * 0.4)
-        stick(sp, a - e + o, b + e + o, w, col, n=n)
+        stick(sp, a - e + o, b + e + o, w, col, n=n, material=material)
 
 
 def glow_eyes(sp, col, glint_col=INK, w=0.5, hgt=0.66, glint=0.2):

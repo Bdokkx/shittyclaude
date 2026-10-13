@@ -22,6 +22,7 @@ The pieces so far:
 | `BuildPotatoesMarsh.lua` | The Mushroom Marsh potatoes |
 | `BuildPotatoesFrost.lua` | The Frost Fields potatoes |
 | `BuildPotatoesLava.lua` | The Lava Furrows potatoes |
+| `BuildPotatoesCrystal.lua` | The Crystal Caverns potatoes |
 
 ---
 
@@ -538,4 +539,35 @@ The rig, rules and clips are the same as the Meadow Patch six. Each has 42 to 45
 
 - `lineup_Lava_L10.jpg`
 - `levels_InfernoTuber.jpg`
+- `turn_<Id>.jpg` for each of the six
+
+---
+
+## Crystal Caverns potatoes (`BuildPotatoesCrystal.lua`)
+
+| Path | Rarity | What |
+|---|---|---|
+| `PotatoKit.Potatoes.GeodeSpud` | Rare | A grey rock cracked open across the top: a jagged broken edge, a white lining and purple crystals bursting out, one of them glowing |
+| `PotatoKit.Potatoes.AmethystTater` | Epic | A purple potato with a ridge of amethyst crystal spikes growing out of its back, the two tallest tipped with light |
+| `PotatoKit.Potatoes.EmeraldFry` | Legendary | A tall emerald-cut emerald stood on end: corners cut off, facets in three greens round a raised table where its face is, star glints |
+| `PotatoKit.Potatoes.DiamondSpud` | Mythic | Cut like a diamond: a narrow flat table on top, widest at its girdle, then tapering away underneath; white and cyan facets, star glints |
+| `PotatoKit.Potatoes.PrismPotato` | Secret | Clear glass: a beam of white light shines in at one side and fans out of the other as a rainbow, and you can see it split through the glass |
+| `PotatoKit.Potatoes.ObsidianOverlord` | Secret | Black volcanic glass with glowing purple cracks, glass shards jutting from its shoulders and back, a purple glare and a jagged obsidian crown |
+
+The rig, rules and clips are the same as the Meadow Patch six. Each has 41 to 45 parts.
+
+- **PrismPotato** is the kit's only see-through piece:
+  - Its `Body` and the glass block on its top are Plastic at Transparency 0.4.
+  - The light and the rainbow are Neon bars that run from outside it to a point inside it.
+- **ObsidianOverlord's `Crown`** is its own jagged crown of black glass:
+  - It has the usual `Band`, four `Point`s of different heights and a Neon purple `Jewel`.
+  - It still shows only at level 10.
+- **ObsidianOverlord's eyes:** Neon slanting `Eye`s with a dark `Pupil` each. Its `Mouth` is a thin Neon line.
+- **GeodeSpud** wears its crown towards its back right, so the crystals stay in front of it.
+- **EmeraldFry's `Body`** is turned to face forward, so the emerald cut shows from the front.
+
+**Previews:** `previews/potatoes/`
+
+- `lineup_Crystal_L10.jpg`
+- `levels_ObsidianOverlord.jpg`
 - `turn_<Id>.jpg` for each of the six

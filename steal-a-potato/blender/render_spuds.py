@@ -112,7 +112,7 @@ def shot_lineup(out, area, w, samples, level=10, ids=None):
     h = int(w * 0.42)
     scene = scene_for(sc, keep, w, h, samples)
     span = (n - 1) * sp
-    cam(scene, (0.0, 6.2, -(span * 0.62 + 9.5)), (0.0, 2.4, 0.0), fov=30.0)
+    cam(scene, (0.0, 6.2, -(span * 0.67 + 9.5)), (0.0, 2.4, 0.0), fov=30.0)
     p = os.path.join(out, "lineup_%s_L%d.png" % (area, level))
     rs.render(scene, p)
     restore()

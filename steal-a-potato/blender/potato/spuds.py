@@ -68,8 +68,8 @@ class Spud:
         self.welds = []         # (part0, part1)
 
     # ---------------------------------------------------------------- pieces
-    def core(self, size, pos, R=None, color=None, material="Plastic"):
-        self.body = self.b.part(self.m, "Body", size, pos, R, color, material=material)
+    def core(self, size, pos, R=None, color=None, material="Plastic", **kw):
+        self.body = self.b.part(self.m, "Body", size, pos, R, color, material=material, **kw)
         self.motors.append(("Body", self.root, self.body, CF()))
         return self.body
 
@@ -559,7 +559,9 @@ from .spuds_dunes import DUNES  # noqa: E402  (the other areas' kinds build on t
 from .spuds_marsh import MARSH  # noqa: E402
 from .spuds_frost import FROST  # noqa: E402
 from .spuds_lava import LAVA  # noqa: E402
+from .spuds_crystal import CRYSTAL  # noqa: E402
 AREAS["Dunes"] = DUNES
 AREAS["Marsh"] = MARSH
 AREAS["Frost"] = FROST
 AREAS["Lava"] = LAVA
+AREAS["Crystal"] = CRYSTAL
