@@ -604,7 +604,7 @@ R 330 331
 T 330 Count n 5
 T 330 ScaleMin n 0.85
 T 330 ScaleMax n 1.2
-T 330 Band s Any
+T 330 Band s Side
 T 330 Solid b 1
 V 331 0 -0.8 0 95
 ]]

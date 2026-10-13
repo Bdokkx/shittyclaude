@@ -686,7 +686,7 @@ R 335 336
 T 335 Count n 6
 T 335 ScaleMin n 0.8
 T 335 ScaleMax n 1.3
-T 335 Band s Any
+T 335 Band s Side
 T 335 Solid b 1
 V 336 0.761 -0.974 0.087 173
 R 350 351

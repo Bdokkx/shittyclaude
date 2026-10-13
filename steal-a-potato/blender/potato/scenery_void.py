@@ -248,7 +248,7 @@ AREA = register(Area("Void", "Glitch Void", hero, [
     (p_cubes, prop_attrs(6, 0.8, 1.3, "Any", False)),
     (p_error, prop_attrs(4, 0.9, 1.2, "Side", False)),
     (p_crystal, prop_attrs(6, 0.8, 1.3, "Side", True)),
-    (p_tv, prop_attrs(4, 0.9, 1.2, "Any", True)),
+    (p_tv, prop_attrs(4, 0.9, 1.2, "Side", True)),
     (p_pillar, prop_attrs(5, 0.9, 1.25, "Side", True)),
     (p_portal, prop_attrs(3, 0.9, 1.2, "Edge", True)),
     (p_bush, prop_attrs(8, 0.8, 1.3, "Any", False)),

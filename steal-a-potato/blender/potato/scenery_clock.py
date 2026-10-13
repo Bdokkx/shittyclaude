@@ -274,5 +274,5 @@ AREA = register(Area("Clock", "Clockwork Yard", hero, [
     (p_gearpile, prop_attrs(8, 0.8, 1.3, "Any", False)),
     (p_watch, prop_attrs(3, 0.9, 1.2, "Side", True)),
     (p_streetclock, prop_attrs(4, 0.95, 1.15, "Side", False)),
-    (p_spring, prop_attrs(5, 0.85, 1.2, "Any", True)),
+    (p_spring, prop_attrs(5, 0.85, 1.2, "Side", True)),
 ], ground="a89a80"))

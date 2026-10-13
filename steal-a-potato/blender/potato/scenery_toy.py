@@ -296,12 +296,12 @@ def p_crayons(sc, parent):
 
 
 AREA = register(Area("Toy", "Toy Town", hero, [
-    (p_blocks, prop_attrs(8, 0.8, 1.3, "Any", True)),
+    (p_blocks, prop_attrs(8, 0.8, 1.3, "Side", True)),
     (p_tops, prop_attrs(6, 0.8, 1.3, "Any", False)),
     (p_soldier, prop_attrs(5, 0.9, 1.2, "Side", True)),
-    (p_duck, prop_attrs(4, 0.9, 1.3, "Any", True)),
+    (p_duck, prop_attrs(4, 0.9, 1.3, "Side", True)),
     (p_jack, prop_attrs(4, 0.9, 1.2, "Side", True)),
     (p_teddy, prop_attrs(4, 0.9, 1.2, "Side", True)),
-    (p_car, prop_attrs(5, 0.9, 1.2, "Any", True)),
+    (p_car, prop_attrs(5, 0.9, 1.2, "Side", True)),
     (p_crayons, prop_attrs(6, 0.85, 1.3, "Side", False)),
 ], ground="8fd0ff"))

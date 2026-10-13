@@ -304,7 +304,7 @@ AREA = register(Area("Dino", "Dino Valley", hero, [
     (p_ribs, prop_attrs(3, 0.9, 1.2, "Side", True)),
     (p_nest, prop_attrs(5, 0.9, 1.3, "Any", False)),
     (p_volcano, prop_attrs(3, 0.9, 1.2, "Edge", True)),
-    (p_amber, prop_attrs(5, 0.85, 1.25, "Any", True)),
+    (p_amber, prop_attrs(5, 0.85, 1.25, "Side", True)),
     (p_prints, prop_attrs(6, 0.9, 1.4, "Any", False)),
     (p_skull, prop_attrs(3, 0.9, 1.2, "Side", True)),
     (p_horsetails, prop_attrs(8, 0.8, 1.3, "Any", False)),

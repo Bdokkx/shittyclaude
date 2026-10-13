@@ -6,7 +6,8 @@ growing out of the battlements, royal blue banners with a white snowflake, slit 
 hanging from every ledge. Between them the gatehouse of big ice blocks: an arch framed in white with
 a glowing crystal keystone, a half-raised portcullis over a deep blue passage, a snowy walkway with
 merlons and, on a plinth in the middle of it, the frozen statue of the potato king in a golden crown
-and a royal blue stole, holding up a crystal sceptre. Snow drifts round its foot.
+and a royal blue stole, holding up a crystal sceptre. Snow drifts round its foot and two clusters of
+glowing crystals either side of the gate.
 """
 import math
 

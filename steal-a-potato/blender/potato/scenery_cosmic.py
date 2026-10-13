@@ -431,7 +431,7 @@ AREA = register(Area("Cosmic", "Cosmic Garden", hero, [
     (p_plants, prop_attrs(10, 0.8, 1.3, "Any", False)),
     (p_rockring, prop_attrs(4, 0.9, 1.2, "Side", True)),
     (p_starlamp, prop_attrs(6, 0.9, 1.15, "Edge", False)),
-    (p_moonrocks, prop_attrs(8, 0.8, 1.3, "Any", True)),
+    (p_moonrocks, prop_attrs(8, 0.8, 1.3, "Side", True)),
     (p_statue, prop_attrs(3, 0.9, 1.2, "Side", True)),
     (p_flag, prop_attrs(3, 0.9, 1.2, "Side", False)),
     (p_rover, prop_attrs(3, 0.9, 1.2, "Side", True)),

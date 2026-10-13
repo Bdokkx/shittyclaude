@@ -385,7 +385,7 @@ R 169 170
 T 169 Count n 8
 T 169 ScaleMin n 0.8
 T 169 ScaleMax n 1.3
-T 169 Band s Any
+T 169 Band s Side
 T 169 Solid b 1
 V 170 1.999 -1.25 -0.727 19
 R 182 185
@@ -411,7 +411,7 @@ R 215 217
 T 215 Count n 4
 T 215 ScaleMin n 0.9
 T 215 ScaleMax n 1.3
-T 215 Band s Any
+T 215 Band s Side
 T 215 Solid b 1
 V 217 0 -1.5 -0.408 1
 R 230 231
@@ -432,7 +432,7 @@ R 274 275
 T 274 Count n 5
 T 274 ScaleMin n 0.9
 T 274 ScaleMax n 1.2
-T 274 Band s Any
+T 274 Band s Side
 T 274 Solid b 1
 V 275 -0.005 -1.5 0 1
 T 285 NightLamp b 1

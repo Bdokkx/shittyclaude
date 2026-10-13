@@ -433,7 +433,7 @@ R 129 130
 T 129 Count n 4
 T 129 ScaleMin n 0.9
 T 129 ScaleMax n 1.2
-T 129 Band s Any
+T 129 Band s Side
 T 129 Solid b 1
 V 130 -0.167 -2.394 -0.13 46
 R 143 145

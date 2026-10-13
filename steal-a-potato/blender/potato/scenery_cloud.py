@@ -202,7 +202,7 @@ def p_windmill(sc, parent):
 
 
 AREA = register(Area("Cloud", "Cloud Kingdom", hero, [
-    (p_puff, prop_attrs(10, 0.8, 1.4, "Any", True)),
+    (p_puff, prop_attrs(10, 0.8, 1.4, "Side", True)),
     (p_tree, prop_attrs(6, 0.85, 1.25, "Side", True)),
     (p_rainbow, prop_attrs(3, 0.9, 1.3, "Side", True)),
     (p_harp, prop_attrs(3, 0.9, 1.2, "Side", True)),

@@ -284,7 +284,7 @@ AREA = register(Area("Jungle", "Jungle Ruins", hero, [
     (p_pillar, prop_attrs(5, 0.9, 1.3, "Side", True)),
     (p_stonehead, prop_attrs(3, 0.9, 1.2, "Edge", True)),
     (p_tiki, prop_attrs(4, 0.9, 1.2, "Side", True)),
-    (p_rocks, prop_attrs(6, 0.8, 1.3, "Any", True)),
+    (p_rocks, prop_attrs(6, 0.8, 1.3, "Side", True)),
     (p_log, prop_attrs(4, 0.9, 1.2, "Side", True)),
     (p_flower, prop_attrs(8, 0.8, 1.3, "Any", False)),
 ], ground="4fa83a"))

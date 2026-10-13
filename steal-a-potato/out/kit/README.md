@@ -989,7 +989,7 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 | `RuinPillar` | 15 | 7.4 × 7.8 × 4.5 | 5 | 0.9–1.3 | Side | yes | A broken stone column, its drums knocked askew, the capital fallen beside it; moss and vines |
 | `StoneHead` | 17 | 6.7 × 7.0 × 6.7 | 3 | 0.9–1.2 | Edge | yes | A giant carved potato head in a stone helmet, mossy, a vine down its face |
 | `TikiTotem` | 31 | 3.5 × 10.3 × 3.5 | 4 | 0.9–1.2 | Side | yes | Three carved wooden faces stacked, a fire on top (`Flame`: Flicker, NightLamp) |
-| `MossyRocks` | 14 | 8.1 × 3.3 × 5.7 | 6 | 0.8–1.3 | Any | yes | Three mossy rocks and a tuft of grass |
+| `MossyRocks` | 14 | 8.1 × 3.3 × 5.7 | 6 | 0.8–1.3 | Side | yes | Three mossy rocks and a tuft of grass |
 | `FallenLog` | 17 | 8.4 × 4.1 × 4.8 | 4 | 0.9–1.2 | Side | yes | An eight-sided log with cut ends, a broken branch, red mushrooms, moss and a fern |
 | `JungleFlower` | 16 | 5.6 × 1.3 × 5.6 | 8 | 0.8–1.3 | Any | no | A giant red flower with white spots, flat on the ground on four leaves |
 
@@ -1021,8 +1021,8 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 | `BrainCoral` | 15 | 6.1 × 2.5 × 3.6 | 6 | 0.8–1.3 | Any | no | A pink dome of brain coral, two sponges, a purple anemone |
 | `Kelp` | 19 | 3.4 × 8.4 × 3.2 | 8 | 0.8–1.3 | Side | no | Four tall bent fronds of kelp with leaves, on a stone |
 | `Anchor` | 16 | 9.0 × 9.3 × 4.2 | 3 | 0.9–1.2 | Side | yes | A big iron anchor stuck in the sand, its chain hanging from the ring |
-| `TreasureChest` | 13 | 5.7 × 3.6 × 5.2 | 4 | 0.9–1.2 | Any | yes | An open chest heaped with gold, two glowing gems (Flicker, NightLamp), coins spilled |
-| `GiantClam` | 12 | 5.8 × 4.3 × 5.4 | 5 | 0.8–1.3 | Any | yes | An open clam with a glowing pearl (`Pearl`: Flicker, NightLamp) |
+| `TreasureChest` | 13 | 5.7 × 3.6 × 5.2 | 4 | 0.9–1.2 | Side | yes | An open chest heaped with gold, two glowing gems (Flicker, NightLamp), coins spilled |
+| `GiantClam` | 12 | 5.8 × 4.3 × 5.4 | 5 | 0.8–1.3 | Side | yes | An open clam with a glowing pearl (`Pearl`: Flicker, NightLamp) |
 | `BarrelStack` | 22 | 5.9 × 4.7 × 4.9 | 4 | 0.9–1.2 | Side | yes | Three barrels stacked, one on its side, and a crate |
 | `DockPosts` | 20 | 6.8 × 6.0 × 2.2 | 4 | 0.9–1.2 | Edge | yes | Three dock posts roped together, a lifebuoy, a gull on top |
 
@@ -1054,7 +1054,7 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 | `Cauldron` | 18 | 4.4 × 5.9 × 4.4 | 3 | 0.9–1.2 | Side | yes | A black pot on three legs over a fire, green brew bubbling, a ladle |
 | `CrookedLamp` | 14 | 4.0 × 9.6 × 2.0 | 6 | 0.9–1.15 | Side | no | A bent iron lamp post with a lantern and a bat on it |
 | `IronFence` | 16 | 11.9 × 5.0 × 1.5 | 5 | 0.9–1.1 | Edge | yes | A spiky iron fence between two big posts |
-| `Coffin` | 11 | 4.8 × 6.1 × 4.0 | 3 | 0.9–1.2 | Any | yes | A coffin standing on a mound, its lid swung open, two red eyes glowing inside |
+| `Coffin` | 11 | 4.8 × 6.1 × 4.0 | 3 | 0.9–1.2 | Side | yes | A coffin standing on a mound, its lid swung open, two red eyes glowing inside |
 | `GlowShrooms` | 12 | 5.2 × 4.2 × 3.7 | 8 | 0.8–1.4 | Any | no | Four mushrooms with glowing purple caps |
 | `Ghost` | 11 | 4.4 × 4.3 × 1.9 | 4 | 0.8–1.3 | Any | no | A friendly ghost floating above the ground with a lantern (Transparency 0.25) |
 
@@ -1082,7 +1082,7 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 | `BoneArch` | 28 | 11.6 × 10.4 × 8.3 | 3 | 0.9–1.2 | Side | yes | A giant ribcage you can walk through |
 | `DinoNest` | 17 | 4.9 × 2.6 × 4.8 | 5 | 0.9–1.3 | Any | no | A nest of spotted eggs, one cracked open with a baby dino peeking out |
 | `MiniVolcano` | 12 | 9.6 × 11.2 × 7.5 | 3 | 0.9–1.2 | Edge | yes | A small volcano: a glowing crater, two lava runs (`Lava`: Flicker, NightLamp), smoke (Transparency 0.35) |
-| `AmberRock` | 10 | 6.0 × 4.3 × 5.0 | 5 | 0.85–1.25 | Any | yes | Rocks with glowing amber in them (`Amber`, NightLamp), a mosquito in the biggest piece |
+| `AmberRock` | 10 | 6.0 × 4.3 × 5.0 | 5 | 0.85–1.25 | Side | yes | Rocks with glowing amber in them (`Amber`, NightLamp), a mosquito in the biggest piece |
 | `Footprints` | 12 | 10.3 × 0.2 × 5.2 | 6 | 0.9–1.4 | Any | no | A trail of three giant three-toed footprints, flat on the ground |
 | `FossilSkull` | 11 | 7.9 × 4.0 × 5.0 | 3 | 0.9–1.2 | Side | yes | A T-rex skull and jaw half dug out of the earth |
 | `Horsetails` | 12 | 2.7 × 5.3 × 2.7 | 8 | 0.8–1.3 | Any | no | A clump of tall horsetail reeds by a rock |
@@ -1109,13 +1109,13 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 
 | `PotatoKit.Props.Toy.<Name>` | Parts | W × H × D | Count | Scale | Band | Solid | What |
 |---|---|---|---|---|---|---|---|
-| `ABCBlocks` | 12 | 6.6 × 4.9 × 5.3 | 8 | 0.8–1.3 | Any | yes | Four alphabet blocks, one stacked on the others |
+| `ABCBlocks` | 12 | 6.6 × 4.9 × 5.3 | 8 | 0.8–1.3 | Side | yes | Four alphabet blocks, one stacked on the others |
 | `SpinningTops` | 10 | 6.7 × 5.3 × 4.0 | 6 | 0.8–1.3 | Any | no | One top spinning on its point (`Spin` = 120 on its five parts) and one fallen over |
 | `ToySoldier` | 21 | 4.7 × 8.1 × 3.4 | 5 | 0.9–1.2 | Side | yes | A potato toy soldier on a stand, with a bearskin, a rifle and a drum |
-| `RubberDuck` | 14 | 6.3 × 5.1 × 5.8 | 4 | 0.9–1.3 | Any | yes | A giant rubber duck on a puddle (Transparency 0.3) |
+| `RubberDuck` | 14 | 6.3 × 5.1 × 5.8 | 4 | 0.9–1.3 | Side | yes | A giant rubber duck on a puddle (Transparency 0.3) |
 | `JackInTheBox` | 24 | 5.0 × 10.2 × 3.9 | 4 | 0.9–1.2 | Side | yes | A striped box with its lid open, a crank and a clown potato on a spring |
 | `TeddyBear` | 18 | 5.8 × 6.5 × 3.7 | 4 | 0.9–1.2 | Side | yes | A sitting teddy bear with a red bow tie |
-| `ToyCar` | 12 | 6.2 × 4.0 × 3.8 | 5 | 0.9–1.2 | Any | yes | A blue toy car with cylinder wheels and glowing headlights (`Light`, NightLamp) |
+| `ToyCar` | 12 | 6.2 × 4.0 × 3.8 | 5 | 0.9–1.2 | Side | yes | A blue toy car with cylinder wheels and glowing headlights (`Light`, NightLamp) |
 | `Crayons` | 12 | 5.6 × 7.4 × 2.6 | 6 | 0.85–1.3 | Side | no | Three giant crayons standing up, leaning |
 
 **Previews:** `previews/scenery/`
@@ -1149,7 +1149,7 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 | `GearPile` | 16 | 5.9 × 3.1 × 5.2 | 8 | 0.8–1.3 | Any | no | Three loose gears in a heap |
 | `PocketWatch` | 25 | 7.0 × 7.3 × 3.1 | 3 | 0.9–1.2 | Side | yes | A giant brass pocket watch leaning back on a stand |
 | `StreetClock` | 17 | 4.0 × 11.6 × 2.5 | 4 | 0.95–1.15 | Side | no | A clock on a tall iron post |
-| `GiantSpring` | 17 | 3.7 × 7.2 × 3.7 | 5 | 0.85–1.2 | Any | yes | A giant steel spring coiled on a crate |
+| `GiantSpring` | 17 | 3.7 × 7.2 × 3.7 | 5 | 0.85–1.2 | Side | yes | A giant steel spring coiled on a crate |
 
 **Previews:** `previews/scenery/`
 
@@ -1204,7 +1204,7 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 
 | `PotatoKit.Props.Cloud.<Name>` | Parts | W × H × D | Count | Scale | Band | Solid | What |
 |---|---|---|---|---|---|---|---|
-| `CloudPuff` | 10 | 9.4 × 3.8 × 6.1 | 10 | 0.8–1.4 | Any | yes | A fluffy cloud resting on the ground |
+| `CloudPuff` | 10 | 9.4 × 3.8 × 6.1 | 10 | 0.8–1.4 | Side | yes | A fluffy cloud resting on the ground |
 | `CloudTree` | 12 | 9.2 × 13.1 × 5.5 | 6 | 0.85–1.25 | Side | yes | A pale trunk with a canopy of cloud |
 | `RainbowArch` | 36 | 15.2 × 7.0 × 3.7 | 3 | 0.9–1.3 | Side | yes | A small rainbow from one cloud to another, high enough to walk under |
 | `GoldenHarp` | 11 | 3.9 × 7.3 × 4.0 | 3 | 0.9–1.2 | Side | yes | A golden harp on a cloud |
@@ -1238,7 +1238,7 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 | `FloatingCubes` | 10 | 4.6 × 8.5 × 4.4 | 6 | 0.8–1.3 | Any | no | Cubes floating over a lit base, the glowing ones turning (`Pixel`, Spin) |
 | `ErrorSign` | 10 | 6.3 × 9.8 × 2.7 | 4 | 0.9–1.2 | Side | no | An error window on a post |
 | `VoidCrystal` | 11 | 4.2 × 7.5 × 3.9 | 6 | 0.8–1.3 | Side | yes | Black crystal shards with glowing purple and magenta seams, on dark rocks |
-| `StaticTV` | 13 | 5.3 × 7.0 × 3.7 | 4 | 0.9–1.2 | Any | yes | An old TV full of static, with knobs and rabbit-ear aerials |
+| `StaticTV` | 13 | 5.3 × 7.0 × 3.7 | 4 | 0.9–1.2 | Side | yes | An old TV full of static, with knobs and rabbit-ear aerials |
 | `BrokenPillar` | 10 | 5.5 × 10.4 × 4.4 | 5 | 0.9–1.25 | Side | yes | A pillar of slipped, floating slices with glowing seams, and a fallen chunk |
 | `PortalRing` | 11 | 8.9 × 9.6 × 2.4 | 3 | 0.9–1.2 | Edge | yes | An eight-sided dark ring with a glowing swirl inside that turns (`Swirl`, `Spin` = 60) |
 | `PixelBush` | 10 | 4.6 × 2.9 × 3.8 | 8 | 0.8–1.3 | Any | no | A bush of pixel cubes with two glowing glitch pixels |
@@ -1266,7 +1266,7 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 |---|---|---|---|---|---|---|---|
 | `BrokenColumn` | 10 | 8.8 × 6.3 × 6.3 | 6 | 0.85–1.3 | Side | yes | A broken marble column, one drum and its gold capital fallen beside it |
 | `OliveTree` | 12 | 8.3 × 12.3 × 8.1 | 6 | 0.85–1.25 | Side | yes | A silvery-green olive tree with olives |
-| `Amphora` | 12 | 3.4 × 5.7 × 3.4 | 6 | 0.8–1.3 | Any | yes | A terracotta amphora with black bands and handles |
+| `Amphora` | 12 | 3.4 × 5.7 × 3.4 | 6 | 0.8–1.3 | Side | yes | A terracotta amphora with black bands and handles |
 | `GoldBrazier` | 10 | 3.4 × 6.4 × 3.4 | 5 | 0.9–1.2 | Side | no | A gold brazier on three legs with a fire burning (`Flame`, `Ember`: NightLamp) |
 | `HeroStatue` | 15 | 5.2 × 7.9 × 4.0 | 3 | 0.9–1.2 | Side | yes | A marble potato athlete with a gold crown and discus, on a plinth |
 | `LaurelBush` | 10 | 5.4 × 3.6 × 4.1 | 8 | 0.8–1.3 | Any | no | A laurel bush with gold berries |

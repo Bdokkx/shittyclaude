@@ -247,7 +247,7 @@ def p_lyre(sc, parent):
 AREA = register(Area("Olympus", "Spud Olympus", hero, [
     (p_column, prop_attrs(6, 0.85, 1.3, "Side", True)),
     (p_olive, prop_attrs(6, 0.85, 1.25, "Side", True)),
-    (p_amphora, prop_attrs(6, 0.8, 1.3, "Any", True)),
+    (p_amphora, prop_attrs(6, 0.8, 1.3, "Side", True)),
     (p_brazier, prop_attrs(5, 0.9, 1.2, "Side", False)),
     (p_statue, prop_attrs(3, 0.9, 1.2, "Side", True)),
     (p_laurel, prop_attrs(8, 0.8, 1.3, "Any", False)),

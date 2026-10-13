@@ -374,8 +374,8 @@ AREA = register(Area("Reef", "Coral Cove", hero, [
     (p_brain, prop_attrs(6, 0.8, 1.3, "Any", False)),
     (p_kelp, prop_attrs(8, 0.8, 1.3, "Side", False)),
     (p_anchor, prop_attrs(3, 0.9, 1.2, "Side", True)),
-    (p_chest, prop_attrs(4, 0.9, 1.2, "Any", True)),
-    (p_clam, prop_attrs(5, 0.8, 1.3, "Any", True)),
+    (p_chest, prop_attrs(4, 0.9, 1.2, "Side", True)),
+    (p_clam, prop_attrs(5, 0.8, 1.3, "Side", True)),
     (p_barrels, prop_attrs(4, 0.9, 1.2, "Side", True)),
     (p_dock, prop_attrs(4, 0.9, 1.2, "Edge", True)),
 ], ground="e8d49a"))

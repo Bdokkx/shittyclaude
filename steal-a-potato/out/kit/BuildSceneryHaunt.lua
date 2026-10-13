@@ -575,7 +575,7 @@ R 296 298
 T 296 Count n 3
 T 296 ScaleMin n 0.9
 T 296 ScaleMax n 1.2
-T 296 Band s Any
+T 296 Band s Side
 T 296 Solid b 1
 V 298 0.068 -3.147 -0.3 102
 T 306 Flicker n 0.2

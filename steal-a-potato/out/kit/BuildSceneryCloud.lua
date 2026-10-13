@@ -377,7 +377,7 @@ R 150 151
 T 150 Count n 10
 T 150 ScaleMin n 0.8
 T 150 ScaleMax n 1.4
-T 150 Band s Any
+T 150 Band s Side
 T 150 Solid b 1
 V 151 0.523 -1.24 0 1
 R 161 165

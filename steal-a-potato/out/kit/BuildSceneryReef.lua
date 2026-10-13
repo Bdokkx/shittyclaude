@@ -658,7 +658,7 @@ R 300 301
 T 300 Count n 4
 T 300 ScaleMin n 0.9
 T 300 ScaleMax n 1.2
-T 300 Band s Any
+T 300 Band s Side
 T 300 Solid b 1
 V 301 0 -0.2 0 173
 T 309 Flicker n 0.1
@@ -669,7 +669,7 @@ R 314 315
 T 314 Count n 5
 T 314 ScaleMin n 0.8
 T 314 ScaleMax n 1.3
-T 314 Band s Any
+T 314 Band s Side
 T 314 Solid b 1
 V 315 0.507 -0.45 0.281 1
 T 323 Flicker n 0.08

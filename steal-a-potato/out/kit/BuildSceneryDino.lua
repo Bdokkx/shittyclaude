@@ -574,7 +574,7 @@ R 250 251
 T 250 Count n 5
 T 250 ScaleMin n 0.85
 T 250 ScaleMax n 1.25
-T 250 Band s Any
+T 250 Band s Side
 T 250 Solid b 1
 V 251 0.789 -0.875 0.25 158
 T 257 Flicker n 0.08

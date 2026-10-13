@@ -414,7 +414,7 @@ R 175 177
 T 175 Count n 6
 T 175 ScaleMin n 0.8
 T 175 ScaleMax n 1.3
-T 175 Band s Any
+T 175 Band s Side
 T 175 Solid b 1
 V 177 0 -2.3 0 1
 R 188 193

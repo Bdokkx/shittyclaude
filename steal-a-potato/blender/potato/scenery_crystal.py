@@ -42,8 +42,9 @@ def axis(heading, lean):
 
 def crystal(B, base, heading, lean, L, w, cols, lamp=False, solid=False, seg=0.0, name="Crystal", twist=0.0):
     """A crystal growing out of base: a faceted prism (a box and a narrower one turned 45 degrees about
-    it) ending in a glowing point, a cube standing on its corner as wide as the prism; the big ones
-    glow along a band below the point too."""
+    it) ending in a glowing point, a cube standing on its corner as wide as the prism (a gold one's
+    point is solid, a smaller glowing cube at its very tip); the big ones glow along a band below the
+    point too, and every one wider than 1.5 has a glint running up an edge."""
     d = axis(heading, lean)
     R = frame(d, None) @ G.ry(twist)
     base = np.asarray(base, float)
@@ -60,7 +61,13 @@ def crystal(B, base, heading, lean, L, w, cols, lamp=False, solid=False, seg=0.0
         out.append(B.p(name, (w * 0.9, seg + 0.1, w * 0.82), top + d * (seg / 2 - 0.05), R, cols[2], **kw))
         top = top + d * seg
     a = w * 0.86
-    out.append(B.p(name, (a, a, a), top - d * (w * 0.05), R @ VERTEX, cols[2], **kw))
+    if cols is GOLD:                     # gold: a solid point, only its very tip glowing
+        out.append(B.p(name, (a, a, a), top - d * (w * 0.05), R @ VERTEX, cols[1]))
+        s = w * 0.42
+        out.append(B.p(name, (s, s, s), top + d * (0.745 * w - 0.866 * s + 0.02 * w), R @ G.ry(60) @ VERTEX, cols[2],
+                       **kw))
+    else:
+        out.append(B.p(name, (a, a, a), top - d * (w * 0.05), R @ VERTEX, cols[2], **kw))
     return out
 
 
