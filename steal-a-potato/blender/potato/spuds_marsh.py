@@ -65,8 +65,8 @@ class ToadstoolTotKind(Kind):
         sp.extra((3.0, 0.14, 2.8), (0.0, 2.3, 0.0), ori(0, 22, 0), "e8dcc0")              # the gills
         red = ("e04a3a", "c9402a", "f06a58")
         cap(sp, (0.0, 2.8, 0.0), 3.9, 0.92, red, lid=(2.5, 0.42, 2.3), turn=8)
-        for pos, sz in (((1.55, 3.29, -0.4), 0.5), ((-0.6, 3.27, -1.4), 0.48), ((-1.45, 3.29, 0.5), 0.44),
-                        ((0.3, 3.68, -0.35), 0.5)):
+        for pos, sz in (((1.55, 3.29, -0.4), 0.62), ((-0.55, 3.27, -1.56), 0.56), ((-1.45, 3.29, 0.5), 0.56),
+                        ((0.3, 3.68, -0.35), 0.62)):
             sp.extra((sz, 0.1, sz), pos, G.ry(30), "fffaf0")                               # white dots
 
 
@@ -128,12 +128,12 @@ class SwampThingKind(Kind):
         vine = "9ad86e"
         for pos, R, ln in (((-1.1, 2.0, -1.38), ori(-4, 0, 24), 2.2), ((1.66, 1.9, -0.35), ori(0, 90, -14), 2.1),
                            ((0.55, 2.95, -1.36), ori(-6, 0, -50), 1.2)):
-            sp.extra((0.2, ln, 0.16), pos, R, vine)                                            # vines
+            sp.extra((0.28, ln, 0.2), pos, R, vine)                                            # vines
         pad = "4ea83a"
-        sp.extra((1.3, 0.1, 1.3), (0.15, 3.48, 0.1), ori(0, 40, -4), pad)                      # lily pads
-        sp.extra((1.0, 0.1, 1.0), (1.45, 2.98, -0.15), ori(0, 15, -20), pad)
-        sp.extra((0.6, 0.18, 0.24), (0.55, 3.62, -0.3), ori(0, 45, 0), "ff9ccc")              # its lily flower
-        sp.extra((0.24, 0.19, 0.6), (0.55, 3.62, -0.3), ori(0, 45, 0), "ff7eb6")
+        sp.extra((1.3, 0.1, 1.3), (-0.7, 3.5, -0.75), ori(-14, 40, 10), pad)                   # lily pads
+        sp.extra((1.4, 0.12, 1.4), (1.42, 3.0, -0.45), ori(0, 15, -24), pad)
+        sp.extra((0.6, 0.18, 0.24), (-0.72, 3.66, -0.95), ori(-14, 45, 0), "ff9ccc")          # its lily flower
+        sp.extra((0.24, 0.19, 0.6), (-0.72, 3.66, -0.95), ori(-14, 45, 0), "ff7eb6")
 
     def mouth(self, sp):
         mouth_smile(sp, width=0.66, tongue=False, cheek_col="7ab864")

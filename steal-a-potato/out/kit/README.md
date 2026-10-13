@@ -19,6 +19,7 @@ The pieces so far:
 | `BuildGuardians1.lua`, `BuildGuardians2.lua`, `BuildGuardians3.lua` | The 18 guardians, six per script, and their Sleep, Wake and Run clips |
 | `BuildRootMonster.lua` | 4.3, the RootMonster in bricks with its four clips |
 | `BuildPotatoesDunes.lua` | The Sandy Dunes potatoes |
+| `BuildPotatoesMarsh.lua` | The Mushroom Marsh potatoes |
 
 ---
 
@@ -458,4 +459,29 @@ A few features are dressed for their potato:
 
 - `lineup_Dunes_L10.jpg`
 - `levels_SphinxSpud.jpg`
+- `turn_<Id>.jpg` for each of the six
+
+---
+
+## Mushroom Marsh potatoes (`BuildPotatoesMarsh.lua`)
+
+| Path | Rarity | What |
+|---|---|---|
+| `PotatoKit.Potatoes.MossyTater` | Uncommon | A brown spud with green moss over its top half, creeping down its sides and brow, and a tiny leaf on its head |
+| `PotatoKit.Potatoes.ToadstoolTot` | Rare | A short cream stalk under a big red toadstool cap with white dots |
+| `PotatoKit.Potatoes.FroggySpud` | Rare | A bright green frog of a potato: big frog eyes up on top, a wide grin, a pale belly and webbed green feet |
+| `PotatoKit.Potatoes.SwampThing` | Epic | Dark swamp green and grumpy, draped in bright vines, with a lily pad and its pink flower on its head and another pad on its shoulder |
+| `PotatoKit.Potatoes.Glowshroom` | Legendary | A dark blue stalk under a glowing cyan mushroom cap (Neon), with glowing spots on its body |
+| `PotatoKit.Potatoes.HydraTuber` | Mythic | Purple and green, with three heads: the big purple one in the middle and two little green ones on its shoulders |
+
+The rig, rules and clips are the same as the Meadow Patch six. Each has 44 or 45 parts.
+
+- FroggySpud's `Eyes` sit on the two bumps on top of its head, and its `Mouth` is a wide frog grin.
+- HydraTuber's face (`Eyes`, `Mouth`) is on the middle head. The two side heads are part of its body (`Extra`).
+- Glowshroom's cap and spots, and its crown jewel, are Neon.
+
+**Previews:** `previews/potatoes/`
+
+- `lineup_Marsh_L10.jpg`
+- `levels_HydraTuber.jpg`
 - `turn_<Id>.jpg` for each of the six
