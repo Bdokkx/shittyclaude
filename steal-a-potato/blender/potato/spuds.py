@@ -554,3 +554,8 @@ class Pose:
 
 
 AREAS = {"Meadow": MEADOW}
+
+from .spuds_dunes import DUNES  # noqa: E402  (the other areas' kinds build on this module)
+from .spuds_marsh import MARSH  # noqa: E402
+AREAS["Dunes"] = DUNES
+AREAS["Marsh"] = MARSH

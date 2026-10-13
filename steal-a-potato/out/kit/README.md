@@ -17,6 +17,8 @@ The pieces so far:
 | `BuildQuestNpc.lua` | Farmer Spud, the quest NPC, and his four clips |
 | `BuildFuseMachine.lua` | The Fuse Machine |
 | `BuildGuardians1.lua`, `BuildGuardians2.lua`, `BuildGuardians3.lua` | The 18 guardians, six per script, and their Sleep, Wake and Run clips |
+| `BuildRootMonster.lua` | 4.3, the RootMonster in bricks with its four clips |
+| `BuildPotatoesDunes.lua` | The Sandy Dunes potatoes |
 
 ---
 
@@ -376,3 +378,84 @@ Each script builds its six into these paths, and leaves the other areas' guardia
 - `guardians_grid_*.jpg`: all 18, awake
 - `guardians_sleep_*.jpg`: all 18 with their eyes shut
 - `clips_<AreaId>.jpg`: six frames each of Sleep, Wake and Run
+
+---
+
+## 4.3 The RootMonster in bricks (`BuildRootMonster.lua`)
+
+| Path | What |
+|---|---|
+| `PotatoKit.RootMonster` | The RootMonster, 167 parts |
+| `PotatoKit.RootAnimations.RootEmerge`, `RootChase`, `RootGrab`, `RootWither` | Its four clips (KeyframeSequences) |
+
+The script replaces part 1's mesh RootMonster and its four sequences under the same names. It leaves everything else in `PotatoKit.RootAnimations` and the kit alone.
+
+**The same rig, joint for joint.** Your code needs no changes.
+
+- **Root:** the PrimaryPart, as before. Anchored and invisible, 4 × 0.4 × 4, with CanTouch on and its pivot on the ground in the middle. The front is -Z.
+- **Motor6Ds:**
+  - `Heap` joins Root → Heap.
+  - Six chains of five: `Tentacle1Seg1` → … → `Tentacle1Seg5`, the same for `Tentacle2` … `Tentacle6`.
+  - Each Motor6D carries its Part1's name and still lives in its Part0.
+  - Every joint frame is exactly part 1's, and the build checks this.
+- **The four clips** are baked by the same code as part 1's, so their keys are the same. The build checks the ground clearances:
+  - RootEmerge starts with its highest brick 3.9 under the ground.
+  - RootWither ends with it 4.8 under.
+  - RootChase's claws dig at most 1.8 into the soil, as before.
+- **Attachments and eyes:**
+  - `Fx_Dirt` is on Root and `Fx_Eyes` on Heap.
+  - A `Claw` attachment sits on each front root's tip (Tentacle1Seg5, Tentacle2Seg5).
+  - The two `Eye` parts are Neon with `Flicker` = 0.1.
+- **Animation:** an AnimationController with an Animator.
+- **Flags:** everything but Root is unanchored and Massless, with CanCollide, CanTouch and CanQuery off.
+
+**What it looks like now.**
+
+- **The heap:** three stacked Folk Valley rounds of dug soil with lumps on its flanks. It carries a dark `EyeHole` with two glowing yellow diamond `Eye`s under a brow of soil. Nine dark `Clods` and seven grey `Pebbles` sit round its foot.
+- **The roots:** each segment is a tapering eight-sided brick, made of a block and the same block turned 45° about the root (`Bark`). Every segment has a `Knob`. `Hairs` grow from the third segment on.
+- **Colours and tips:** the roots are brown and paler towards the tips. The front roots end in a two-pronged `Fork`, and the others in a point (`Tip`).
+
+| Clip | Length | Loop | Priority | Markers |
+|---|---|---|---|---|
+| `RootEmerge` | 1.0 s | no | Action | `Out` at 0.3 s |
+| `RootChase` | 0.7 s | yes | Movement | none |
+| `RootGrab` | 0.6 s | no | Action | `Hit` at 0.32 s |
+| `RootWither` | 1.2 s | no | Action | none |
+
+**Previews:** `previews/roots_bricks/`
+
+- `turn_RootMonster.jpg`, `face_RootMonster.jpg`
+- `clip_RootMonster_<Clip>.jpg`
+- `RootMonster_clips.mp4`
+
+---
+
+## Sandy Dunes potatoes (`BuildPotatoesDunes.lua`)
+
+| Path | Rarity | What |
+|---|---|---|
+| `PotatoKit.Potatoes.DustySpud` | Common | A sandy tan spud with a little red desert scarf knotted at its neck, tails flying, and dust spots |
+| `PotatoKit.Potatoes.CactusTater` | Uncommon | A tall green cactus potato: dark grooves with white spines on them and a pink flower on its head |
+| `PotatoKit.Potatoes.MummyMash` | Rare | Wrapped in old bandages, one of them over its left eye, so only its right eye peeks out; a loose end hanging |
+| `PotatoKit.Potatoes.ScorpionSpud` | Epic | Orange-brown, a segmented scorpion tail arching up over its right shoulder with a stinger, and pincers for hands |
+| `PotatoKit.Potatoes.PharaohFry` | Legendary | A tall golden fry in a pharaoh's blue headdress with a gold band, gold-striped lappets, a gold cobra and a little beard |
+| `PotatoKit.Potatoes.SphinxSpud` | Mythic | Carved sandstone in a sphinx's headdress with carved stripes and cracks, glowing turquoise eyes (Neon) and lion's paws for feet |
+
+**Same rig and rules as the Meadow Patch six.**
+
+- **Rig:** Root, Body, Extra, the feature Motor6Ds and LegHeight.
+- **Levels:** each feature shows at the level it always has.
+- **Parts:** 42 to 45 each.
+- **Clips:** the six in `PotatoKit.PotatoAnimations` (from `BuildPotatoesMeadow.lua`) play on these as they are. This script doesn't touch them.
+
+A few features are dressed for their potato:
+
+- ScorpionSpud's `HandL` and `HandR` are pincers: an invisible part at the wrist with two jaw bricks welded to it, as for any feature of several bricks.
+- SphinxSpud's `FootL` and `FootR` are big sandstone lion's paws, and its `Eyes` glow turquoise.
+- PharaohFry's and SphinxSpud's crowns have a turquoise Neon jewel.
+
+**Previews:** `previews/potatoes/`
+
+- `lineup_Dunes_L10.jpg`
+- `levels_SphinxSpud.jpg`
+- `turn_<Id>.jpg` for each of the six

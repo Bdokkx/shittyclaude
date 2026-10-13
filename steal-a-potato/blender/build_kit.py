@@ -19,20 +19,99 @@ TOOLS = os.path.join(os.path.dirname(HERE), "tools")
 sys.path.insert(0, TOOLS)
 
 import numpy as np  # noqa: E402
+from spsgeo import CF  # noqa: E402
 import spslib  # noqa: E402
 
 from potato import brickcheck, fuse, guardian_anim, guardians, npc, plotkit, rig, spud_anim, spuds  # noqa: E402,E501
+from potato import roots as ROOTS, roots_anim as RA, rootbricks  # noqa: E402
 
 PIECES = {
     "potatoes_meadow": dict(file="Potatoes_Meadow", title="the Meadow Patch potatoes and their clips"),
+    "potatoes_dunes": dict(file="Potatoes_Dunes", title="the Sandy Dunes potatoes", area="Dunes"),
+    "potatoes_marsh": dict(file="Potatoes_Marsh", title="the Mushroom Marsh potatoes", area="Marsh"),
     "plot": dict(file="PlotKit", title="the plot kit (fences, soil, board, mound, seeds)"),
     "questnpc": dict(file="QuestNpc", title="Farmer Spud, the quest NPC, and his clips"),
     "fuse": dict(file="FuseMachine", title="the Fuse Machine"),
+    "rootmonster": dict(file="RootMonster", title="the RootMonster in bricks and its four clips"),
     "guardians1": dict(file="Guardians1", title="guardians 1-6 (Meadow to Frost) and their clips", span=(0, 6)),
     "guardians2": dict(file="Guardians2", title="guardians 7-12 (Haunt to Candy) and their clips", span=(6, 12)),
     "guardians3": dict(file="Guardians3", title="guardians 13-18 (Clock to Olympus) and their clips", span=(12, 18)),
 }
 GAITS = ("Stomp", "Scuttle", "Hop", "Float", "Gallop")
+
+
+def check_rootmonster(sc, m):
+    """The same rig as part 1's: joints, their Part0s and frames, attachments, eyes; the clips start
+    and end under the ground; no flickering faces."""
+    errs = []
+    parts = [n for n in m.walk() if n.kind == "Part"]
+    root = m.p.get("primary")
+    if root is None or root.name != "Root" or not root.p["anchored"] or root.p["transparency"] < 0.99 \
+            or not root.p["touch"]:
+        errs.append("Root is not the anchored, invisible, touchable PrimaryPart")
+    for p in parts:
+        if p is root:
+            continue
+        if p.p["anchored"] or p.p["collide"] or p.p["touch"] or p.p["query"] or not p.p["massless"]:
+            errs.append("%s flags" % p.path())
+        if p.p["shadow"] and max(p.p["size"]) < 2.5:
+            errs.append("small %s casts a shadow" % p.path())
+    want = [("Heap", "Root", "Heap", CF())]
+    for (tname, bp, d0, length, bend, claw) in ROOTS.TENTACLES:
+        frames, seg = ROOTS.tentacle_frames(bp, d0, length, bend)
+        prev = "Heap"
+        for i, fr in enumerate(frames):
+            pname = "%sSeg%d" % (tname, i + 1)
+            want.append((pname, prev, pname, fr))
+            prev = pname
+    motors = {n.name: n for n in m.walk() if n.kind == "Motor"}
+    if sorted(motors) != sorted(w[0] for w in want):
+        errs.append("joints %s" % sorted(motors))
+    for (j, p0, p1, fr) in want:
+        n = motors.get(j)
+        if n is None:
+            continue
+        if n.p["part0"].name != p0 or n.p["part1"].name != p1 or n.parent is not n.p["part0"]:
+            errs.append("%s joins %s -> %s (in %s)" % (j, n.p["part0"].name, n.p["part1"].name, n.parent.name))
+        h = n.p["hinge"]
+        if not (np.allclose(h.p, fr.p, atol=1e-6) and np.allclose(h.R, fr.R, atol=1e-6)):
+            errs.append("%s: frame moved" % j)
+    att = sorted((n.parent.name, n.name) for n in m.walk() if n.kind == "Attachment")
+    if att != sorted([("Root", "Fx_Dirt"), ("Heap", "Fx_Eyes"), ("Tentacle1Seg5", "Claw"), ("Tentacle2Seg5", "Claw")]):
+        errs.append("attachments %s" % att)
+    eyes = [p for p in parts if p.name == "Eye"]
+    if len(eyes) != 2 or any(p.p["material"] != "Neon" or p.p.get("attrs", {}).get("Flicker") != 0.1 for p in eyes):
+        errs.append("eyes")
+    errs += brickcheck.rules(parts)
+    for a, b, ar in brickcheck.zfight(parts, ground=0.0):
+        errs.append("z-fight %s %s / %s %s (%.3f)" % (a.path().split("/", 2)[-1], [round(v, 2) for v in a.p["size"]],
+                                                      b.path().split("/", 2)[-1], [round(v, 2) for v in b.p["size"]], ar))
+    P = rig.Pose(m)
+
+    def extent(X):
+        lo, hi = 1e9, -1e9
+        for part, cf_ in P.world(X).values():
+            if part.p["transparency"] >= 0.99:
+                continue
+            e = np.abs(cf_.R) @ (np.array(part.p["size"]) / 2)
+            lo, hi = min(lo, float(cf_.p[1] - e[1])), max(hi, float(cf_.p[1] + e[1]))
+        return lo, hi
+    for c in RA.CLIPS:
+        fr = c.bake()
+        if c.name == "RootEmerge":
+            top = extent(fr[0])[1]
+            print("  RootEmerge starts with its highest brick %.1f under the ground" % -top)
+            if top > -1.0:
+                errs.append("RootEmerge starts with a brick %.2f above ground" % top)
+        if c.name == "RootWither":
+            top = extent(fr[-1])[1]
+            print("  RootWither ends with its highest brick %.1f under the ground" % -top)
+            if top > -1.0:
+                errs.append("RootWither ends with a brick %.2f above ground" % top)
+        if c.name == "RootChase":
+            low = min(extent(X)[0] for X in fr)
+            print("  RootChase digs at most %.1f into the soil" % -low)
+    return errs
 
 
 def check_guardian(m, area):
@@ -146,12 +225,12 @@ def check_deco(sc):
     return errs
 
 
-def potatoes(area):
+def potatoes(area, anims=True):
     sc = spslib.Scene("PotatoKit")
     pot = sc.container(sc.root, "Potatoes")
     models = [k.build(sc, pot) for k in spuds.AREAS[area]]
-    anims = sc.container(sc.root, "PotatoAnimations")
-    return sc, models, anims
+    folder = sc.container(sc.root, "PotatoAnimations") if anims else None
+    return sc, models, folder
 
 
 def check_potatoes(models):
@@ -221,6 +300,12 @@ def main():
         for c, fr in baked:
             print("  %-14s %.1f s  %d keyframes  joints %s" % (c.name, c.length, len(fr),
                                                               sorted(spud_anim.moving(fr))))
+    elif piece.startswith("potatoes_"):
+        sc, models, _f = potatoes(cfg["area"], anims=False)
+        errs = check_potatoes(models)
+        for m in models:
+            n = sum(1 for x in m.walk() if x.kind == "Part")
+            print("  %-14s %2d parts  LegHeight %.2f" % (m.name, n, m.p["attrs"]["LegHeight"]))
     elif piece == "questnpc":
         sc = spslib.Scene("PotatoKit")
         m = npc.build(sc, sc.root)
@@ -256,6 +341,18 @@ def main():
         hi = np.max([p.p["cf"].p + np.abs(p.p["cf"].R) @ (np.array(p.p["size"]) / 2) for p in parts], axis=0)
         print("  FuseMachine: %d parts (%d solid), size %s" % (len(parts), sum(1 for p in parts if p.p["collide"]),
                                                              np.round(hi - lo, 1)))
+    elif piece == "rootmonster":
+        sc = spslib.Scene("PotatoKit")
+        m = rootbricks.build(sc, sc.root)
+        sc.container(sc.root, "RootAnimations")
+        errs = check_rootmonster(sc, m)
+        clips = [RA.write(sc.root_rig, c, c.bake()) for c in RA.CLIPS]
+        ap = os.path.join(out, cfg["file"] + "_anims.json")
+        with open(ap, "w") as f:
+            json.dump([rig.folder_json("RootAnimations", clips)], f)
+        anim_specs["RootAnimations"] = ap
+        print("  RootMonster: %d parts, %d joints" % (sum(1 for x in m.walk() if x.kind == "Part"),
+                                                     sum(1 for x in m.walk() if x.kind == "Motor")))
     elif piece.startswith("guardians"):
         sc = spslib.Scene("PotatoKit")
         gfold = sc.container(sc.root, "Guardians")

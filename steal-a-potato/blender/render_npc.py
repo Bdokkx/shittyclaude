@@ -19,7 +19,7 @@ import rbxscene as rs  # noqa: E402
 from spsgeo import CF  # noqa: E402
 
 import render_spuds as RS  # noqa: E402
-from potato import fuse, npc, rig  # noqa: E402
+from potato import fuse, npc, rig, rootbricks, roots_anim  # noqa: E402
 
 FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 
@@ -170,6 +170,19 @@ def main():
                 shot_face(out, b, "FuseMachine", w, samples, (-22.0, 16.0, -38.0), (-1.0, 9.0, 0.0), fov=40.0)
             elif s == "eye":                         # what a player sees walking up to it
                 shot_face(out, b, "FuseMachine_eye", w, samples, (6.0, 6.5, -34.0), (0.0, 11.0, 0.0), fov=42.0)
+    if what == "roots":
+        b = rootbricks.build
+        for s in opts.get("shots", "turn,face,clips").split(","):
+            if s == "turn":
+                shot_turn(out, b, "RootMonster", w, samples, 2.5, 34.0, 13.0)
+            elif s == "face":
+                shot_face(out, b, "RootMonster", w, samples, (-11.0, 7.5, -19.0), (0.0, 2.2, -2.5), fov=40.0)
+            elif s == "clips":
+                shot_clips(out, b, roots_anim.CLIPS, "RootMonster", w, samples, (13.0, 11.0, -25.0), (0.0, 2.0, -2.0),
+                           fov=44.0)
+            elif s == "video":
+                video(out, b, roots_anim.CLIPS, "RootMonster", w, samples, (13.0, 11.0, -25.0), (0.0, 2.0, -2.0),
+                      fov=44.0, reps={"RootChase": 4})
     if what == "npc":
         b = npc.build
         for s in opts.get("shots", "turn,face,clips").split(","):

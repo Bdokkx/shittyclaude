@@ -3,3 +3,4 @@ __pycache__/
 previews/**/_*.png
 previews/**/_frames.txt
 out/kit/Guardians*_anims.json
+out/kit/RootMonster_anims.json
