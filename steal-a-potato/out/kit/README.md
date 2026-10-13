@@ -27,6 +27,7 @@ The pieces so far:
 | `BuildPotatoesCosmic.lua` | The Cosmic Garden potatoes |
 | `BuildPotatoesJungle.lua` | The Jungle Ruins potatoes |
 | `BuildPotatoesReef.lua` | The Coral Cove potatoes |
+| `BuildPotatoesHaunt.lua` | The Haunted Hollow potatoes |
 
 ---
 
@@ -688,4 +689,32 @@ The rig, rules and clips are the same as the Meadow Patch six. Each has 43 to 45
 
 - `lineup_Reef_L10.jpg`
 - `levels_KrakenTuber.jpg`
+- `turn_<Id>.jpg` for each of the six
+
+---
+
+## Haunted Hollow potatoes (`BuildPotatoesHaunt.lua`)
+
+| Path | Rarity | What |
+|---|---|---|
+| `PotatoKit.Potatoes.PumpkinSpud` | Rare | A jack-o'-lantern: ribbed orange, a curly green stem and a leaf, carved triangle eyes and a jagged grin glowing from inside |
+| `PotatoKit.Potatoes.GhostTater` | Rare | A sheet ghost: white and a little see-through, a wavy hem, big dark eyes and an "oo" mouth, a wisp trailing behind |
+| `PotatoKit.Potatoes.BatSpud` | Epic | A bat: dusky purple, big wings spread behind it, pointed ears, glowing yellow eyes and two little fangs |
+| `PotatoKit.Potatoes.WitchFry` | Legendary | A tall green witch: a tall black pointed hat with a crooked tip and a purple band, straggly purple hair, a long nose with a wart |
+| `PotatoKit.Potatoes.FrankenSpud` | Mythic | Frankenstein's monster: grey-green, a flat top of black hair with a ragged fringe, bolts in its neck and a stitched scar down one cheek |
+| `PotatoKit.Potatoes.ReaperTuber` | Secret | A grim reaper in a black hooded cloak, eyes glowing out of the hood's shadow, a ghostly glow about it and a scythe in its left hand |
+
+The rig, rules and clips are the same as the Meadow Patch six. Each has 39 to 45 parts.
+
+- **GhostTater's sheet** (its `Body`, the other body bricks and the hem) is at Transparency 0.2.
+- **ReaperTuber's scythe** (`Scythe` bricks) is held in the left hand: children of `HandL`, welded to it. Hide them with it below level 5.
+- **PumpkinSpud's face glows.** Its `Eyes` are Neon triangles, each with a shadow plate named `Glint` under it. Its `Mouth` is Neon with two `Tooth` plates.
+- **BatSpud's `Mouth`** has two white `Fang`s.
+- **WitchFry's crown** sits on her hat brim, round the hat like a band.
+- **The glowing eyes:** BatSpud's and ReaperTuber's eyes glow (Neon), and so does ReaperTuber's mouth.
+
+**Previews:** `previews/potatoes/`
+
+- `lineup_Haunt_L10.jpg`
+- `levels_ReaperTuber.jpg`
 - `turn_<Id>.jpg` for each of the six
