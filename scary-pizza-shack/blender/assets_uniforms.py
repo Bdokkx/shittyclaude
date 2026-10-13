@@ -256,6 +256,8 @@ def place(sc, parent, name, part_cf):
     sc.attachment(h, att, part_cf * lcf)
     prefix = SHARED.get(name) or ("UniOvenMitt" if name.startswith("OvenMitt") else "Uni" + name)
     for pname, colr, geo in fn():
+        if att == "HatAttachment":
+            geo = geo.xf(G.S(K.HAT_OVER_HAIR))          # 15% bigger than the head it was fitted to: over hair
         mp = sc.mesh(acc, pname, "%s__%s" % (prefix, pname), geo, part_cf, col(c(colr)),
                      material="Glass" if colr == "uni_glass" else "Plastic",
                      transparency=0.4 if colr == "uni_glass" else 0.0, anchored=False, collide=False, touch=False,

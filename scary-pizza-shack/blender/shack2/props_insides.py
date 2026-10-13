@@ -319,15 +319,13 @@ def little_papa_geo():
     for sx in (-1, 1):
         cheeks.add(ccyl(0.07, 0.15, 8, "z", (sx * 0.27, 1.0, 0.22), 0.02))
     out.append(("Cheeks", "red_light", cheeks))
-    grin = G.Geo()
-    for i in range(7):
-        x = -0.24 + 0.08 * i
-        y = 0.96 - 0.12 * (1 - (x / 0.26) ** 2)
-        grin.add(bevel_box(0.1, 0.15, 0.15, 0.02, c=(x, y, 0.27)))
+    up = [(x, 0.99 - 0.09 * (1 - (x / 0.24) ** 2)) for x in np.linspace(-0.24, 0.24, 9)]
+    lo = [(x, 0.98 - 0.19 * (1 - (x / 0.24) ** 2)) for x in np.linspace(0.21, -0.21, 8)]
+    grin = G.extrude(up + lo, 0.05, "z", (0, 0, 0.245))           # a thin black crescent, stitched on
     out.append(("Grin", "black", grin))
     pep = G.Geo()
-    for (x, y) in ((0.02, 0.78), (-0.1, 1.27)):
-        pep.add(ccyl(0.06, 0.15, 8, "z", (x, y - 0.1 if y > 1.2 else y, 0.24), 0.02))
+    for (x, y) in ((0.02, 0.78), (0.29, 1.21)):
+        pep.add(ccyl(0.06, 0.15, 8, "z", (x, y, 0.24), 0.02))
     out.append(("Pepperoni", "pepperoni", pep))
     hat = G.Geo()
     hat.add(ccyl(0.2, 0.15, 10, "y", (0, 1.42, 0.0), 0.03))

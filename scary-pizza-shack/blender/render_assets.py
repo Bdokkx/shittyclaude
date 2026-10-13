@@ -183,33 +183,76 @@ def render_kit():
 # ---------------------------------------------------------------- characters line-up
 
 def render_chars():
+    import assets_papa as PAPA
     sc = spslib.Scene("Preview")
     f = sc.folder(sc.root, "Line")
-    xs = {"Dummy": 13.0, "Customer": 6.6, "Watcher": 0.2, "Inspector": -6.8, "Hole": -16.6}
+    xs = {"Dummy": 13.0, "Customer": 6.6, "Watcher": 0.2, "PapaStud": -8.4, "PapaSide": -19.0}
     R6.build(sc, f, "Dummy", R6.Body(), CF((xs["Dummy"], 0, 0)), NOOB, humanoid=False)
     m, parts = R6.build(sc, f, "Customer", R6.Body(), CF((xs["Customer"], 0, 0)), PLAIN, humanoid=False)
     AC.passenger(sc, f, parts["Torso"].p["cf"])
     w = AC.watcher(sc, f, CF((xs["Watcher"], 0, 0)))
     pose(w, "Right Arm", 7)            # arms turned out a little so their length shows
     pose(w, "Left Arm", -7)
-    AC.inspector(sc, f, CF((xs["Inspector"], 0, 0)))
-    AC.inspector_hole(sc, f, CF((xs["Hole"], 0, 1.0)))
-    AC.inspector(sc, f, CF((xs["Hole"], -6.2, 1.0)), name="InspectorRising")
+    papa = PAPA.papa_stud(sc, f, CF((xs["PapaStud"], 0, 0)))
+    PAPA.papa_stud(sc, f, CF((xs["PapaSide"], 0, 0), G.ry(-90)), name="PapaSide")
+    top = model_size(sc, papa)[1]
+    eye, _ = PAPA.eye_height()
     scene, coll = new_scene(sc, strength=0.85)
     floor(coll, (160, 120), 0.0, (78, 82, 90))
     rs.setup_render(scene, 1920, 900, samples=samples, bloom=True)
     items = [("R6 dummy", "for scale, 5 tall", (xs["Dummy"], 0, 0)),
              ("Passenger", "on a customer's Torso", (xs["Customer"], 0, 0)),
              ("Watcher", "1.18x, arms 1.3x long", (xs["Watcher"], 0, 0)),
-             ("Inspector", "9.8 to the hat top", (xs["Inspector"], 0, 0)),
-             ("InspectorHole", "8 across, Inspector rising", (xs["Hole"], 0, 1.0))]
-    for name, pos, tgt in (("characters_front", (1.0, 8.5, -34.0), (-2.0, 4.0, 0.0)),
-                           ("characters_back", (-5.0, 8.5, 34.0), (-2.0, 4.0, 0.0))):
+             ("PapaStud", "%.1f to the hat top, eyes %.1f over the root" % (top, eye), (xs["PapaStud"], 0, 0)),
+             ("PapaStud", "from the side", (xs["PapaSide"], 0, 0))]
+    for name, pos, tgt in (("characters_front", (-2.0, 8.5, -36.0), (-4.0, 4.6, 0.0)),
+                           ("characters_back", (-8.0, 8.5, 36.0), (-4.0, 4.6, 0.0))):
         cam = SB.camera(scene, pos, tgt, lens=30, name=name)
         p = os.path.join(out, name + ".png")
         rs.render(scene, p)
-        finish(scene, cam, p, items, note="Watcher's arms turned out 7 degrees for the picture" +
+        its = items if name == "characters_front" else [(a, b, (x, y, z)) for a, b, (x, y, z) in items]
+        finish(scene, cam, p, its, note="Watcher's arms turned out 7 degrees for the picture" +
                ("" if name == "characters_front" else "; seen from behind"))
+    # close look at the mask and the hands
+    cam = SB.camera(scene, (xs["PapaStud"] - 3.0, 8.4, -10.0), (xs["PapaStud"], 6.6, 0.0), lens=40, name="papa_close")
+    p = os.path.join(out, "papa_close.png")
+    rs.render(scene, p)
+    finish(scene, cam, p, [("PapaStud", "Mask, MaskCrust, MaskEyes (Neon), MaskPupils, MaskGrin, MaskCheeks, "
+                                        "MaskPepperoni; HatBand, HatPuff; PeelHandle, PeelBlade",
+                            (xs["PapaStud"], 0, 0))])
+    render_papa_night()
+
+
+def render_papa_night():
+    """Papa Stud 100 studs out at night, seen at a Roblox camera's field of view (78 degrees
+    vertical): what a player at the window gets. A 4x crop of the same frame beside it."""
+    import assets_papa as PAPA
+    sc = spslib.Scene("Night")
+    f = sc.folder(sc.root, "N")
+    PAPA.papa_stud(sc, f, CF((0.0, 0.0, 0.0), G.ry(180)))
+    scene, coll = new_scene(sc, day=False)
+    SB.night_world(scene, color=(0.05, 0.07, 0.12), strength=0.6, moon=0.25, moon_from=(0.3, 0.5, 1.0))
+    floor(coll, (400, 400), 0.0, (24, 30, 26))
+    W, H = 1280, 720
+    rs.setup_render(scene, W, H, samples=samples, bloom=True)
+    cam = SB.camera(scene, (0.0, 6.0, 100.0), (0.0, 6.5, 0.0), lens=30, name="night")
+    cam.data.sensor_fit = "VERTICAL"
+    cam.data.angle = math.radians(78.0)
+    p = os.path.join(out, "papa_night_100.png")
+    rs.render(scene, p)
+    img = Image.open(p).convert("RGB")
+    cw, ch = 200, 112
+    crop = img.crop((W // 2 - cw // 2, H // 2 - ch // 2 - 6, W // 2 + cw // 2, H // 2 + ch // 2 - 6))
+    crop = crop.resize((cw * 4, ch * 4), Image.NEAREST)
+    outi = Image.new("RGB", (W + cw * 4 + 20, max(H, ch * 4)), (12, 12, 14))
+    outi.paste(img, (0, 0))
+    outi.paste(crop, (W + 20, (H - ch * 4) // 2))
+    d = ImageDraw.Draw(outi)
+    d.text((14, H - 40), "100 studs, night, 78 degree camera (left); the middle of the frame, 4x (right)",
+           fill=(200, 200, 190), font=font(22, False))
+    outi.save(p[:-4] + ".jpg", quality=90)
+    os.remove(p)
+    print("saved", p[:-4] + ".jpg")
 
 
 # ---------------------------------------------------------------- helpers for posed previews
@@ -259,6 +302,12 @@ def render_vehicles():
     for nm in ("DoorL", "DoorR"):
         d = v.find(nm)
         swing(v, nm, d.p["attrs"]["OpenAngle"])
+    dd = car.find("DriverDoor")                       # an openable Model: turn all of it about its pivot
+    pv = dd.p["primary"].p["cf"] * dd.p["primary"].p["pivot"]
+    M_ = pv * CF((0, 0, 0), G.ry(dd.p["attrs"]["OpenAngle"])) * pv.inv()
+    for n in dd.walk():
+        if n.kind in ("Part", "MeshPart"):
+            n.p["cf"] = M_ * n.p["cf"]
     crew = [((14.4, 1.6, 0.6), NOOB), ((17.6, 1.6, 2.2), PLAIN), ((14.8, 1.6, 4.6), PLAIN), ((17.3, 1.6, 6.4), NOOB)]
     for k, (pos, cols) in enumerate(crew):
         R6.build(sc, f, "Crew%d" % k, R6.Body(), CF(pos, G.ry(180)), cols, humanoid=False, attachments=False)
@@ -266,7 +315,7 @@ def render_vehicles():
     scene, coll = new_scene(sc, strength=0.85)
     floor(coll, (200, 160), 0.0, (74, 78, 86))
     rs.setup_render(scene, 1920, 960, samples=samples, bloom=False)
-    items = [("InspectorCar", sizes["InspectorCar"] + " (W x H x L)", (-16, 0, -9.5)),
+    items = [("InspectorCar", sizes["InspectorCar"] + " (W x H x L), DriverDoor open", (-16, 0, -9.5)),
              ("DeliveryTruck", sizes["DeliveryTruck"], (0, 0, -12)),
              ("Van", sizes["Van"], (16, 0, -9.5))]
     back = [(a, b, (p[0], 0, -p[2])) for a, b, p in items]

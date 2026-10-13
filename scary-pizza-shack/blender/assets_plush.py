@@ -19,6 +19,9 @@ PC = {
     "owl_eye": (246, 226, 140), "orange": (228, 140, 50), "bear": (190, 44, 40), "bear_light": (232, 170, 150),
     "white": (244, 244, 238), "sloth": (180, 150, 112), "sloth_light": (226, 206, 170), "sloth_dark": (92, 70, 52),
     "pig": (240, 160, 172), "pig_light": (250, 196, 204), "thread": (60, 50, 50),
+    # Little Papa (the shack kit's names)
+    "cheese": (246, 196, 72), "crust": (206, 140, 66), "pepperoni": (168, 40, 30), "red_light": (224, 92, 88),
+    "grey_dark": (60, 60, 66),
 }
 
 
@@ -182,26 +185,19 @@ def lucky_cat(sc, parent, origin=CF()):
 
 
 def little_inspector(sc, parent, origin=CF()):
+    """Little Papa (the Model keeps the name LittleInspector): a stuffed toy of Papa Stud's mask,
+    1.3 tall, sitting; the same toy as the one hidden in the shack (shack2.props_insides),
+    turned to face -Z, with stitches round its slice of a face."""
+    from shack2.props_insides import little_papa_geo
     p = Plush(sc, parent, "LittleInspector", origin)
-    body = soft_box(0.6, 0.56, 0.4, 0.12, (0, 0.42, 0.04))
-    for sx in (-1, 1):
-        body.add(soft_box(0.24, 0.2, 0.46, 0.07, (sx * 0.15, 0.1, -0.2)))          # legs sitting out front
-        body.add(soft_box(0.16, 0.62, 0.18, 0.06, (0, 0, 0)).xf(T(sx * 0.4, 0.38, 0.02) @ RZ(sx * 8)))   # long arms
-    p.add("Body", body, "suit", root=True)
-    p.add("Head", soft_box(0.42, 0.42, 0.38, 0.12, (0, 0.92, 0.02)), "skin_grey")
-    hands = G.Geo()
-    for sx in (-1, 1):
-        hands.add(soft_box(0.14, 0.16, 0.14, 0.05, (sx * 0.43, 0.04, 0.02)))
-    p.add("Hands", hands, "skin_grey")
-    p.add("Shoes", G.Geo().add([soft_box(0.26, 0.12, 0.14, 0.04, (sx * 0.15, 0.12, -0.45)) for sx in (-1, 1)]), "black")
-    p.add("Shirt", G.extrude([(-0.1, 0.7), (0.1, 0.7), (0.0, 0.42)], 0.03, "z", (0, 0, -0.17)), "white")
-    p.add("Tie", G.extrude([(-0.04, 0.68), (0.04, 0.68), (0.05, 0.48), (0, 0.42), (-0.05, 0.48)], 0.03, "z",
-                           (0, 0, -0.19)), "red")
-    brim = G.cyl(0.42, 0.05, 14, "y", (0, 1.13, 0.02))
-    crown = G.frustum(0.24, 0.22, 0.26, 10, "y", (0, 1.28, 0.02))
-    p.add("Hat", G.Geo().add([brim, crown]), "black")
-    p.add("HatBand", G.cyl(0.245, 0.08, 10, "y", (0, 1.2, 0.02)), "red")
-    p.add("Stitches", stitches([(0.0, 1.13, -0.17), (0.0, 1.13, 0.2)], 0.06), "thread")
+    k = 1.3 / 1.7
+    turn = S(k) @ RY(180)
+    for pname, colr, g in little_papa_geo():
+        p.add(pname, g.xf(turn), colr, root=pname == "Body",
+              material="SmoothPlastic" if pname in ("Eyes", "Pupils") else "Fabric")
+    z = 0.12 + 0.11 + 0.012
+    edge = [(-0.4, 0.42), (-0.06, -0.3), (0.06, -0.3), (0.4, 0.42)]
+    p.add("Stitches", stitches([(x, y + 0.86, z) for x, y in edge], 0.07, 0.03).xf(turn), "thread")
     return p.m
 
 

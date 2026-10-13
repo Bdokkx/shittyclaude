@@ -241,8 +241,7 @@ def yard(k, f, gr, rng):
     _fence_run(k, m, (g1 + 0.3, zf), (x1 - 0.4, zf), gr, skip=("start",))
     _fence_run(k, m, (x0 + 0.4, zf), (x0 + 0.4, z1 - 4.0), gr, sag_panel=2)
     _fence_run(k, m, (x1 - 0.4, zf), (x1 - 0.4, z1 - 4.0), gr)
-    # the east side return (a walk-round gap by the shack); the west side is open from the fence's end
-    _fence_run(k, m, (25.6, z1 - 4.0), (x1 - 0.4, z1 - 4.0), gr)
+    # no side returns: the yard is open by the shack's back corners (Papa's walk goes round through it)
     shed(k, m, gr)
     yp = L.YARD_PROPS
     for i, dz in enumerate((0.0, 0.62, 1.24)):
@@ -259,7 +258,7 @@ def yard(k, f, gr, rng):
                name="FuelCan")
     k.prop(m, "OilDrum", CF((-16.5, 0.4, -39.2)), where="outside", name="OilDrum")
     k.prop(m, "Wheelbarrow", CF((15.5, 0.0, -40.5), G.ry(-30)), where="outside", name="Wheelbarrow")
-    k.prop(m, "Tarp", CF((-22.0, 0.0, -20.0), G.ry(10)), where="outside", name="Tarp", seed=8)
+    k.prop(m, "Tarp", CF((-26.0, 0.0, -41.5), G.ry(10)), where="outside", name="Tarp", seed=8)
     k.prop(m, "Cone", CF((13.6, 0.0, -44.6)), where="outside", name="Cone")
     for i in range(14):
         side = i % 3

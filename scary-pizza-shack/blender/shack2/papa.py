@@ -13,7 +13,7 @@ from spsgeo import CF
 
 from . import layout as L
 
-BODY = np.array((2.5, 4.6, 1.5))          # half extents of a 9-stud figure, arms in
+BODY = np.array((3.5, 5.1, 1.75))         # half extents of PapaStud (6.8 across the arms, the peel, 10.5 to the hat top)
 HEAD = 8.0
 CAR_DOOR = (-6.0, 0.0, 1.2)               # from the InspectorCar's pivot: clear of its door open at -70
 SEE_THROUGH = ("Glass", "Window", "Fence", "Mesh", "Gate", "Wire", "Blocker", "PlayerBlock", "Chain", "Cable",
@@ -47,7 +47,7 @@ class Space:
         self.solid_sight = np.array([not any(s in n.name or s in (n.parent.name if n.parent else "")
                                              for s in SEE_THROUGH) for n in self.b.nodes])
         self.groundy = np.array([n.name in GROUNDY for n in self.b.nodes])
-        low = ("Weeds", "Tuft", "Fern", "Litter", "Puddle", "Stones", "Rut", "Stain", "Cracks")
+        low = ("Weeds", "Tuft", "Fern", "Litter", "Puddle", "Stones", "Rut", "Stain", "Cracks", "WheelStop")
         self.under = np.array(["/Undergrowth/" in n.path() or any(s in n.path() for s in low) for n in self.b.nodes])
 
     def fits(self, p, R, half=BODY, lift=0.4):
@@ -175,7 +175,7 @@ def build(k, sc):
         p, R, seen = place(sc, gr, space, vps, name, cands, want)
         put(name, p, R, seen)
     # in the trees, 45..70 out
-    trees = [("Papa_Trees1", ring(45, 70, -100, -75), ["SideWindow"] + cams),
+    trees = [("Papa_Trees1", ring(45, 70, -100, -75) + ring(45, 70, -118, -62, 8, 70), ["SideWindow"] + cams),
              ("Papa_Trees2", ring(45, 70, -175, -110, 6, 60), ["BackDoor", "Yard", "Cam_Yard"]),
              ("Papa_Trees3", ring(45, 70, -30, -5), win + ["Cam_Back"]),
              ("Papa_Trees4", ring(45, 70, 60, 100), win + cams)]
@@ -190,7 +190,9 @@ def build(k, sc):
     # across the road: one at the verge, one under the far street lamp
     road_z = L.ROAD_Z + 13.0
     p, R, seen = place(sc, gr, space, vps, "Papa_Road1",
-                       [(x, road_z + dz) for x in (14.0, 10.0, 18.0, 6.0, 22.0) for dz in (0.0, 1.5, -1.0)], win + cams)
+                       [(x, road_z + dz) for x in (14.0, 10.0, 18.0, 6.0, 22.0) for dz in (0.0, 1.5, -1.0)] +
+                       [(x, road_z + dz) for dz in (0.5, 2.0, 3.0, -0.5) for x in np.arange(2.0, 32.0, 1.5)],
+                       win + cams)
     put("Papa_Road1", p, R, seen)
     p, R, seen = place(sc, gr, space, vps, "Papa_Road2",
                        [(-14.0 + dx, 43.0 + dz) for dz in (0.0, -0.5, 0.5, -1.0) for dx in (0.0, -1.0, 1.0, -2.0, 2.0)],
@@ -225,7 +227,9 @@ def build(k, sc):
                        target=bd)
     put("Papa_BackDoor", p, R, seen)
     p, R, seen = place(sc, gr, space, vps, "Papa_Yard1",
-                       [(24.0 + dx, -26.5 + dz) for dz in (0.0, 0.5, -0.3, 1.0) for dx in (0.0, -0.2)],
+                       [(24.0 + dx, -26.5 + dz) for dz in (0.0, 0.5, -0.3, 1.0) for dx in (0.0, -0.2)] +
+                       sorted([(x, z) for x in np.arange(13.0, 25.0, 0.5) for z in np.arange(-41.0, -22.0, 0.5)],
+                              key=lambda c: math.hypot(c[0] - 21.0, c[1] + 36.5)),       # nearest its far end first
                        ["Yard", "Cam_Yard", "BackDoor"])
     put("Papa_Yard1", p, R, seen)
     gx = (L.GATE_X[0] + L.GATE_X[1]) / 2
@@ -266,31 +270,36 @@ def build(k, sc):
     return report
 
 
-WALK_VIA = [(0.0, 23.5), (-26.0, 20.0), (-26.5, -4.0), (-25.0, -24.0), (-5.0, -38.0), (10.0, -42.0),
-            (22.5, -22.0), (22.5, 0.0), (16.0, 22.5)]      # clockwise from the forecourt's middle
-WALK_BOX = (-36.0, 36.0, -50.0, 30.0)
+WALK_VIA = [(0.0, 23.5), (-27.0, 18.0), (-27.0, -4.0), (-15.0, -19.0), (-5.0, -36.0), (10.0, -41.0),
+            (16.0, -20.0), (23.5, 0.0), (35.5, 21.0), (16.0, 31.0)]      # clockwise from the forecourt's middle
+WALK_BOX = (-40.0, 40.0, -50.0, 34.0)
 WALK_CELL = 0.5
 
 
 def _walk_free(space, gr):
-    """Grid of cells (x, z) where the body fits facing along X and along Z."""
+    """Grids of cells (x, z) where the body fits walking along X (fx) and along Z (fz)."""
     x0, x1, z0, z1 = WALK_BOX
     xs = np.arange(x0, x1 + 1e-6, WALK_CELL)
     zs = np.arange(z0, z1 + 1e-6, WALK_CELL)
-    free = np.zeros((len(xs), len(zs)), bool)
+    fx = np.zeros((len(xs), len(zs)), bool)
+    fz = np.zeros_like(fx)
     Rz, Rx = G.facing((0.0, 0.0, 1.0)), G.facing((1.0, 0.0, 0.0))
     for i, x in enumerate(xs):
         for j, z in enumerate(zs):
             p = np.array((x, gr.y(x, z), z))
-            free[i, j] = space.fits(p, Rz) and space.fits(p, Rx)
-    return xs, zs, free
+            fz[i, j] = space.fits(p, Rz)
+            fx[i, j] = space.fits(p, Rx)
+    return xs, zs, fx, fz
 
 
-def _astar(free, a, b):
+def _astar(fx, fz, a, b):
+    """Shortest 8-way path on the grid: a step along X needs both cells clear walking along X,
+    along Z clear along Z, a diagonal step all four."""
     import heapq
-    nx, nz = free.shape
-    steps = [(1, 0, 1.0), (-1, 0, 1.0), (0, 1, 1.0), (0, -1, 1.0),
-             (1, 1, 1.414), (1, -1, 1.414), (-1, 1, 1.414), (-1, -1, 1.414)]
+    both = fx & fz
+    nx, nz = fx.shape
+    steps = [(1, 0, 1.0, fx), (-1, 0, 1.0, fx), (0, 1, 1.0, fz), (0, -1, 1.0, fz),
+             (1, 1, 1.414, both), (1, -1, 1.414, both), (-1, 1, 1.414, both), (-1, -1, 1.414, both)]
     h = lambda c: math.hypot(c[0] - b[0], c[1] - b[1])
     best = {a: 0.0}
     came = {}
@@ -305,11 +314,9 @@ def _astar(free, a, b):
             return out[::-1]
         if g > best.get(c, 1e18):
             continue
-        for (di, dj, w) in steps:
+        for (di, dj, w, ok) in steps:
             n = (c[0] + di, c[1] + dj)
-            if not (0 <= n[0] < nx and 0 <= n[1] < nz) or not free[n]:
-                continue
-            if di and dj and not (free[c[0] + di, c[1]] and free[c[0], c[1] + dj]):
+            if not (0 <= n[0] < nx and 0 <= n[1] < nz) or not (ok[c] and ok[n]):
                 continue
             g2 = g + w
             if g2 < best.get(n, 1e18):
@@ -334,8 +341,8 @@ def leg_clear(space, gr, a, b, step=0.5):
 
 def walk_points(space, gr):
     """The loop round the shack through WALK_VIA, as few straight legs as stay clear."""
-    xs, zs, free = _walk_free(space, gr)
-    fi, fj = np.nonzero(free)
+    xs, zs, fx, fz = _walk_free(space, gr)
+    fi, fj = np.nonzero(fx | fz)
 
     def cell(p):                                    # the nearest free cell to a via point
         d = (xs[fi] - p[0]) ** 2 + (zs[fj] - p[1]) ** 2
@@ -347,7 +354,7 @@ def walk_points(space, gr):
     for i, ca in enumerate(vias):
         cb = vias[(i + 1) % len(vias)]
         a, b = WALK_VIA[i], WALK_VIA[(i + 1) % len(vias)]
-        seg = _astar(free, ca, cb)
+        seg = _astar(fx, fz, ca, cb)
         assert seg is not None, ("no way round", a, b)
         path += [(float(xs[c[0]]), float(zs[c[1]])) for c in seg[:-1]]
     # straighten: from each kept point, the farthest point along the path reachable in a clear line

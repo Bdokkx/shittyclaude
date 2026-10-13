@@ -22,6 +22,7 @@ import numpy as np  # noqa: E402
 import assets_chars as AC  # noqa: E402
 import assets_common  # noqa: E402
 import assets_kit as AK  # noqa: E402
+import assets_papa as PAPA  # noqa: E402
 import assets_plush as AP  # noqa: E402
 import assets_r6 as R6  # noqa: E402
 import assets_uniforms as AU  # noqa: E402
@@ -30,8 +31,8 @@ import spslib  # noqa: E402
 from spsgeo import CF  # noqa: E402
 
 Y0 = -120.0
-MODELS = ["CustomerKit", "Passenger", "Watcher", "Inspector", "InspectorHole", "InspectorCar", "DeliveryTruck",
-          "Van", "Plushies", "Uniforms"]
+MODELS = ["CustomerKit", "Passenger", "Watcher", "PapaStud", "InspectorCar", "DeliveryTruck", "Van", "Plushies",
+          "Uniforms"]              # V3: PapaStud replaces the Inspector; the InspectorHole is retired
 AXIS = "PSA_Axis"
 
 
@@ -45,8 +46,7 @@ def build():
         AK.place(sc, kit, name, CF((x, Y0 + 4.0, z)))
     AC.passenger(sc, root, CF((-60.0, Y0 + 3.0, 0.0)))
     AC.watcher(sc, root, CF((-50.0, Y0, 0.0)))
-    AC.inspector(sc, root, CF((-38.0, Y0, 0.0)))
-    AC.inspector_hole(sc, root, CF((-22.0, Y0, 0.0)))
+    PAPA.papa_stud(sc, root, CF((-34.0, Y0, 0.0)))
     AV.inspector_car(sc, root, CF((0.0, Y0, 0.0)))
     AV.delivery_truck(sc, root, CF((20.0, Y0, 0.0)))
     AV.van(sc, root, CF((40.0, Y0, 0.0)))
@@ -70,7 +70,7 @@ def check(sc, batch1_json=None):
         return hits
 
     # -- R6 rigs: names, joints in Part0, standard joint frames
-    for rig in ("Watcher", "Inspector"):
+    for rig in ("Watcher", "PapaStud"):
         m = M[rig]
         for pn in R6.PARTS:
             need(m, pn, "Part")
@@ -80,26 +80,27 @@ def check(sc, batch1_json=None):
                 problems.append("%s.%s wired wrong" % (rig, jn))
         if m.p.get("primary") is None or m.p["primary"].name != "HumanoidRootPart":
             problems.append("%s PrimaryPart" % rig)
-        need(m, "Humanoid", "Humanoid")
+        need(m, "Humanoid", "Humanoid", 1 if rig == "Watcher" else 0)
         for n in m.walk():
             if n.kind in ("Part", "MeshPart") and n.p["anchored"] != (n.name == "HumanoidRootPart"):
                 problems.append("%s.%s anchored=%s" % (rig, n.name, n.p["anchored"]))
     need(M["Watcher"], "Eye", "Part", 2)
-    insp = M["Inspector"]
-    for pn in ("Clipboard", "Paper", "Pen"):
-        need(insp, pn)
-    soles = min(n.p["cf"].p[1] for n in insp.walk() if n.name in ("Left Leg", "Right Leg")) - 1.7
-    hrp = insp.find("HumanoidRootPart").p["cf"].p[1]
-    hat = [n for n in insp.walk() if n.name == "HatCrown"][0]
-    top = hat.p["cf"].p[1] + hat.p["size"][1] / 2
-    if abs(hrp - soles - 5.1) > 1e-6 or abs(top - soles - 9.8) > 0.02:
-        problems.append("Inspector heights: HRP %.3f, hat top %.3f above the soles" % (hrp - soles, top - soles))
+    papa = M["PapaStud"]
+    for pn in ("Mask", "MaskCrust", "MaskEyes", "MaskPupils", "MaskGrin", "MaskCheeks", "MaskPepperoni", "Hood",
+               "HatBand", "HatPuff", "Neckerchief", "Apron", "LeftGlove", "RightGlove", "PeelHandle", "PeelBlade"):
+        need(papa, pn)
+    soles = min(n.p["cf"].p[1] for n in papa.walk() if n.name in ("Left Leg", "Right Leg")) - 1.7
+    hrp = papa.find("HumanoidRootPart").p["cf"].p[1]
+    arm = papa.find("Right Arm").p["size"]
+    if abs(hrp - soles - 5.1) > 1e-6 or abs(arm[1] - 4.25) > 1e-6:
+        problems.append("PapaStud: HRP %.3f above the soles, arm %.2f long" % (hrp - soles, arm[1]))
+    for n in papa.walk():
+        if n.name in ("PeelHandle", "PeelBlade"):
+            if not any(c.kind == "Weld" and c.p["part0"].name == "Right Arm" for c in n.children):
+                problems.append("PapaStud.%s not welded to the right arm" % n.name)
     # -- Passenger, hole
     need(M["Passenger"], "Eye", "Part", 2)
     need(M["Passenger"], "Handle", "Part")
-    need(M["InspectorHole"], "Dark", "Part")
-    for k in range(1, 9):
-        need(M["InspectorHole"], "Shard%d" % k)
     # -- vehicles
     for vn, wheels in (("InspectorCar", 4), ("DeliveryTruck", 6), ("Van", 4)):
         m = M[vn]

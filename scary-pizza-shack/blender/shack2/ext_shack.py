@@ -296,7 +296,7 @@ def east_wall(k, f):
                       material="Neon", shape="Ball", grid=False, shadow=False)
         k.lamp(lm, bulb, "Shack", "Spot", 14.0, 1.2, (255, 206, 150), angle=110.0, shadows=False)
     # the air conditioner: unit on its pad, fan turning behind its guard (Spin about its own Y)
-    px, pz = x + 1.4, -6.8
+    px, pz = x + 0.45, -6.8                              # tight to the wall: Papa walks past it
     k.prop(m, "ACCondenser", CF((px, 0.0, pz), G.ry(90)), where="outside", name="AirConditioner")
     fan = G.Geo()
     for a in (0, 120, 240):

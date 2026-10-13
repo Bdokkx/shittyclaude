@@ -45,6 +45,7 @@ def _u_of(y):
     return U_TOP + RC * math.acos(c)
 
 
+HAT_OVER_HAIR = 1.15  # every hat is scaled up this much about the head's centre so hair never shows through
 CLEAR = 0.03         # the least a cap's surface may come to the head between its vertices
 
 
@@ -744,6 +745,8 @@ def place(sc, parent, name, part_cf):
     m = sc.model(parent, name)
     h = handle(sc, m, part_cf)
     for pname, colr, mat, tr, geo in fn():
+        if category == "Hat":
+            geo = geo.xf(G.S(HAT_OVER_HAIR))           # 15% bigger about the head's centre: over any hair
         mp = sc.mesh(m, pname, "Kit%s__%s" % (name, pname), geo, part_cf, col(colr), material=mat, transparency=tr,
                      anchored=False, collide=False, touch=False, query=False, massless=True, owner="Kit" + name)
         sc.weld(h, mp, "Weld")

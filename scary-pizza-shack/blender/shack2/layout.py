@@ -85,7 +85,7 @@ WALKWAY_Z = (11.0, 14.0)                     # paving along the front wall
 LOT = (22.0, 46.0, -8.0, 21.0)               # side lot east of the shack: two nose-in bays
 BAYS_X = ((24.0, 34.0), (34.0, 44.0))        # bay A (empty, oil stains), bay B (the old pickup)
 BUS_STOP_X = (50.0, 58.0)
-YARD_X = (-30.0, 28.0)          # wide enough west of the shack for Papa to walk round into the yard
+YARD_X = (-32.0, 28.0)          # wide enough west of the shack for Papa to walk round into the yard
 YARD_Z = (-47.0, -11.0)
 GATE_X = (8.0, 12.0)
 # the delivery truck's lane through the forest to the yard gate: 14 wide, 13 clear overhead,
