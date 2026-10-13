@@ -168,6 +168,8 @@ def main():
                 shot_turn(out, b, "FuseMachine", w, samples, 10.0, 62.0, 22.0)
             elif s == "face":
                 shot_face(out, b, "FuseMachine", w, samples, (-22.0, 16.0, -38.0), (-1.0, 9.0, 0.0), fov=40.0)
+            elif s == "eye":                         # what a player sees walking up to it
+                shot_face(out, b, "FuseMachine_eye", w, samples, (6.0, 6.5, -34.0), (0.0, 11.0, 0.0), fov=42.0)
     if what == "npc":
         b = npc.build
         for s in opts.get("shots", "turn,face,clips").split(","):

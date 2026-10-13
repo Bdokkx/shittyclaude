@@ -15,6 +15,7 @@ The pieces so far:
 | `BuildPotatoesMeadow.lua` | 4.1, the Meadow Patch potatoes and the six potato clips |
 | `BuildPlotKit.lua` | 4.2, the plot kit: four fence tiers, Soil, UpgradeBoard, Mound, the Seeds (now 18, with 30% bigger toppers; GateArch now 14 wide) |
 | `BuildQuestNpc.lua` | Farmer Spud, the quest NPC, and his four clips |
+| `BuildFuseMachine.lua` | The Fuse Machine |
 
 ---
 
@@ -225,3 +226,68 @@ Wave and Cheer start and end at rest, so they fall back into Idle cleanly.
 - `turn_FarmerSpud.jpg`, `face_FarmerSpud.jpg`
 - `clip_FarmerSpud_<Clip>.jpg`
 - `FarmerSpud_clips.mp4`
+
+---
+
+## The Fuse Machine (`BuildFuseMachine.lua`)
+
+| Path | What |
+|---|---|
+| `PotatoKit.FuseMachine` | The machine: 28 wide, 20 deep, 23 tall, 170 parts |
+
+**What it is.** A chunky blue cabinet on a two-tier grey stone step, with:
+
+- **Front:** a big lit white screen in a dark bezel. Left of the screen as you face it (+X), a panel with three red lights, a big round red button and a lever with a red knob.
+- **Top:** a low dark dome ringed by glowing cyan bars, with a light on its tip. A fat dark pipe arches from the dome down into a control block on the machine's left (-X), which is your right as you face the screen. The control block has two dials, a vent, an amber lamp and the aerial with its red light.
+- **Sign:** a dark sign over the top in a blue frame of yellow bulbs.
+- **Sockets:** three round sockets on the step in front, each with a glowing cyan ring and a cyan lamp above it on the cabinet.
+- **Around it:** yellow and black hazard stripes along the step's front edge, glowing conduits up both sides, and a hatch with a red valve wheel on the back.
+
+The dome and the pipe stay low enough that the whole sign shows from a player's eye level as they walk up (`face_FuseMachine_eye.jpg`).
+
+**Pivot.** PrimaryPart **Step** (the lower stone slab) has a PivotOffset, so the pivot is the middle of the footprint on the ground. The front is -Z.
+
+**Flags.** Everything is anchored with CanTouch off.
+
+- **Solid** (CanCollide and CanQuery on): the step, cabinet, skirt, top trim, the dome's lower tier, the pipe and the control block.
+- **Decoration** (CanCollide, CanTouch and CanQuery off): everything else. CastShadow is off on decoration under 2.5 studs.
+
+**Parts you will use.**
+
+| Name | What |
+|---|---|
+| **Board** | SmoothPlastic, 22 × 5 × 0.3, centred at Y 19.3, its front face (-Z) at Z 5.13. For FUSE MACHINE. |
+| **Screen** | Neon f4fbff, 9.2 × 6.4 × 0.2 at (-2.2, 7.4, -4.68), front face at Z -4.78. For the "?". |
+| **Prompt** | Invisible and anchored, 8 × 5 × 2 at (0, 3, -11), just in front of the step at chest height. CanCollide, CanTouch and CanQuery are off. |
+| **Socket1**, **Socket2**, **Socket3** | The pads the three potatoes stand on, left to right as you face the machine: Socket1 at X 6, Socket2 at X 0, Socket3 at X -6, all at Z -6.8. Their tops are at Y 2.31. Each is 1.7 × 0.22 × 1.7, turned 45°. |
+
+**Parts you may want to light up or move during a fuse.** All Neon except the lever and the button.
+
+| Name | What |
+|---|---|
+| `Ring` (8) | The cyan bars round the dome |
+| `DomeLight` | The light on the dome's tip |
+| `SocketGlow` (4 per socket) | The cyan rings round the sockets |
+| `SocketLamp` (3) | The lamps over the sockets, at X -6, 0, 6 |
+| `Bulb` (24) | The sign's bulbs |
+| `Light` (3) | The red lights on the panel |
+| `Lamp` | The amber lamp on the control block |
+| `AerialLight` | The aerial's tip |
+| `ConduitGlow` (2) | The strips up the sides |
+| `Lever`, `LeverKnob` | The lever, leaning to your left as you face it. It pivots at the bottom end of `Lever`, at (6.08, 4.98, -5.25). |
+| `Button` (4) | The red button |
+
+**Every name.** Each name is followed by how many parts carry it.
+
+- **Step and cabinet:** Step 2, Stone 4, Stripe 11, Cabinet, Skirt, TopTrim, Pillar 4, Conduit 2, ConduitGlow 2, Vent 10, Hatch 2, Hinge 2, Valve 4.
+- **Front:** Bezel 2, Screen, Panel 2, Light 3, ButtonBase, Button 4, LeverBase, Lever, LeverKnob, SocketLamp 3.
+- **Dome and pipe:** Dome 7, DomeLight, Ring 8, Pipe 5, Collar 5.
+- **Control block and aerial:** Control 3, Dial 4, Needle 2, LampBase, Lamp, Aerial 4, AerialLight.
+- **Sign:** SignPost 2, SignFrame, Board, SignTop, Bulb 24.
+- **Sockets and prompt:** SocketRim 12, SocketGlow 12, SocketPad 6, Socket1, Socket2, Socket3, Prompt.
+
+**Previews:** `previews/fuse/`
+
+- `turn_FuseMachine.jpg`: front, right, back, left
+- `face_FuseMachine.jpg`: three-quarter view
+- `face_FuseMachine_eye.jpg`: from a player's eye level, 34 studs out
