@@ -27,7 +27,7 @@ import render_spuds as RS  # noqa: E402
 from render_roots import runner  # noqa: E402
 from potato import scenery, spuds  # noqa: E402
 from potato import scenery_clock, scenery_dino, scenery_haunt, scenery_jungle, scenery_reef  # noqa: E402,F401
-from potato import scenery_neon, scenery_toy  # noqa: E402,F401
+from potato import scenery_cloud, scenery_neon, scenery_toy  # noqa: E402,F401
 
 
 def hexrgb(c):
@@ -109,16 +109,16 @@ def shot_props(out, area, w, samples):
         lo, hi = footprint(m)
         widths.append((lo, hi))
     gap = 2.5
-    total = sum(hi[0] - lo[0] for lo, hi in widths) + gap * (len(props) - 1)
+    slots = [max(hi[0] - lo[0] + gap, 0.62 * len(m.name)) for m, (lo, hi) in zip(props, widths)]
+    total = sum(slots) - gap
     x = total / 2                                       # first prop on the left of the picture (+X)
     places = []
-    for m, (lo, hi) in zip(props, widths):
-        wdt = hi[0] - lo[0]
-        cx = x - wdt / 2
+    for m, (lo, hi), slot in zip(props, widths, slots):
+        cx = x - (slot - gap) / 2
         mid = scenery.pivot_of(m).p
         move(m, CF((cx - mid[0], 0.0, -mid[2])))
         places.append((cx, m.name, hi[1] - lo[1]))
-        x -= wdt + gap
+        x -= slot
     keep = {id(n) for m in props for n in m.walk() if n.kind == "Part"}
     tall = max(p[2] for p in places)
     files = []
@@ -141,8 +141,12 @@ def shot_props(out, area, w, samples):
             for cx, name, _t in places:
                 v = ou.world_to_camera_view(scene, scene.camera, mathutils.Vector(SB.rb2bl((cx, -1.2, -3.0))))
                 texts.append(((v.x * w, (1 - v.y) * h), name))
-        longest = max(len(n) for _c, n, _t in places)
-        files.append(RS.label(p, texts, size=max(14, min(w // 64, int(w / len(places) / (longest * 0.66))))))
+        size = w // 64
+        xs = [t[0][0] for t in texts]
+        for i, ((x, _y), name) in enumerate(texts):
+            room = min([abs(x - xs[j]) for j in (i - 1, i + 1) if 0 <= j < len(xs)] or [w])
+            size = min(size, int(room / (len(name) * 0.64)))
+        files.append(RS.label(p, texts, size=max(12, size)))
     return files
 
 

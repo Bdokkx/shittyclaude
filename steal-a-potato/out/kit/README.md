@@ -42,6 +42,7 @@ The pieces so far:
 | `BuildSceneryToy.lua` | The Toy Town hero and props |
 | `BuildSceneryClock.lua` | The Clockwork Yard hero and props |
 | `BuildSceneryNeon.lua` | The Neon City hero and props |
+| `BuildSceneryCloud.lua` | The Cloud Kingdom hero and props |
 
 ---
 
@@ -1168,3 +1169,33 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 - `hero_Neon_corner.jpg`: from the corner
 - `props_Neon.jpg`: the props in a row
 - `props_Neon_top.jpg`: the props from above
+
+### Cloud Kingdom (`BuildSceneryCloud.lua`)
+
+**`PotatoKit.Heroes.Cloud`**: 145 parts, 41.1 wide, 26.2 tall, 22.8 deep.
+
+- **The cloud:** a fluffy base of white and pale blue puffs, with cloud steps up to the gate.
+- **The palace:** a white keep with gold bands and a stepped gold dome. A spire on top carries a glowing star.
+- **Its front:** pale blue windows, a gold gate and two glowing lamps.
+- **The towers:** two slim white towers with gold roofs and pink and blue flags.
+- **The rainbow:** a six-band rainbow arches over it all from cloud to cloud, with little clouds floating about.
+- **Solid (24 parts):** the cloud base, the steps, the keep and the towers.
+- **Glow:** the gate `Lamp`s have Flicker 0.08 and NightLamp; the `Spire` star has NightLamp.
+
+| `PotatoKit.Props.Cloud.<Name>` | Parts | W × H × D | Count | Scale | Band | Solid | What |
+|---|---|---|---|---|---|---|---|
+| `CloudPuff` | 10 | 9.4 × 3.8 × 6.1 | 10 | 0.8–1.4 | Any | yes | A fluffy cloud resting on the ground |
+| `CloudTree` | 12 | 9.2 × 13.1 × 5.5 | 6 | 0.85–1.25 | Side | yes | A pale trunk with a canopy of cloud |
+| `RainbowArch` | 36 | 15.2 × 7.0 × 3.7 | 3 | 0.9–1.3 | Side | yes | A small rainbow from one cloud to another, high enough to walk under |
+| `GoldenHarp` | 11 | 3.9 × 7.3 × 4.0 | 3 | 0.9–1.2 | Side | yes | A golden harp on a cloud |
+| `CloudPillar` | 10 | 4.5 × 10.6 × 4.6 | 5 | 0.9–1.2 | Side | yes | A white column with gold rings on a cloud, a glowing gem on top |
+| `HotAirBalloon` | 12 | 5.4 × 11.8 × 5.4 | 3 | 0.9–1.3 | Edge | no | A red, yellow and blue balloon with a wicker basket on ropes |
+| `StarLantern` | 10 | 2.7 × 10.0 × 2.8 | 6 | 0.9–1.2 | Side | no | A gold post on a cloud with a glowing yellow star (`Star`: Flicker, NightLamp) |
+| `CloudMill` | 10 | 7.0 × 12.1 × 4.3 | 3 | 0.9–1.2 | Edge | yes | A little white windmill on a cloud, its sails turning (`Sails`, `Spin` = 40) |
+
+**Previews:** `previews/scenery/`
+
+- `hero_Cloud.jpg`: from the lane
+- `hero_Cloud_corner.jpg`: from the corner
+- `props_Cloud.jpg`: the props in a row
+- `props_Cloud_top.jpg`: the props from above
