@@ -103,8 +103,53 @@ def pizza_peel():
     return it
 
 
+# ---------------------------------------------------------------- drinks (V3)
+# a can 0.74 wide and 1.28 tall: rolled bottom, a white label band with the flavour's stripe,
+# a lid with a rim and a ring pull; a bottle for the cooler's top shelf, the same width.
+SODA = {"Cola": (200, 32, 36), "Orange": (240, 132, 30), "Lime": (96, 190, 64), "Grape": (122, 62, 164)}
+
+
+def can_parts(color):
+    """[(part, colour, geo)] for a can standing on y = -0.64 (centre at the origin)."""
+    body = G.outward(G.lathe([(0.0, -0.64), (0.26, -0.64), (0.34, -0.57), (0.355, -0.5), (0.355, 0.42),
+                               (0.3, 0.52), (0.0, 0.52)], 14))
+    band = G.ring(0.37, 0.3, 0.6, 14, "y", (0, -0.04, 0))
+    stripe = G.ring(0.37, 0.3, 0.15, 14, "y", (0, 0.08, 0)).xf(S(1.002, 1.0, 1.002))
+    lid = ccyl(0.3, 0.1, 14, "y", (0, 0.5, 0), 0.02)
+    lid.add(G.torus(0.28, 0.075, 14, 4, "y", (0, 0.565, 0)))
+    pull = G.torus(0.09, 0.075, 8, 4, "y", (0, 0.56, 0.1))
+    pull.add(bevel_box(0.16, 0.15, 0.26, 0.04, c=(0, 0.565, -0.06)))
+    return [("Body", color, body), ("Band", (238, 236, 228), band), ("Stripe", color, stripe),
+            ("Lid", "steel_light", lid), ("Pull", (200, 204, 206), pull)]
+
+
+def bottle_parts(color):
+    """A plastic soda bottle 0.74 wide, 1.45 tall, standing on y = -0.65."""
+    body = G.outward(G.lathe([(0.0, -0.65), (0.28, -0.65), (0.355, -0.55), (0.355, 0.12), (0.3, 0.3), (0.16, 0.5),
+                               (0.15, 0.62), (0.0, 0.62)], 14))
+    label = G.ring(0.37, 0.3, 0.45, 14, "y", (0, -0.2, 0))
+    cap = ccyl(0.17, 0.18, 10, "y", (0, 0.71, 0), 0.04)
+    return [("Body", color, body), ("Label", (238, 236, 228), label), ("Cap", color, cap)]
+
+
+def soda_can(name, color):
+    it = Item(name, mesh_prefix="SodaCan", desc="soda can 0.74 x 1.28 (one mesh, four colours)")
+    for pname, c, g in can_parts(color):
+        it.add(pname, c, g)
+    return it
+
+
+def soda_bottle(name, color):
+    it = Item(name, mesh_prefix="SodaBottle", desc="soda bottle 0.74 x 1.45 for the cooler's top shelf")
+    for pname, c, g in bottle_parts(color):
+        it.add(pname, c, g)
+    return it
+
+
 NEW = {"RollingPin": rolling_pin, "Knife": knife, "PizzaCutter": pizza_cutter, "Ladle": ladle,
        "PizzaPeel": pizza_peel}
+NEW.update({"SodaCan" + f: (lambda f=f: soda_can("SodaCan" + f, SODA[f])) for f in SODA})
+ADDED = [lambda f=f: soda_bottle("SodaBottle" + f, SODA[f]) for f in SODA]
 
 
 def _colour(c):
@@ -130,6 +175,7 @@ def all_items():
         if it.name in NEW:
             it = NEW[it.name]()
         out.append(_no_metal(it))
+    out += [_no_metal(f()) for f in ADDED]
     return out
 
 

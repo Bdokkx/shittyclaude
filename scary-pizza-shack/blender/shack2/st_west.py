@@ -54,50 +54,93 @@ def storage_shelf(k):
 
 # ---------------------------------------------------------------- drinks cooler
 
+COOLER_SHELVES = (6.05, 4.3, 2.55, 0.8)            # shelf tops, top first: 1.75 apart
+COOLER_ROWS = (("Cola", "Orange", "Lime"), ("Grape", "Cola", "Orange"), ("Lime", "Grape", "Cola"),
+               ("Orange", "Lime", "Grape"))           # per shelf, south to north; three rows of each flavour
+ROW_PITCH = 0.8
+
+
 def drinks_cooler(k):
-    """A red glass-door drinks cooler, lit inside, three shelves of cans (Slot1..12 at the
-    front, more cans behind), its door hinged on the north edge."""
+    """A red glass-door drinks cooler: four wire shelves 1.75 apart, three rows of one flavour
+    on each, three deep (the front place of every row is its Slot, Slot1..12 top shelf first,
+    south to north; bottles on the top shelf), a price card on each shelf edge, a strip light
+    inside, the lit brand header, the glass Door hinged on its north edge (an openable Model)."""
+    from .items2 import SODA
+    from .opens import hinge, opener
     m = station(k, "DrinksCooler")
     z0, z1 = -2.0, 2.0
     x0, x1 = WX, WX + 3
     zc = (z0 + z1) / 2
-    k.box(m, "Base", (x0, L.FLOOR, z0), (x1, 1.2, z1), "black", solid=True)
-    k.mesh(m, "Grille", "DrinksCooler__Grille", _grille(4.0), CF((x1 + 0.05, 0.8, zc)), "steel_dark", shadow=False)
+    k.attr(m, "RowDepth", 3)                          # drinks a row holds, front to back
+    k.attr(m, "RowPitch", ROW_PITCH)                  # studs between them (going back from the Slot)
+    k.box(m, "Base", (x0, L.FLOOR, z0), (x1, 0.8, z1), "black", solid=True)
+    k.mesh(m, "Grille", "DrinksCooler__Grille", _grille(4.0), CF((x1 + 0.05, 0.6, zc)), "steel_dark", shadow=False)
     for zz in (z0 + 0.2, z1 - 0.2):
-        k.mesh(m, "Side", "DrinksCooler__Side", bevel_box(3.0, 6.4, 0.4, 0.06), CF(((x0 + x1) / 2, 1.2 + 3.2, zz)), "red",
-               solid=True)
-    k.box(m, "Back", (x0, 1.2, z0 + 0.5), (x0 + 1, 7.6, z1 - 0.5), "label_white", solid=True)
-    k.box(m, "Header", (x0, 7.4, z0), (x1, 8.2, z1), "red", solid=True)
-    wall_board(k, m, "W", zc, 7.8, (3.2, 0.6), "label_white", d=x1 - x0 + 0.075, text="ICE COLD SODA",
-               text_color=(170, 30, 24), name="Band")
+        k.mesh(m, "Side", "DrinksCooler__Side", bevel_box(3.0, 7.4, 0.4, 0.06), CF(((x0 + x1) / 2, 0.8 + 3.7, zz)),
+               "red", solid=True)
+    k.mesh(m, "Back", "DrinksCooler__Back", bevel_box(0.3, 7.4, 3.2, 0.05), CF((x0 + 0.15, 0.8 + 3.7, zc)),
+           "label_white", solid=True)
+    k.mesh(m, "Top", "DrinksCooler__Top", bevel_box(3.0, 0.6, 4.0, 0.08), CF(((x0 + x1) / 2, 7.9, zc)), "red",
+           solid=True)
+    # the lit header: the brand on a glowing panel across the top
+    hd = k.sc.model(m, "Header")
+    board(k, hd, (3.4, 0.55, 0.15), CF((x1 + 0.08, 7.9, zc), G.facing((1, 0, 0))), (255, 244, 226),
+          text="PAPA'S POP", text_color=(176, 30, 24), name="Board", material="Neon")
+    # the strip light inside, under the top
     lm = k.sc.model(m, "CoolerLight")
-    bulb = k.part(lm, "Bulb", (2.0, 0.2, 3.2), CF((x0 + 2.0, 7.3, zc)), (220, 240, 255), material="Neon", grid=False,
+    bulb = k.part(lm, "Bulb", (0.4, 0.15, 3.0), CF((x1 - 0.5, 7.53, zc)), (220, 240, 255), material="Neon", grid=False,
                   shadow=False)
-    k.lamp(lm, bulb, "Shack", "Surface", 6.0, 0.8, (210, 232, 255), shadows=False)
-    for y in (6.0, 4.4, 2.8):
-        k.box(m, "Shelf", (x0 + 1, y - 0.4, z0 + 0.5), (x1, y, z1 - 0.5), "steel", solid=True)
+    k.lamp(lm, bulb, "Shack", "Surface", 7.0, 0.9, (210, 232, 255), shadows=False)
+    # wire shelves on side ledges; price cards on their front bars
+    wire = G.Geo()
+    sd, sw = x1 - x0 - 0.45, z1 - z0 - 0.8
+    for zz in (-sw / 2, sw / 2):
+        wire.add(rod((-sd / 2, -0.075, zz), (sd / 2, -0.075, zz), 0.075, 4))
+    for xx in (-sd / 2, sd / 2):
+        wire.add(rod((xx, -0.075, -sw / 2), (xx, -0.075, sw / 2), 0.075, 4))
+    for zz in np.arange(-sw / 2 + 0.4, sw / 2 - 0.2, 0.4):
+        wire.add(rod((-sd / 2, -0.075, zz), (sd / 2, -0.075, zz), 0.075, 4))
+    sxc = x0 + 0.3 + sd / 2
     kk = 1
-    for y in (6.0, 4.4, 2.8, 1.2):
-        for z in (z1 - 1.0, zc, z0 + 1.0):
-            spot(k, m, "Slot%d" % kk, x0 + 2.0, y, z, W)
+    for si, y in enumerate(COOLER_SHELVES):
+        if y > 1.0:
+            k.mesh(m, "Shelf", "DrinksCooler__WireShelf", wire, CF((sxc, y, zc)), "steel_light", solid=True)
+            for zz in (z0 + 0.4, z1 - 0.4):
+                k.mesh(m, "Ledge", "DrinksCooler__Ledge", bevel_box(sd, 0.15, 0.2, 0.03),
+                       CF((sxc, y - 0.225, zz + (0.1 if zz < zc else -0.1))), "steel_dark", shadow=False)
+        board(k, m, (1.0, 0.35, 0.15), CF((x1 - 0.12, y - 0.3, zc), G.facing((1, 0, 0))), "label_white",
+              text=("$2.50", "$1.25", "$1.25", "$1.25")[si], text_color=(160, 30, 24), name="PriceCard")
+        for ri, z in enumerate((z1 - 1.0, zc, z0 + 1.0)):
+            flav = COOLER_ROWS[si][ri]
+            col = SODA[flav]
+            sx = x1 - 0.55
+            sl = spot(k, m, "Slot%d" % kk, sx, y, z, W)
+            k.attr(sl, "Holds", ("SodaBottle" if si == 0 else "SodaCan") + flav)
             kk += 1
-        k.prop(m, "CanRowBack", CF((x0 + 1.3, y, zc), G.ry(90)), name="Stock", seed=int(y * 10))
-    door = k.part(m, "Door", (6.0, 0.4, 4.0), CF((x1 + 0.2, 4.2, zc), G.rz(90)), "glass", material="Glass",
-                  transparency=0.7, solid=True, shadow=False)
-    frame = []
+            if si == 0:
+                k.prop(m, "BottleRow", CF((sx - ROW_PITCH, y, z), G.ry(90)), name="Bottles",
+                       colors={"Body": col, "Cap": col})
+            else:
+                k.prop(m, "CanRow", CF((sx - ROW_PITCH, y, z), G.ry(90)), name="Cans",
+                       colors={"Body": col, "Stripe": col})
+    # the glass door, an openable Model: hinged on its north edge, +90 about Y swings it into the room
+    dm = opener(k, m, "Door", "Swing", "Fridge", angle=90.0)
+    dz0, dz1 = z0 + 0.25, z1 - 0.25
+    dy0, dy1 = 0.85, 7.55
+    dzc, dyc = (dz0 + dz1) / 2, (dy0 + dy1) / 2
     fr = G.Geo()
-    for (cy, cz, sy, sz) in ((-2.85, 0, 0.3, 4.0), (2.85, 0, 0.3, 4.0), (0, -1.85, 6.0, 0.3), (0, 1.85, 6.0, 0.3)):
-        fr.add(bevel_box(0.5, sy, sz, 0.06, c=(0, cy, cz)))
-    frame.append(k.mesh(m, "DoorFrame", "DrinksCooler__DoorFrame", fr, CF((x1 + 0.25, 4.2, zc)), "red", solid=False))
+    for (cy, cz, sy, sz) in ((dy1 - dyc - 0.15, 0, 0.3, dz1 - dz0), (dy0 - dyc + 0.2, 0, 0.4, dz1 - dz0),
+                             (0, dz0 - dzc + 0.15, dy1 - dy0, 0.3), (0, dz1 - dzc - 0.15, dy1 - dy0, 0.3)):
+        fr.add(bevel_box(0.3, sy, sz, 0.06, c=(0, cy, cz)))
+    frame = k.mesh(dm, "DoorFrame", "DrinksCooler__DoorFrame2", fr, CF((x1 + 0.15, dyc, dzc)), "red")
+    k.part(dm, "Glass", (0.15, dy1 - dy0 - 0.6, dz1 - dz0 - 0.5), CF((x1 + 0.15, dyc + 0.05, dzc)), "glass",
+           material="Glass", transparency=0.65, grid=False, shadow=False)
     hdl = G.Geo()
-    hdl.add(rod((0.4, -1.0, 0), (0.4, 1.0, 0), 0.1, 8))
-    for dy in (-0.9, 0.9):
-        hdl.add(rod((0.0, dy, 0), (0.4, dy, 0), 0.08, 6))
-    frame.append(k.mesh(m, "DoorHandle", "DrinksCooler__Handle", hdl, CF((x1 + 0.45, 4.4, z1 - 0.45)), "steel_light"))
-    weld_all(k, door, frame)
-    pivot(door, CF((x1 + 0.4, 4.4, z0)))
-    moving(m, "Door", "glass door hinged on its north edge; rotate the pivot +90 deg about Y to swing it open into "
-                      "the room. Frame strips and handle are welded to it")
+    hdl.add(rod((0.35, -1.3, 0), (0.35, 1.3, 0), 0.1, 8))
+    for dy in (-1.15, 1.15):
+        hdl.add(rod((0.0, dy, 0), (0.35, dy, 0), 0.08, 6))
+    k.mesh(dm, "DoorHandle", "DrinksCooler__Handle", hdl, CF((x1 + 0.3, 4.2, dz1 - 0.4)), "steel_light")
+    hinge(dm, frame, CF((x1 + 0.3, dyc, dz0)))
     stand(k, m, x1 + IP.STAND_GAP + 0.6, zc, W)
     return m
 

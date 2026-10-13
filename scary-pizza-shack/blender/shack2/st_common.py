@@ -49,7 +49,8 @@ def board(k, parent, size, cf_, color, text="", text_color=(30, 30, 30), name="B
     every text part is called Board and a station's own work Board stays its only direct one."""
     if name != "Board":
         parent = k.sc.model(parent, name)
-    b = k.part(parent, "Board", size, cf_, color, material="SmoothPlastic", grid=False, shadow=False, **kw)
+    material = kw.pop("material", "SmoothPlastic")
+    b = k.part(parent, "Board", size, cf_, color, material=material, grid=False, shadow=False, **kw)
     if text:
         k.attr(b, "BoardText", text)
         k.attr(b, "BoardTextColor", "%d,%d,%d" % tuple(col(text_color)))

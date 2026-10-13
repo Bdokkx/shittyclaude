@@ -340,3 +340,27 @@ def little_papa_geo():
 def little_papa(rng):
     sc = 1.3 / 1.7                                   # modelled at 1.7, the toy is 1.3 tall
     return [(n, c, g.xf(G.S(sc))) for (n, c, g) in little_papa_geo()]
+
+
+# ---------------------------------------------------------------- the drinks cooler's stock
+
+def _row(parts_fn, n, pitch, h):
+    """n drinks one behind the other (going -Z from the origin), standing on y = 0."""
+    out = {}
+    for i in range(n):
+        for pname, c, g in parts_fn((200, 32, 36)):
+            out.setdefault(pname, (c, G.Geo()))[1].add(g.xf(T(0, h, -pitch * i)))
+    return [(pname, c, g) for pname, (c, g) in out.items()]
+
+
+@prop("CanRow")
+def can_row(rng):
+    """Two cans one behind the other (the row's front place is the Slot); recoloured per flavour."""
+    from .items2 import can_parts
+    return _row(can_parts, 2, 0.8, 0.64)
+
+
+@prop("BottleRow")
+def bottle_row(rng):
+    from .items2 import bottle_parts
+    return _row(bottle_parts, 2, 0.8, 0.65)

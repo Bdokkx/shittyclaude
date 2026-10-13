@@ -423,6 +423,9 @@ def planes(sc, boxes=None, res=0.2, limit_in=6.0, limit_out=12.0, radius=110.0):
 
 # ---------------------------------------------------------------- clear boxes at markers
 
+REACH_IN = ("DrinksCooler",)
+
+
 def clear(sc, boxes=None, width=3.0, height=3.0, lift=0.3, depth=0.3, reach_top=8.0):
     """For every item marker: the box from the marker to its station's Stand, `width` wide,
     from `lift` to `height` above the marker's surface, must hold nothing but the marker's
@@ -444,7 +447,9 @@ def clear(sc, boxes=None, width=3.0, height=3.0, lift=0.3, depth=0.3, reach_top=
             stand = stand or stands.get("Stand")
             p0 = c.p["cf"].p
             p1 = stand.p["cf"].p
-            hit = _box_hits(b, p0, p1, width, p0[1] + lift, min(p0[1] + height, max(reach_top, p0[1] + 1.2)),
+            # a reach-in cooler's rows sit 1 apart inside its 3.2-wide cabinet: an arm's width will do
+            wd = 1.6 if m.name in REACH_IN else width
+            hit = _box_hits(b, p0, p1, wd, p0[1] + lift, min(p0[1] + height, max(reach_top, p0[1] + 1.2)),
                             skip=own, depth=depth)
             if hit:
                 out.append((m.name + "." + c.name, hit[:4]))
