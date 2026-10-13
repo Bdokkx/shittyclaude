@@ -19,7 +19,7 @@ import rbxscene as rs  # noqa: E402
 from spsgeo import CF  # noqa: E402
 
 import render_spuds as RS  # noqa: E402
-from potato import npc, rig  # noqa: E402
+from potato import fuse, npc, rig  # noqa: E402
 
 FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 
@@ -161,6 +161,13 @@ def main():
     w = int(opts.get("w", 1600))
     samples = int(opts.get("samples", 24))
     what = opts.get("what", "npc")
+    if what == "fuse":
+        b = fuse.build
+        for s in opts.get("shots", "turn,face").split(","):
+            if s == "turn":
+                shot_turn(out, b, "FuseMachine", w, samples, 10.0, 62.0, 22.0)
+            elif s == "face":
+                shot_face(out, b, "FuseMachine", w, samples, (-22.0, 16.0, -38.0), (-1.0, 9.0, 0.0), fov=40.0)
     if what == "npc":
         b = npc.build
         for s in opts.get("shots", "turn,face,clips").split(","):

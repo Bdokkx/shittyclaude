@@ -18,14 +18,16 @@ sys.path.insert(0, HERE)
 TOOLS = os.path.join(os.path.dirname(HERE), "tools")
 sys.path.insert(0, TOOLS)
 
+import numpy as np  # noqa: E402
 import spslib  # noqa: E402
 
-from potato import brickcheck, npc, plotkit, rig, spud_anim, spuds  # noqa: E402
+from potato import brickcheck, fuse, npc, plotkit, rig, spud_anim, spuds  # noqa: E402
 
 PIECES = {
     "potatoes_meadow": dict(file="Potatoes_Meadow", title="the Meadow Patch potatoes and their clips"),
     "plot": dict(file="PlotKit", title="the plot kit (fences, soil, board, mound, seeds)"),
     "questnpc": dict(file="QuestNpc", title="Farmer Spud, the quest NPC, and his clips"),
+    "fuse": dict(file="FuseMachine", title="the Fuse Machine"),
 }
 
 
@@ -164,6 +166,27 @@ def main():
                                                    sorted(n.name for n in m.walk() if n.kind == "Motor")))
         for c in npc.CLIPS:
             print("  %-6s %.1f s loop=%s joints %s" % (c.name, c.length, c.loop, sorted(rig.moving(c.bake()))))
+    elif piece == "fuse":
+        sc = spslib.Scene("PotatoKit")
+        m = fuse.build(sc, sc.root)
+        parts = [n for n in m.walk() if n.kind == "Part"]
+        errs = []
+        for nm in ("Board", "Screen", "Prompt", "Socket1", "Socket2", "Socket3"):
+            if not any(p.name == nm for p in parts):
+                errs.append("FuseMachine: no %s" % nm)
+        for p in parts:
+            if not p.p["anchored"] or p.p["touch"]:
+                errs.append("FuseMachine: %s flags" % p.name)
+            if p.p["shadow"] and max(p.p["size"]) < 2.5:
+                errs.append("FuseMachine: small %s casts a shadow" % p.name)
+        errs += brickcheck.rules(parts)
+        for a, b, ar in brickcheck.zfight(parts, ground=0.0):
+            errs.append("FuseMachine: z-fight %s %s / %s %s (%.3f)" % (a.name, [round(v, 2) for v in a.p["size"]],
+                        b.name, [round(v, 2) for v in b.p["size"]], ar))
+        lo = np.min([p.p["cf"].p - np.abs(p.p["cf"].R) @ (np.array(p.p["size"]) / 2) for p in parts], axis=0)
+        hi = np.max([p.p["cf"].p + np.abs(p.p["cf"].R) @ (np.array(p.p["size"]) / 2) for p in parts], axis=0)
+        print("  FuseMachine: %d parts (%d solid), size %s" % (len(parts), sum(1 for p in parts if p.p["collide"]),
+                                                             np.round(hi - lo, 1)))
     elif piece == "plot":
         sc = spslib.Scene("PotatoKit")
         plotkit.build(sc)
