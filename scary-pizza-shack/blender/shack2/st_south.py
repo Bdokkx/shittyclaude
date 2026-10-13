@@ -48,8 +48,8 @@ def plushie_shelf(k):
     k.mesh(m, "Lip", "PlushieShelf__Lip", bevel_box(x1 - x0, 0.3, 0.2, 0.05), CF(((x0 + x1) / 2, y + 0.1, SZ - 1.95)),
            "wood_dark", shadow=False)
     br = G.Geo()
-    br.add(G.extrude([(0, 0), (1.6, 0), (0.2, -1.2), (0, -1.2)], 0.3, "x", (0, 0, 0)))
-    for x in (x0 + 0.35, x1 - 0.35):
+    br.add(G.extrude([(0, 0), (1.6, 0), (0.2, -0.85), (0, -0.85)], 0.3, "x", (0, 0, 0)))
+    for x in (x0 + 0.2, x1 - 0.35):
         k.mesh(m, "Bracket", "PlushieShelf__Bracket", br.xf(G.M(G.ry(180))), CF((x, y - 0.4, SZ)), "wood_dark",
                solid=True)
     for i in range(4):
@@ -73,10 +73,11 @@ def rules_board(k):
     table, a chalk ledge under it."""
     m = station(k, "RulesBoard")
     x0, x1 = BAY[0] + 0.4, BAY[1] - 0.6
-    xc, yc = (x0 + x1) / 2, 6.3
+    xc, yc = (x0 + x1) / 2, 6.0                       # its top under the conduit along the wall
     zf = SZ - 0.75
-    k.part(m, "Face", (x1 - x0, 4.2, 0.2), CF((xc, yc, zf)), "chalkboard", material="SmoothPlastic", grid=False)
-    w, h = x1 - x0 + 0.6, 4.8
+    fh = 3.6
+    k.part(m, "Face", (x1 - x0, fh, 0.2), CF((xc, yc, zf)), "chalkboard", material="SmoothPlastic", grid=False)
+    w, h = x1 - x0 + 0.6, fh + 0.6
     fr = G.Geo()
     for (cx, cy, sx, sy) in ((0, h / 2 - 0.15, w, 0.3), (0, -h / 2 + 0.15, w, 0.3), (-w / 2 + 0.15, 0, 0.3, h),
                              (w / 2 - 0.15, 0, 0.3, h)):
@@ -85,14 +86,14 @@ def rules_board(k):
     for x in (x0 + 0.6, x1 - 0.6):
         k.mesh(m, "Cleat", "RulesBoard__Cleat", bevel_box(0.6, 3.0, 0.6, 0.05), CF((x, yc, SZ - 0.3)),
                "wood_dark", solid=True)
-    k.mesh(m, "Ledge", "RulesBoard__Ledge4", bevel_box(x1 - x0 - 0.4, 0.15, 0.4, 0.04), CF((xc, yc - 2.4, zf - 0.4)),
+    k.mesh(m, "Ledge", "RulesBoard__Ledge4", bevel_box(x1 - x0 - 0.4, 0.15, 0.4, 0.04), CF((xc, yc - h / 2, zf - 0.4)),
            "wood", shadow=False)
     chalk = G.Geo()
     for dx in (-1.2, -0.9, 1.3):
         chalk.add(ccyl(0.075, 0.4, 6, "x", (dx, 0, 0), 0.02))
-    k.mesh(m, "Chalk", "RulesBoard__Chalk", chalk, CF((xc, yc - 2.25, zf - 0.45)), "paper", shadow=False)
+    k.mesh(m, "Chalk", "RulesBoard__Chalk", chalk, CF((xc, yc - h / 2 + 0.15, zf - 0.45)), "paper", shadow=False)
     for x in (x0 + 0.3, x1 - 0.3):
-        k.part(m, "Pin", (0.4, 0.4, 0.4), CF((x, yc + 2.05, zf - 0.25)), "red", shape="Ball", grid=False)
+        k.part(m, "Pin", (0.4, 0.4, 0.4), CF((x, yc + fh / 2 - 0.05, zf - 0.25)), "red", shape="Ball", grid=False)
     st = np.array((xc, L.FLOOR, 4.9))                 # at the bay's mouth, not in it
     d = np.array((xc, L.FLOOR, zf)) - st
     k.sc.marker(m, "Stand", CF(st, G.facing(d / np.linalg.norm(d))))
@@ -136,14 +137,14 @@ def register(k):
     k.mesh(m, "DisplayCase", "Register__Display", bevel_box(1.6, 0.6, 0.4, 0.06), CF((txc, W_ + 2.4, tz0 + 1.6)),
            "black", solid=True)
     # the Display: its glowing readout is a Board (the game writes the total on it)
-    board(k, m, (1.2, 0.3, 0.15), CF((txc, W_ + 2.42, tz0 + 1.38)), (40, 70, 50), text="0.00",
+    board(k, m, (1.2, 0.3, 0.15), CF((txc, W_ + 2.42, tz0 + 1.34)), (40, 70, 50), text="0.00",
           text_color=(130, 255, 150), name="Display", material="Neon", font="Code")
-    drawer = k.mesh(m, "Drawer", "Register__Drawer", bevel_box(tx1 - tx0 - 0.4, 0.5, tz1 - tz0 - 0.25, 0.05),
-                    CF((txc, W_ + 0.45, (tz0 + tz1) / 2 - 0.1)), "mustard", solid=True)
+    drawer = k.mesh(m, "Drawer", "Register__Drawer", bevel_box(tx1 - tx0 - 0.4, 0.35, tz1 - tz0 - 0.25, 0.05),
+                    CF((txc, W_ + 0.375, (tz0 + tz1) / 2 - 0.1)), "mustard", solid=True)
     cash = G.Geo()
     for i in range(3):
-        cash.add(bevel_box(0.6, 0.15, 1.1, 0.03, c=(-0.75 + 0.75 * i, 0, 0)))
-    cm = k.mesh(m, "DrawerCash", "Register__Cash", cash, CF((txc, W_ + 0.72, (tz0 + tz1) / 2)), (104, 150, 96),
+        cash.add(bevel_box(0.5, 0.15, 1.1, 0.03, c=(-0.6 + 0.6 * i, 0, 0)))
+    cm = k.mesh(m, "DrawerCash", "Register__Cash", cash, CF((txc, W_ + 0.63, (tz0 + tz1) / 2)), (104, 150, 96),
                 shadow=False)
     pull = k.mesh(m, "DrawerPull", "Register__Pull", bevel_box(0.8, 0.15, 0.15, 0.04),
                   CF((txc, W_ + 0.45, tz0 - 0.08)), "black", shadow=False)
@@ -230,13 +231,13 @@ def serving_window(k):
            grid=False, shadow=False)
     # ticket rail above the window, inside (Ticket1..5 hang from it)
     tr = k.sc.model(m, "TicketRail")
-    k.mesh(tr, "Rail", "TicketRail__Rail", bevel_box(8.0, 0.4, 0.6, 0.08), CF((0.0, 8.2, SZ - 0.75)), "steel",
+    k.mesh(tr, "Rail", "TicketRail__Rail", bevel_box(8.0, 0.4, 0.6, 0.08), CF((0.0, 7.95, SZ - 0.75)), "steel",
            solid=True)
     for x in (-3.6, 3.6):
-        k.mesh(tr, "Bracket", "TicketRail__Bracket", bevel_box(0.3, 0.3, 0.7, 0.05), CF((x, 8.2, SZ - 0.35)),
+        k.mesh(tr, "Bracket", "TicketRail__Bracket", bevel_box(0.3, 0.3, 0.7, 0.05), CF((x, 7.95, SZ - 0.35)),
                "steel_dark", shadow=False)
     for i in range(5):
-        spot(k, tr, "Ticket%d" % (i + 1), -3.2 + 1.6 * i, 8.0, SZ - 1.05, N)
+        spot(k, tr, "Ticket%d" % (i + 1), -3.2 + 1.6 * i, 7.75, SZ - 1.05, N)
     # neon OPEN sign hanging in the window (always lit), chains to the frame head
     op = k.sc.model(m, "OpenSign")
     bulb = k.part(op, "Bulb", (3.0, 1.0, 0.15), CF((-3.0, 6.0, SZ + 0.35)), (255, 70, 60), material="Neon",
@@ -342,43 +343,48 @@ def cctv_desk(k):
     for i, (a, b, base_y) in enumerate(((x0 + 0.3, x0 + 2.9, W_ + 1.2), (x1 - 2.9, x1 - 0.3, W_))):
         mon = k.sc.model(m, "Monitor%d" % (i + 1))
         xc = (a + b) / 2
-        k.mesh(mon, "Body", "Monitor__Body", _crt(), CF((xc, base_y, FRONT + 1.4)), "crt_cream", solid=True)
-        k.part(mon, "Screen", (2.4, 1.8, 0.2), CF((xc, base_y + 1.25, FRONT + 1.35)), "screen", material="SmoothPlastic",
+        k.mesh(mon, "Body", "Monitor__Body", _crt(), CF((xc, base_y, FRONT + 1.2)), "crt_cream", solid=True)
+        k.part(mon, "Screen", (2.4, 1.8, 0.2), CF((xc, base_y + 1.25, FRONT + 1.15)), "screen", material="SmoothPlastic",
                grid=False)
         knobs = G.Geo()
         for dx in (0.75, 1.05):
             knobs.add(ccyl(0.1, 0.15, 6, "z", (dx, 0, 0), 0.02))
-        k.mesh(mon, "Knobs", "CCTVDesk__Knobs", knobs, CF((xc - 0.1, base_y + 0.2, FRONT + 1.12)), "black",
+        k.mesh(mon, "Knobs", "CCTVDesk__Knobs", knobs, CF((xc - 0.1, base_y + 0.2, FRONT + 0.92)), "black",
                shadow=False)
-        k.part(mon, "PowerLed", (0.2, 0.2, 0.15), CF((xc - 0.95, base_y + 0.25, FRONT + 1.34)), (90, 255, 120),
+        k.part(mon, "PowerLed", (0.2, 0.2, 0.15), CF((xc - 0.95, base_y + 0.25, FRONT + 1.14)), (90, 255, 120),
                material="Neon", grid=False, shadow=False)
     k.prop(m, "VCRStack", CF((x0 + 1.6, W_, FRONT + 2.4)), name="VCRs")
     # switch box (a Model, as batch 1)
     sb = k.sc.model(m, "SwitchBox")
-    k.mesh(sb, "Box", "SwitchBox__Box", bevel_box(2.0, 0.4, 1.0, 0.06), CF((x0 + 3.0, W_ + 0.2, FRONT + 0.75)),
+    k.mesh(sb, "Box", "SwitchBox__Box", bevel_box(2.0, 0.4, 1.0, 0.06), CF((x0 + 1.5, W_ + 0.2, FRONT + 0.6)),
            "grey_dark", solid=True)
     btns = G.Geo()
     for i in range(4):
         btns.add(bevel_box(0.3, 0.15, 0.3, 0.03, c=(-0.6 + 0.4 * i, 0.075, 0)))
-    k.mesh(sb, "Buttons", "SwitchBox__Buttons", btns, CF((x0 + 3.1, W_ + 0.4, FRONT + 0.8)), "red", shadow=False)
-    k.part(sb, "Lamp", (0.4, 0.2, 0.2), CF((x0 + 2.25, W_ + 0.5, FRONT + 0.55)), (120, 255, 120), material="Neon",
+    k.mesh(sb, "Buttons", "SwitchBox__Buttons", btns, CF((x0 + 1.6, W_ + 0.4, FRONT + 0.65)), "red", shadow=False)
+    k.part(sb, "Lamp", (0.4, 0.2, 0.2), CF((x0 + 0.75, W_ + 0.5, FRONT + 0.4)), (120, 255, 120), material="Neon",
            grid=False, shadow=False)
-    k.prop(m, "Keyboard", CF((x1 - 1.9, W_, FRONT + 0.75)), name="Keyboard")
-    k.prop(m, "Mug", CF((x1 - 0.45, W_, FRONT + 0.55)), name="Mug")
+    k.prop(m, "Keyboard", CF((x1 - 2.3, W_, FRONT + 0.4)), name="Keyboard")
+    k.prop(m, "Mug", CF((x1 - 0.6, W_, FRONT + 0.55)), name="Mug")
     cables = G.Geo()
+    # from the monitors' backs along the desk top to a grommet over the kneehole, down to the socket
+    # (behind both monitors to the gap between them, down through the top into the kneehole)
     for xs in (x0 + 1.6, x1 - 1.6):
-        cables.add(G.tube([(xs, W_ + 0.6, FRONT + 3.6), (xs + 0.2, W_ + 0.2, SZ - 0.25), (xs + 0.3, W_ - 0.6, SZ - 0.2),
-                           (xs + 0.2, 0.9, SZ - 0.2), (-10.0, 0.6, SZ - 0.2)], 0.075, 4))
+        xg = -10.05 + 0.1 * (xs > -10)
+        pts = [(xs, W_ + 0.6, SZ - 0.4), (xs, W_ + 0.15, SZ - 0.15), (xg, W_ + 0.15, SZ - 0.15),
+               (xg, W_ + 0.15, SZ - 1.25), (xg, W_ - 0.6, SZ - 1.25), (-10.0, 1.05, SZ - 1.25)]
+        for a_, b_ in zip(pts, pts[1:]):              # one rod a stretch: each its own piece
+            cables.add(rod(a_, b_, 0.075, 4))
     k.mesh(m, "Cables", "CCTVDesk__Cables", cables, CF(), "black", shadow=False)
-    k.prop(m, "Socket", C.wcf("S", -10.0, 0.9, 0.0), name="Socket")
+    k.prop(m, "Socket", C.wcf("S", -10.0, 0.9, 1.0), name="Socket")      # on the modesty panel
     # the wall over the desk: radio shelf + Radio, cork board, calendar, the phone
     # the radio's shelf at head height on the west wall, just round the corner from the desk
     k.prop(m, "WallShelfSmall", C.wcf("W", 8.0, 5.75, 0.0), name="RadioShelf")
     radio(k, m, C.wcf("W", 8.0, 5.75, 0.6) * CF((0, 0, 0), G.ry(180)))
-    k.prop(m, "CorkBoard", C.wcf("S", -9.7, 6.2, 0.0), name="CorkBoard")
-    k.prop(m, "Calendar", C.wcf("S", -12.0, 7.6, 0.0), name="Calendar")
+    k.prop(m, "CorkBoard", C.wcf("S", -9.95, 6.2, 0.0), name="CorkBoard")
+    k.prop(m, "Calendar", C.wcf("S", -12.1, 7.6, 0.0), name="Calendar")
     ph = k.sc.model(m, "Phone")
-    px = -7.8
+    px = -7.85
     k.mesh(ph, "Base", "Phone__Base", bevel_box(1.0, 1.6, 0.6, 0.12), CF((px, 6.2, SZ - 0.3)), "red", solid=True)
     dial = G.Geo()
     dial.add(ccyl(0.36, 0.15, 12, "z", (0, 0, 0), 0.03))
@@ -394,12 +400,12 @@ def cctv_desk(k):
     pivot(hsp, CF((px + 0.68, 6.35 + 0.62, SZ - 0.5)))
     moving(ph, "Handset", "lift it off the cradle: the pivot is where its top hangs on the hook (rotate about X to "
                           "lift it towards the room, or move it free)")
-    cord = G.tube([(px + 0.55, 5.55, SZ - 0.4), (px + 0.6, 4.9, SZ - 0.35), (px + 0.75, 4.7, SZ - 0.4),
-                   (px + 0.82, 5.1, SZ - 0.42), (px + 0.72, 5.8, SZ - 0.45)], 0.075, 5)
+    cord = G.tube([(px + 0.55, 5.55, SZ - 0.4), (px + 0.6, 5.2, SZ - 0.35), (px + 0.75, 5.05, SZ - 0.4),
+                   (px + 0.82, 5.3, SZ - 0.42), (px + 0.72, 5.8, SZ - 0.45)], 0.075, 5)
     k.mesh(ph, "Cord", "Phone__Cord", cord, CF(), "black", shadow=False)
     k.prop(m, "SwivelStool", CF(((x0 + x1) / 2, L.FLOOR, FRONT + 1.2)), name="Stool")    # pushed in under the desk
     # the desk's lamp: an enamel pendant over the monitors
-    pendant_lamp(k, m, "DeskLamp", -9.5, 8.4, drop=2.2, bright=0.9, rng=11.0)
+    pendant_lamp(k, m, "DeskLamp", -10.6, 8.4, drop=2.2, bright=0.9, rng=11.0)
     stand(k, m, (x0 + x1) / 2, STZ, S_)
     return m
 
@@ -483,16 +489,16 @@ def sink(k):
     k.part(m, "Water", (hx1 - hx0 - 0.5, 0.15, hz1 - hz0 - 0.5), CF(((hx0 + hx1) / 2, L.WORK + 0.02 - 1.2 + 0.15 + 0.075,
                                                                  (hz0 + hz1) / 2)), (120, 150, 160), material="Glass",
            transparency=0.4, grid=False, shadow=False)
-    mb = k.prop(m, "MopBucket", C.wcf("S", -15.6, 0.9, 1.9), name="MopBucket")
+    mb = k.prop(m, "MopBucket", C.wcf("S", -15.92, 0.9, 1.9, G.ry(-90)), name="MopBucket")
     k.attr(mb, "Loose", True)                         # the game may wheel it out
     # under the basin: its pipework, the bleach and a sprung mouse trap
     k.prop(m, "SinkTrap", C.wcf("S", (hx0 + hx1) / 2, 0.9, SZ - (hz0 + hz1) / 2), name="SinkTrap")
     k.prop(m, "BleachJug", C.wcf("S", x1 - 0.9, 0.9, 2.6, G.ry(-15)), name="BleachJug")
-    k.prop(m, "MouseTrap", C.wcf("S", x1 - 0.6, 0.9, 1.0, G.ry(30)), name="MouseTrap")
+    k.prop(m, "MouseTrap", C.wcf("S", x1 - 0.85, 0.9, 1.0, G.ry(30)), name="MouseTrap")
     k.prop(m, "DryingRack", CF((x1 - 0.55, L.WORK, FRONT + 1.6), G.ry(90)), name="DryingRack")
     k.prop(m, "SoapDispenser", C.wcf("S", x0 + 1.0, 5.0, 0.0), name="Soap")
     k.prop(m, "TowelDispenser", C.wcf("S", x0 + 2.6, 5.6, 0.0), name="PaperTowels")
-    wall_board(k, m, "S", x0 + 2.2, 7.6, (1.6, 1.2), "paper", text="EMPLOYEES MUST WASH HANDS",
+    wall_board(k, m, "S", x0 + 2.0, 7.6, (1.6, 1.2), "paper", text="EMPLOYEES MUST WASH HANDS",
                text_color=(30, 60, 140), name="HandWashNotice")
     k.prop(m, "FirstAid", C.wcf("S", x1 - 0.55, 7.4, 0.0), name="FirstAid")
     stand(k, m, (x0 + x1) / 2 + 0.6, STZ, S_)

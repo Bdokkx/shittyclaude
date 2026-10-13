@@ -160,7 +160,7 @@ def oven(k):
         door = k.mesh(dm, "Door", "Oven__Door%d" % (i + 1), _door(yf, ys, yc), CF((X0, 0, 0)), "iron",
                       solid=False)
         zc = (MZ[0] + MZ[1]) / 2
-        py = yf + 0.45
+        py = yf + 0.55
         port = k.part(dm, "Porthole", (0.15, 0.8, 0.8), CF((X0 + 0.02, py, zc)), "glass_hot", material="Glass",
                       transparency=0.35, shape="Cylinder", grid=False, shadow=False)
         rim = k.mesh(dm, "PortRim", "Oven__PortRim", G.torus(0.43, 0.09, 12, 4, "x", (0, 0, 0)),
@@ -181,10 +181,10 @@ def oven(k):
     # ---- the hood: a steel canopy over the mouths with its lamp, sitting on the brick top
     hood(k, m)
     # ---- the breast's dressing: thermometer, brush on its hook, mitts on hooks
-    bf = X0 - 0.15
+    bf = X0 - 0.25                                    # on the brick face, not in it
     k.prop(m, "OvenDial", CF((bf, 7.3, -7.6), G.ry(-90)), name="Thermometer")
     k.prop(m, "OvenBrush", CF((bf, 6.6, -6.55), G.ry(-90)), name="OvenBrush")
-    for dz, seed in ((-8.9, 1), (-9.55, 2)):
+    for dz, seed in ((-9.55, 1),):                       # one mitt on the hook (the pair is the OvenMitts item)
         k.prop(m, "OvenMitt", CF((bf, 7.4, dz), G.ry(-90)), name="OvenMitt", seed=seed)
     k.prop(m, "AshBucket", CF((12.5, L.FLOOR, -5.0)), name="AshBucket")      # in the fire gap by the breast
     # ---- the old brick chimney on the roof (batch 1's Smoke attachment) and the steel flue
@@ -357,10 +357,10 @@ def hood(k, m):
     k.mesh(m, "Filter", "Oven__Filter", filt, CF((X0, 0, zc)), "steel_dark", shadow=False)
     # the oven lamp in the hood's underside, warm, pointing down at the mouths
     lm = k.sc.model(m, "OvenLamp")
-    bulb = k.part(lm, "Bulb", (0.5, 0.3, 0.5), CF((X0 - 0.45, y0 - 0.12, zc)), (255, 222, 170), material="Neon",
+    bulb = k.part(lm, "Bulb", (0.5, 0.3, 0.5), CF((X0 - 0.6, y0 - 0.16, zc)), (255, 222, 170), material="Neon",
                   grid=False, shadow=False)
     k.mesh(lm, "Guard", "Oven__LampGuard", G.torus(0.33, 0.075, 10, 4, "y", (0, 0, 0)),
-           CF((X0 - 0.45, y0 - 0.12, zc)), "steel_dark", shadow=False)
+           CF((X0 - 0.6, y0 - 0.16, zc)), "steel_dark", shadow=False)
     k.lamp(lm, bulb, "Shack", "Spot", 12.0, 1.0, (255, 196, 132), angle=110.0)
 
 
@@ -441,9 +441,9 @@ def cut_table(k):
     zw = z0 + 1.9
     k.prop(m, "RoundBoard", CF((15.0, L.WORK, zw), G.ry(90)), name="Board")
     spot(k, m, "Work", 15.0, L.WORK + 0.4, zw, E)
-    k.prop(m, "ToolRail", C.wcf("E", z0 + 2.4, 6.2, 0.0), name="ToolRail")
+    k.prop(m, "ToolRail", C.wcf("E", z0 + 1.9, 6.2, 0.0), name="ToolRail")
     R = np.column_stack(((1, 0, 0), (0, 0, -1), (0, 1, 0)))     # hanging wheel-down, flat to the wall
-    items2.place(k, m, "PizzaCutter", CF((X1 - 0.4, 6.2 - 0.9, z0 + 2.4 + 0.9), R))     # grip in the hook
+    items2.place(k, m, "PizzaCutter", CF((X1 - 0.4, 6.2 - 0.9, z0 + 1.9 + 0.9), R))     # grip in the hook
     k.prop(m, "SliceGuide", C.wcf("E", z1 - 1.7, 6.0, 0.0), name="SliceGuide")
     stand(k, m, X0 - IP.STAND_GAP - 0.3, zw - 0.8, E)
     return m

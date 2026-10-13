@@ -175,6 +175,27 @@ def outside_markers(sc):
             n.p["cf"] = CF((q[0], y, q[2]), n.p["cf"].R)
 
 
+# things within reach that are not floor, wall, a counter's body or a blocker: no collision
+# (fittings, things on counters, inside cabinets, on the walls); everything else that
+# collides is a body you walk round
+NO_COLLIDE = ("CCTVDesk/Phone/", "CCTVDesk/Radio/", "CCTVDesk/Monitor", "CCTVDesk/SwitchBox/", "DoughStation/Board",
+              "DrinksCooler/Shelf", "Extinguisher/Cradle", "Fridge/Shelf", "Fridge/Deck", "FuseBox/Lever", "FuseBox/Box",
+              "Hatch/Door/", "PeelRack/Arm", "PeelRack/Backboard", "PeelRack/FloorRail", "PlushieShelf/",
+              "Register/DisplayCase", "Register/TillBase", "Register/TillTop", "Register/Drawer/",
+              "RulesBoard/Cleat", "RulesBoard/Frame", "ServingWindow/TicketPrinter/", "ServingWindow/TicketRail/",
+              "ServingWindow/LedgeBracket", "ShutterButton/", "BoxStation/StickerShelf", "Stations/Bin/",
+              "Dressing/SideWindow/Sill", "Oven/Door1/", "Oven/Door2/")
+
+
+def no_collide(sc):
+    n_off = 0
+    for n in sc.nodes(("Part", "MeshPart")):
+        if n.p.get("collide") and any(s in n.path() for s in NO_COLLIDE):
+            n.p["collide"] = False
+            n_off += 1
+    return n_off
+
+
 def build(items=False, seed=2026):
     import scene_build
     sc = spslib.Scene()
@@ -208,6 +229,7 @@ def build(items=False, seed=2026):
     inside_markers(sc)
     outside_markers(sc)
     st_out2.cameras(k, sc)
+    no_collide(sc)
     if items:
         from . import items2
         items2.build_items(k)

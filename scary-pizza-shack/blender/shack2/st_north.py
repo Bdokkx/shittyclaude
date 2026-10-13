@@ -123,13 +123,14 @@ def fridge(k):
     side = G.Geo()
     side.add(bevel_box(0.5, 6.2, 5.0, 0.08))
     trim = G.Geo()
-    trim.add(bevel_box(0.6, 6.4, 0.3, 0.08, c=(0, 0, 2.45)))
+    trim.add(bevel_box(0.5, 6.4, 0.3, 0.08, c=(0, 0, 2.45)))
     for sx, xx in ((-1, x0 + 0.25), (1, x1 - 0.25)):
         k.mesh(m, "Side", "Fridge__Side", side, CF((xx, 1.2 + 3.1, (z0 + z1) / 2)), "fridge_body", solid=True)
         k.mesh(m, "Nosing", "Fridge__Nosing", trim, CF((xx, 1.2 + 3.1, (z0 + z1) / 2)), "steel", shadow=False,
                material="SmoothPlastic")
-        k.mesh(m, "Stripe", "Fridge__Stripe", bevel_box(0.15, 0.6, 4.2, 0.03),
-               CF((xx + sx * 0.3, 2.4, (z0 + z1) / 2 - 0.2)), "red", shadow=False)
+        if sx < 0:                                    # (the east side stands against the dough bench)
+            k.mesh(m, "Stripe", "Fridge__Stripe", bevel_box(0.15, 0.6, 4.2, 0.03),
+                   CF((xx + sx * 0.3, 2.4, (z0 + z1) / 2 - 0.2)), "red", shadow=False)
     k.box(m, "Back", (x0 + 0.5, 0.8, z0), (x1 - 0.5, 7.6, z0 + 1), "liner", solid=True)
     std = G.Geo()
     for dx in (-1.1, 1.1):
@@ -152,11 +153,11 @@ def fridge(k):
            shadow=False)
     # canopy, badge, dial, the air-curtain grille and night blind under it, and the cold light
     k.box(m, "Header", (x0, 7.4, z0), (x1, 8.2, z1), "red", solid=True)
-    k.mesh(m, "HeaderTrim", "Fridge__HeaderTrim", bevel_box(4.0, 0.3, 0.3, 0.06), CF((xc, 7.55, z1 + 0.1)),
+    k.mesh(m, "HeaderTrim", "Fridge__HeaderTrim", bevel_box(4.0, 0.3, 0.3, 0.06), CF((xc, 7.45, z1 + 0.1)),
            "steel_light", shadow=False, material="SmoothPlastic")
     board(k, m, (2.0, 0.5, 0.15), CF((xc - 0.5, 7.85, z1 + 0.075), FACE["N"]), "cream", text="COLD",
           text_color=(160, 30, 24), name="Badge")
-    k.prop(m, "FridgeDial", CF((x1 - 0.65, 7.85, z1)), name="Thermometer")
+    k.prop(m, "FridgeDial", CF((x1 - 0.65, 7.95, z1)), name="Thermometer")
     air = G.Geo()
     air.add(bevel_box(3.0, 0.2, 0.6, 0.04))
     for t in np.linspace(-1.3, 1.3, 9):
@@ -243,15 +244,15 @@ def dough_station(k):
     k.mesh(m, "Board", "DoughStation__Board", bevel_box(3.6, 0.4, 3.6, 0.08), CF((wx, L.WORK + 0.2, WZ)),
            "wood_light", solid=True)
     spot(k, m, "Work", wx, L.WORK + 0.4, WZ, N)
-    k.prop(m, "FlourDust", CF((wx, L.WORK + 0.4, WZ), G.ry(20)), name="FlourDust", seed=3)
+    k.prop(m, "FlourDust", CF((wx, L.WORK + 0.48, WZ), G.ry(20)), name="FlourDust", seed=3)
     k.prop(m, "Scraper", CF((x1 - 1.0, L.WORK, NZ + 0.75), G.ry(10)), name="Scraper")       # at the back, off the board
     k.prop(m, "Scale", CF((x0 + 0.95, L.WORK, NZ + 0.85)), name="Scale")
     # wall shelf with the dough trays, the pin's rack above
     k.prop(m, "WallShelf", C.wcf("N", xc, 5.8, 0.0), name="TrayShelf")
     k.prop(m, "DoughTray", CF((xc, 5.8 + 0.15, NZ + 0.95)), name="DoughTrays")
-    rack = C.wcf("N", xc, 7.6, 0.0)
+    rack = C.wcf("N", xc, 7.5, 0.0)                   # the pin just under the conduit along the wall
     k.prop(m, "PinRack", rack, name="PinRack")
-    items2.place(k, m, "RollingPin", CF((xc + 0.9, 7.6 + 0.15 + 0.32, NZ + 0.5), G.facing(E)))
+    items2.place(k, m, "RollingPin", CF((xc - 0.6, 7.5 + 0.15 + 0.32, NZ + 0.5), G.facing(E)))    # handle west
     stand(k, m, xc, SZ, N)
     return m
 
@@ -299,23 +300,22 @@ def sauce_station(k):
     k.prop(m, "Burner", CF(pc), name="Burner")
     k.prop(m, "StockPot", CF((pc[0], L.WORK + 0.55, pc[2])), name="Pot")
     gas = G.Geo()
-    gas.add(rod((pc[0] - 0.7, L.WORK + 0.15, NZ + 0.25), (pc[0] - 0.7, L.WORK + 0.15, pc[2] - 0.6), 0.09, 6))
-    gas.add(rod((pc[0] - 0.7, L.WORK + 0.15, NZ + 0.25), (pc[0] - 0.7, 0.2, NZ + 0.25), 0.09, 6))
+    gas.add(rod((pc[0] - 0.7, L.WORK + 0.15, NZ + 0.1), (pc[0] - 0.7, L.WORK + 0.15, pc[2] - 1.04), 0.09, 6))
+    gas.add(rod((pc[0] - 0.7, L.WORK + 0.15, NZ + 0.1), (pc[0] - 0.7, 0.2, NZ + 0.1), 0.09, 6))       # in the back
     k.mesh(m, "GasPipe", "SauceStation__Gas", gas, CF(), "mustard_dark", shadow=False)
     # the ladle: bowl down in its rest, handle leaning back against the wall
-    rest = (x0 + 2.45, L.WORK, bz)
-    k.prop(m, "LadleRest", CF(rest, G.ry(90)), name="LadleRest")
+    rest = (x0 + 2.9, L.WORK, bz)
+    k.prop(m, "LadleRest", CF(rest), name="LadleRest")
     items2.place(k, m, "Ladle", _leaning(items2.get("Ladle"), (0.0, -0.45, -1.1), 0.39,
                                          (rest[0], L.WORK + 0.07, rest[2]), NZ + 0.3))
-    k.prop(m, "TomatoCanOpen", CF((x0 + 3.3, L.WORK, bz)), name="OpenCan")
-    k.prop(m, "TomatoCan", CF((x0 + 4.5, L.WORK, bz), G.ry(15)), name="Cans")
+    k.prop(m, "TomatoCanOpen", CF((x0 + 4.0, L.WORK, bz)), name="OpenCan")     # (the spare tins are in the cupboard)
     k.prop(m, "SpiceRack", C.wcf("N", x0 + 2.0, 5.75, 0.0), name="SpiceRack")
     # cheese: the grater on its tray, the CheeseBlock item, the wheel up on a shelf
-    k.prop(m, "GraterTray", CF((x0 + 6.1, L.WORK, bz)), name="GraterTray")
-    items2.place_on(k, m, "Grater", CF((x0 + 6.0, L.WORK + 0.15, bz)))
-    items2.place_on(k, m, "CheeseBlock", CF((x0 + 7.4, L.WORK, bz), G.ry(90)))
+    k.prop(m, "GraterTray", CF((x0 + 5.85, L.WORK, bz + 0.1)), name="GraterTray")
+    items2.place_on(k, m, "Grater", CF((x0 + 6.25, L.WORK + 0.15, bz + 0.1)))
+    items2.place_on(k, m, "CheeseBlock", CF((x0 + 7.45, L.WORK, bz), G.ry(90)))
     k.prop(m, "WallShelf3", C.wcf("N", 1.5, 5.6, 0.0), name="CheeseShelf")
-    k.prop(m, "CheeseWheel", CF((1.1, 5.6 + 0.15, NZ + 0.85), G.ry(200)), name="CheeseWheel")
+    k.prop(m, "CheeseWheel", CF((1.1, 5.6 + 0.3, NZ + 0.85), G.ry(200)), name="CheeseWheel")
     stand(k, m, (x0 + x1) / 2, SZ, N)
     stand(k, m, xs, SZ, N, name="StandSauce")
     stand(k, m, xch, SZ, N, name="StandCheese")
@@ -331,7 +331,7 @@ def chop_station(k):
     m = station(k, "ChopStation")
     x0, x1 = 3.0, 7.0
     xc = (x0 + x1) / 2
-    _counter(k, m, x0, x1, fronts=[(2, "door"), (2, "open")], end_left=False, end_right=False,
+    _counter(k, m, x0, x1, fronts=[(2, "door"), (2, "open")], end_left=False, end_right=False, open_sides=False,
              insides={0: ["OneShoe", "|", "PlateStack"]},
              owner="ChopStation")
     k.prop(m, "VegCrate", C.wcf("N", x1 - 1.0, 0.9, 3.2, G.ry(90)), name="VegCrate")
@@ -339,8 +339,8 @@ def chop_station(k):
     spot(k, m, "Work", xc, L.WORK + 0.4, WZ, N)
     k.prop(m, "BoardUpright", C.wcf("N", xc - 0.3, L.WORK, 0.45), name="SpareBoard")
     k.prop(m, "KnifeStrip", C.wcf("N", xc, 6.9, 0.0), name="KnifeStrip")
-    # the Knife item hangs on the strip too (second from the left is its twin: this one is the real one)
-    items2.place(k, m, "Knife", CF((xc + 0.4, 6.9 - 0.75, NZ + 0.45), np.column_stack(((1, 0, 0), (0, 0, 1),
+    # the Knife item hangs on the strip, second from the left
+    items2.place(k, m, "Knife", CF((xc - 0.4, 6.9 - 0.75, NZ + 0.52), np.column_stack(((1, 0, 0), (0, 0, 1),
                                                                                         (0, -1, 0)))))
     stand(k, m, xc, SZ, N)
     return m
@@ -394,7 +394,7 @@ def topping_rail(k):
     k.mesh(lid_m, "Grip", "ToppingRail__LidGrip", bevel_box(1.2, 0.15, 0.2, 0.04),
            CF((lc[0], y1 + 0.28, lz1 - 0.25)), "steel_dark", shadow=False)
     hinge(lid_m, leaf, CF((lc[0], y1 + 0.3, lz0)))
-    k.prop(m, "Tongs", CF((x1 - 0.75, L.WORK, z1 + 0.9), G.ry(160)), name="Tongs")      # on the top, by the lid
+    k.prop(m, "Tongs", CF((x1 - 0.5, L.WORK + 0.1, z1 + 0.9), G.ry(160)), name="Tongs")     # on the top, by the lid
     spot(k, m, "Work", (x0 + x1) / 2 - 0.5, L.WORK, WZ + 0.4, N)
     stand(k, m, (x0 + x1) / 2 - 0.5, SZ, N)
     return m

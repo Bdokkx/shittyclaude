@@ -88,6 +88,7 @@ class Mock:
             mp = new("MeshPart", self.lua.table_from({"Name": name}))
             mp.Size = self.g.Vector3.new(*[float(v) for v in sz])
             mp.CFrame = self.cf(pos, R)
+            mp.PivotOffset = self.cf((4000.0, -250.0, 3000.0), np.eye(3))   # importers leave pivots far away
             extra = new("SurfaceAppearance", None)
             extra.Parent = mp
             mp.Parent = inner
@@ -202,6 +203,10 @@ def check(m, data, R_geom=np.eye(3), size_map=None, tag=""):
                 exp = {"studs": ("Studs", "Inlet"), "wedge": ("Smooth", "Inlet"), "smooth": ("Smooth", "Smooth")}
                 if (top, bot) != exp[a["surfaces"]] or sides != {"Smooth"}:
                     errs.append("%s surfaces %s/%s/%s" % (a["name"], top, bot, sides))
+            if a.get("pivot") is None and k == "MeshPart":
+                op = m.rows(b.PivotOffset)[0]
+                if np.abs(op).max() > 1e-3:
+                    errs.append("%s pivot left at %s" % (a["name"], op.round(1)))
             if a.get("pivot") is not None:
                 wp, wR = m.rows(m.g.cf_mul(b.CFrame, b.PivotOffset))
                 d = a["cf"]
@@ -266,20 +271,33 @@ def check(m, data, R_geom=np.eye(3), size_map=None, tag=""):
 def leftovers(m):
     bad = []
     for d in m.g.workspace.GetDescendants(m.g.workspace).values():
-        if d.ClassName == "MeshPart" and (d.Name.startswith(CFG["axis"]) or "__" in d.Name):
+        if d.ClassName == "MeshPart" and (d.Name.startswith(CFG["axis"]) or "__" in d.Name) and \
+                d.Parent.Name != "SomeoneElses":
             bad.append(d.Name)
-    names = [c.Name for c in children(m.g.workspace)]
+    names = [c.Name for c in children(m.g.workspace) if c.Name != "SomeoneElses"]
     return bad, names
+
+
+def decoy(m, meshes):
+    """Somebody else's part elsewhere in the game that happens to share a mesh's name."""
+    f = m.g.mock_new("Folder", m.lua.table_from({"Name": "SomeoneElses"}))
+    mp = m.g.mock_new("MeshPart", m.lua.table_from({"Name": next(iter(meshes))}))
+    mp.Parent = f
+    f.Parent = m.g.workspace
+    return f
 
 
 def case(data, script, scale, R_imp, mode, label):
     m = Mock()
     meshes = data["meshes"]
+    dec = decoy(m, meshes)
     cont = m.import_container(meshes, scale, R_imp, mode)
     created0 = m.g.CREATED
     m.run(script)
     R_geom = R_imp if mode == "baked" else np.eye(3)
     errs = check(m, data, R_geom=R_geom)
+    if dec.Parent is None or len(children(dec)) != 1:
+        errs.append("deleted a part it did not bring in (SomeoneElses)")
     bad, names = leftovers(m)
     warns = list(m.g.WARNINGS.values())
     cache = m.g.game.GetService(m.g.game, "ServerStorage").FindFirstChild(

@@ -244,7 +244,8 @@ end
 function Inst.SetAttribute(o, k, v)
 	assert(type(k) == "string" and k:match("^[%w_]+$"), "bad attribute name " .. tostring(k))
 	local t = type(v)
-	assert(t == "number" or t == "string" or t == "boolean", "bad attribute value for " .. k)
+	assert(t == "number" or t == "string" or t == "boolean" or (t == "table" and getmetatable(v) == V),
+		"bad attribute value for " .. k)
 	o._attrs[k] = v
 end
 function Inst.GetAttribute(o, k) return o._attrs[k] end

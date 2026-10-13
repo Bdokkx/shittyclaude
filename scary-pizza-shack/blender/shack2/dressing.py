@@ -87,7 +87,7 @@ def inspection_certificate(k, f):
     text(k, m, fr, 0.0, 0.14, 0.1, (1.3, 0.6), "paper_old", text="HEALTH DEPT.\nFOOD SAFETY\nINSPECTION",
          text_color=(40, 40, 40), name="Heading")
     text(k, m, fr, -0.3, -0.3, 0.1, (0.6, 0.25), "paper_old", text="GRADE", text_color=(40, 40, 40), name="Grade")
-    k.mesh(m, "Stamp", "Dress__CertStamp", G.torus(0.18, 0.075, 10, 4, "z", (0, 0, 0.0)), fr * CF((0.3, -0.28, 0.17)),
+    k.mesh(m, "Stamp", "Dress__CertStamp", G.torus(0.18, 0.075, 10, 4, "z", (0, 0, 0.0)), fr * CF((0.34, -0.4, 0.17)),
            "red_dark", shadow=False)
     sc_ = G.Geo()
     for a, dy in ((25, 0.06), (-20, -0.02), (35, -0.1), (-30, 0.12)):

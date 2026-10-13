@@ -82,21 +82,21 @@ def bus_stop(k, gr):
     # the lit advert box at the east end (faces the traffic from the east)
     ad = k.sc.model(m, "Advert")
     k.mesh(ad, "Box", "BusStop__AdBox", bevel_box(0.5, 4.6, BZ1 - BZ0 - 0.1, 0.08),
-           CF((BX1 + 0.05, y + 3.5, (BZ0 + BZ1) / 2)), "shelter", solid=True)
-    k.part(ad, "Glow", (0.15, 4.0, BZ1 - BZ0 - 0.6), CF((BX1 + 0.32, y + 3.5, (BZ0 + BZ1) / 2)), (255, 236, 200),
+           CF((BX1 + 0.2, y + 3.5, (BZ0 + BZ1) / 2)), "shelter", solid=True)
+    k.part(ad, "Glow", (0.15, 4.0, BZ1 - BZ0 - 0.6), CF((BX1 + 0.47, y + 3.5, (BZ0 + BZ1) / 2)), (255, 236, 200),
            material="Neon", grid=False, shadow=False)
-    board(k, ad, (BZ1 - BZ0 - 0.7, 3.8, 0.15), CF((BX1 + 0.46, y + 3.5, (BZ0 + BZ1) / 2), FACE["W"]), "red",
+    board(k, ad, (BZ1 - BZ0 - 0.7, 3.8, 0.15), CF((BX1 + 0.61, y + 3.5, (BZ0 + BZ1) / 2), FACE["W"]), "red",
           text="PAPA\nSTUD'S\nPIZZA\n\nOPEN\nLATE", text_color=(250, 226, 150))
     # litter bin on its post, the flag pole at the kerb
     k.prop(m, "PostBin", CF((BX1 + 1.4, y, BZ0 + 0.7)), where="outside", name="Bin")
-    k.mesh(m, "SignPole", "BusStop__SignPole", O.flat_pole(8.4, 0.18, 0.15, 8), CF((BX0 - 1.4, y - 0.4, BZ1 + 0.3)),
+    k.mesh(m, "SignPole", "BusStop__SignPole", O.flat_pole(8.4, 0.18, 0.15, 8), CF((BX0 - 1.8, y - 0.4, BZ1 + 0.3)),
            "galv", solid=True)
     fl = k.sc.model(m, "Flag")
     k.mesh(fl, "Disc", "BusStop__FlagDisc", ccyl(1.1, 0.2, 12, "z", (0, 0, 0), 0.05),
-           CF((BX0 - 1.4, y + 7.3, BZ1 + 0.55)), "red", shadow=False)
-    board(k, fl, (1.5, 1.0, 0.15), CF((BX0 - 1.4, y + 7.3, BZ1 + 0.72), FACE["N"]), "red", text="BUS\nSTOP",
+           CF((BX0 - 1.8, y + 7.3, BZ1 + 0.55)), "red", shadow=False)
+    board(k, fl, (1.5, 1.0, 0.15), CF((BX0 - 1.8, y + 7.3, BZ1 + 0.72), FACE["N"]), "red", text="BUS\nSTOP",
           text_color=(250, 240, 220))
-    k.mesh(fl, "Plate", "BusStop__FlagPlate", bevel_box(1.2, 0.6, 0.15, 0.03), CF((BX0 - 1.4, y + 6.0, BZ1 + 0.53)),
+    k.mesh(fl, "Plate", "BusStop__FlagPlate", bevel_box(1.2, 0.6, 0.15, 0.03), CF((BX0 - 1.8, y + 6.0, BZ1 + 0.53)),
            "timetable", shadow=False)
     stand(k, m, (BX0 + BX1) / 2, 23.2, S_, y=gr.y((BX0 + BX1) / 2, 23.2))     # kerbside, clear of the posts
     k.mark_used("BusShelter", "outside")
@@ -214,7 +214,7 @@ def road_sign(k, gr):
 CAMS = {
     "Cam_Front": ((4.6, 8.4, 13.25), (0.0, 0.0, 1.0), (-1.0, 3.6, 17.0)),           # shutter box front: the queue
     "Cam_Back": ((-9.0, 10.2, 21.6), None, (1.0, 4.0, 11.5)),                       # street lamp: the shack's front
-    "Cam_Yard": ((0.0, 9.6, L.OUT_Z0 - 0.5), (0.0, 0.0, -1.0), (0.0, 0.5, -33.0)),  # back wall: the yard and gate
+    "Cam_Yard": ((4.0, 9.6, L.OUT_Z0 - 0.5), (0.0, 0.0, -1.0), (0.0, 0.5, -33.0)),  # back wall: the yard and gate
     "Cam_Road": ((31.2, 12.6, 21.0), (1.0, 0.0, 0.0), (90.0, 3.0, 30.0)),           # road sign's end: oncoming cars
 }
 POLE_R = 0.3
@@ -243,7 +243,7 @@ def cameras(k, sc):
             d = tgt - mp
             d[1] = 0.0
             nrm = d / np.linalg.norm(d)
-            mp = mp + nrm * POLE_R
+            mp = mp + nrm * (POLE_R + 0.12)          # the plate on the clamp band, clear of the pole
         nrm = np.asarray(nrm, float)
         R = G.facing(-nrm)                               # local +Z out of the mount
         loc = R.T @ (tgt - (mp + R @ np.array((0.0, 0.45, 1.6))))

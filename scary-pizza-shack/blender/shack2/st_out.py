@@ -167,8 +167,8 @@ def dumpster(k, old):
         lid2.add(bevel_box(1.85, 0.2, 1.95, 0.06, c=(0, 0, 0)))
         lid2.add(bevel_box(0.8, 0.15, 0.25, 0.04, c=(0, 0.15, -0.9)))
         lm2 = opener(k, wb, "Lid", "Swing", "Lid", angle=95.0, axis="X")
-        l2 = k.mesh(lm2, "Leaf", "WheelieBin__Lid", lid2, CF((bx, y0 + 3.0, -26.5)), col, solid=True)
-        hinge(lm2, l2, CF((bx, y0 + 3.0, -26.5 + 0.95)))
+        l2 = k.mesh(lm2, "Leaf", "WheelieBin__Lid", lid2, CF((bx, y0 + 3.13, -26.5)), col, solid=True)
+        hinge(lm2, l2, CF((bx, y0 + 3.13, -26.5 + 0.95)))
         k.mark_used("WheelieBin", "outside")
     # the TrashBag items exactly as batch 1 (the game picks them up)
     from .build import _copy_tree
@@ -200,7 +200,7 @@ def yard_gate(k):
         k.mesh(m, "GatePost", "YardGate__Post", g, CF((x, y0, z)), "galv", solid=True)
         k.mesh(m, "Footing", "YardGate__Footing", ccyl(0.6, 0.3, 10, "y", (0, -0.1, 0), 0.06), CF((x, y0, z)),
                "concrete_dark", solid=True)
-    x0, x1 = 8.1, 12.15                         # the frame clear of the hinge post as it swings round it
+    x0, x1 = 8.1, 12.05                         # the frame clear of both posts (it swings round the west one)
     w, h, yb = x1 - x0, 5.4, 0.4
     cx = (x0 + x1) / 2
     fr = G.Geo()
@@ -221,7 +221,7 @@ def yard_gate(k):
     pl = G.Geo()
     pl.add(bevel_box(0.4, 0.5, 0.2, 0.06, c=(0, 0, 0)))
     pl.add(G.torus(0.14, 0.075, 8, 4, "z", (0, 0.32, 0)))
-    lock = k.mesh(m, "Padlock", "YardGate__Padlock", pl, CF((x1 + 0.27, y0 + yb + 2.45, z + 0.2)), "brass",
+    lock = k.mesh(m, "Padlock", "YardGate__Padlock", pl, CF((x1 + 0.27, y0 + yb + 2.45, z + 0.5)), "brass",
                   shadow=False)
     # an openable Model "Gate": hung on the west post, +90 about Y swings it into the yard
     from .opens import adopt

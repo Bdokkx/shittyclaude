@@ -181,12 +181,12 @@ def mouse_trap(rng):
 def sink_trap(rng):
     """The pipework under a sink: tail pipe, U-bend, the run to the wall; a slow drip tray."""
     g = G.Geo()                                     # origin on the bay floor under the plughole
-    g.add(rod((0, 1.32, 0), (0, 0.95, 0), 0.15, 8))
-    g.add(rod((0, 0.95, 0), (0.45, 0.95, 0), 0.15, 8))
-    g.add(rod((0.45, 0.95, 0), (0.45, 1.15, 0), 0.15, 8))
-    g.add(rod((0.45, 1.15, 0), (0.45, 1.15, -1.75), 0.15, 8))
+    g.add(rod((0, 1.06, 0), (0, 1.0, 0), 0.15, 8))
+    g.add(rod((0, 1.0, 0), (-0.45, 1.0, 0), 0.15, 8))
+    g.add(rod((-0.45, 1.0, 0), (-0.45, 1.1, 0), 0.15, 8))
+    g.add(rod((-0.45, 1.1, 0), (-0.45, 1.1, -1.75), 0.15, 8))
     nut = G.Geo()
-    for c in ((0, 1.25, 0), (0.45, 1.15, -1.45)):
+    for c in ((0, 1.04, 0), (-0.45, 1.1, -1.45)):
         nut.add(ccyl(0.2, 0.15, 8, "y", c, 0.03))
     return [("Pipes", "grey_light", g), ("Nuts", "steel_dark", nut)]
 

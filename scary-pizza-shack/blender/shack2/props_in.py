@@ -147,17 +147,20 @@ def pin_rack(rng):
 
 @prop("Burner")
 def gas_ring(rng):
-    """Cast-iron gas ring on a stand, its pilot glowing faintly blue."""
+    """A steel gas ring on a stand with a mustard control panel, its flame ring glowing blue
+    under the pot (no dark slab: it reads as a burner, not a hole)."""
     base = bevel_box(1.9, 0.3, 1.9, 0.08, c=(0, 0.15, 0))
+    base.add(bevel_box(1.6, 0.15, 0.3, 0.04, c=(0, 0.15, 0.95)))
     legs = G.Geo()
     ring_ = G.torus(0.58, 0.12, 12, 6, "y", (0, 0.42, 0))
+    flame = G.torus(0.45, 0.075, 12, 4, "y", (0, 0.5, 0))
     for a in range(4):
         t = math.pi / 4 + a * math.pi / 2
         legs.add(rod((0.55 * math.cos(t), 0.3, 0.55 * math.sin(t)), (0.86 * math.cos(t), 0.55, 0.86 * math.sin(t)),
                      0.08, 4))
     knob = ccyl(0.18, 0.2, 8, "x", (1.05, 0.15, 0.5), 0.04)
-    return [("Base", "charcoal", base), ("Ring", "black", ring_), ("PanSupports", "black", legs),
-            ("Knob", "black", knob)]
+    return [("Base", "steel", base), ("Ring", "iron", ring_), ("PanSupports", "iron", legs),
+            ("Knob", "mustard", knob), ("Flame", (90, 140, 255), flame, {"material": "Neon"})]
 
 
 @prop("StockPot")
@@ -260,12 +263,12 @@ def cheese_wheel(rng):
 def grater_tray(rng):
     """Steel tray with a heap of grated cheese (the Grater item stands on it)."""
     tray = G.Geo()
-    tray.add(bevel_box(1.6, 0.15, 1.3, 0.04, c=(0, 0.075, 0)))
-    for (cx, cz, sx, sz) in ((0, -0.6, 1.6, 0.15), (0, 0.6, 1.6, 0.15), (-0.75, 0, 0.15, 1.3), (0.75, 0, 0.15, 1.3)):
+    tray.add(bevel_box(2.0, 0.15, 1.4, 0.04, c=(0, 0.075, 0)))
+    for (cx, cz, sx, sz) in ((0, -0.625, 2.0, 0.15), (0, 0.625, 2.0, 0.15), (-0.925, 0, 0.15, 1.4), (0.925, 0, 0.15, 1.4)):
         tray.add(bevel_box(sx, 0.3, sz, 0.04, c=(cx, 0.15, cz)))
-    heap = G.Geo()
+    heap = G.Geo()                                  # the left half: the grater stands on the right
     for k in range(4):
-        heap.add(_blob(0.22, (1.0, 0.5, 1.0), 60 + k, c=(rng.uniform(-0.55, -0.15), 0.15, rng.uniform(-0.35, 0.35)),
+        heap.add(_blob(0.22, (1.0, 0.5, 1.0), 60 + k, c=(rng.uniform(-0.6, -0.35), 0.15, rng.uniform(-0.3, 0.3)),
                        flat=0.0))
     return [("Tray", "steel", tray), ("Cheese", "cheese", heap)]
 
@@ -275,14 +278,15 @@ def grater_tray(rng):
 @prop("KnifeStrip")
 def knife_strip(rng):
     """Magnetic knife strip on the wall with five knives of different sizes hanging from it
-    (origin at the wall, +Z out). The Knife item is the second from the left."""
+    (origin at the wall, +Z out). The second place from the left is the Knife item's (the
+    station hangs the item there)."""
     bar = bevel_box(3.6, 0.5, 0.3, 0.08, c=(0, 0, 0.15))
     screws = G.Geo()
     for x in (-1.6, 1.6):
         screws.add(ccyl(0.1, 0.15, 6, "z", (x, 0, 0.33), 0.02))
     blades, grips = G.Geo(), G.Geo()
     # (x, blade length, blade width, grip length) -- cleaver, chef (=item size), utility, bread, paring
-    for x, bl, bw, gl, shape in ((-1.3, 0.9, 0.7, 0.55, "cleaver"), (-0.4, 0.85, 0.32, 0.6, "chef"),
+    for x, bl, bw, gl, shape in ((-1.3, 0.9, 0.7, 0.55, "cleaver"),
                                  (0.35, 0.7, 0.24, 0.5, "chef"), (1.05, 1.05, 0.26, 0.55, "bread"),
                                  (1.6, 0.45, 0.2, 0.45, "chef")):
         z = 0.38
@@ -859,11 +863,11 @@ def swivel_stool(rng):
 def mop_bucket(rng):
     """A yellow mop bucket with its wringer and the mop stood in it (it lives under the sink)."""
     b = _lathe_loop([(0.0, 0.0), (0.7, 0.0), (0.78, 0.9), (0.84, 0.95), (0.7, 0.95), (0.64, 0.08), (0.0, 0.08)], 10)
-    b = b.xf(S(1.2, 1.0, 1.0))
-    water = _cyl_y(0.66, 0.55, 0.6, 10).xf(S(1.2, 1.0, 1.0))
+    b = b.xf(S(0.9, 1.0, 0.9))
+    water = _cyl_y(0.6, 0.55, 0.6, 10)
     wringer = bevel_box(0.6, 0.4, 0.9, 0.06, c=(0.6, 1.05, 0))
     mop = G.Geo()
-    mop.add(rod((-0.3, 0.6, 0.0), (0.25, 1.1, -0.85), 0.08, 6))
+    mop.add(rod((-0.3, 0.6, 0.0), (0.0, 1.15, -0.5), 0.08, 6))
     mop.add(_blob(0.35, (1.0, 0.7, 1.0), 140, c=(-0.3, 0.55, 0.0)))
     return [("Bucket", "label_yellow", b), ("Water", (110, 120, 110), water), ("Wringer", "charcoal", wringer),
             ("Mop", "wood_pale", mop)]

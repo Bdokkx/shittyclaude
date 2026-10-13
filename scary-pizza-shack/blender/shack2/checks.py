@@ -828,6 +828,82 @@ def zfight(sc, boxes=None):
     return out
 
 
+# ---------------------------------------------------------------- overlaps between props
+
+# what may go into what, and why (checked by hand)
+GROUNDISH = ("Bank", "Meadow", "Shoulder", "Apron", "Slab", "LotAsphalt", "YardGround", "Ground", "Path", "Pad",
+             "Forecourt", "Hill", "Road")                    # posts, footings, pads and feet are sunk into ground
+DECALS = ("Puddle", "OilStain", "Stain", "Cracks", "Rut", "BayLines", "Weeds", "Stones", "Litter", "FlourDust")
+JUSTIFIED = (
+    ("Wires", "", "the telegraph wires' boxes round their sag (the wires hang from the poles)"),
+    ("DropWire", "", "the service wire hangs from the pole to the wall"),
+    ("Wire", "Hook", "the string lights' wire hangs on its hook"),
+    ("PipeClamp", "Pole", "the back camera is clamped round the street lamp's pole"),
+    ("ArmPipe", "Catwalk", "the billboard's lamp arms are bolted to the catwalk"),
+    ("Hooks", "Strap", "the apron hangs on its hook"),
+    ("Latch", "GatePost", "the gate's D-latch closes round its post"),
+    ("Conduit", "Conduit", "two conduit runs meet at a junction"),
+    ("Tape", "Board", "tape over a poster's edge"),
+    ("Ladle", "Dish", "the ladle's bowl rests in its dish"),
+    ("Surround", "Door", "the oven doors sit in their steel surrounds (arched pieces: their boxes overlap)"),
+    ("ArchFill", "Door", "the oven doors under their arches (arched pieces: their boxes overlap)"),
+    ("Arch", "Door", "the oven doors under their arches (arched pieces: their boxes overlap)"),
+    ("Hooks", "Apron", "the apron hangs on its hook"),
+    ("Track", "Bank", "the culvert runs through the road bank"),
+    ("Hinges", "Lid", "the ice chest's hinges hold its lid"),
+    ("BedTarp", "Body", "the pickup's tarp lies over its bed"),
+)
+PILES = ("TrashBag", "Pallet", "Cone", "Weeds")              # a pile of the same thing settles into itself
+
+
+def overlaps(sc, boxes=None, depth=0.05):
+    """Every pair of visible parts of different props (their nearest Models differ) that go
+    into each other deeper than `depth`, less the justified kinds above and the shell (walls,
+    floor, ceiling, roof). Returns [(depth, a, b)] one per pair of models."""
+    b = boxes or Boxes(sc)
+    P = b.pairs(0.0)
+    if not len(P):
+        return []
+    d = b.overlap(P[:, 0], P[:, 1])
+
+    def owner(n):
+        p = n.parent
+        while p is not None and p.kind != "Model":
+            p = p.parent
+        return p
+    shell = ("/Shack/Walls/", "/Shack/Floor", "/Shack/Ceiling", "/Shack/Exterior", "/Shack/Roof", "/Outside/Forest",
+             "/Outside/Terrain")
+    out, seen = [], set()
+    for (i, j), dd in zip(P, d):
+        if dd <= depth:
+            continue
+        ni, nj = b.nodes[i], b.nodes[j]
+        if ni is nj:
+            continue
+        pi, pj = ni.path(), nj.path()
+        if any(s in pi or s in pj for s in shell):
+            continue
+        oi, oj = owner(ni), owner(nj)
+        if oi is oj:
+            continue
+        if any(g in pi.split("/")[-2:][0] or g == ni.name for g in GROUNDISH) and "/Outside/" in pi:
+            continue
+        if any(g in pj.split("/")[-2:][0] or g == nj.name for g in GROUNDISH) and "/Outside/" in pj:
+            continue
+        if any(x in pi or x in pj for x in DECALS):
+            continue
+        if any((a_ in pi and b_ in pj) or (a_ in pj and b_ in pi) for a_, b_, _ in JUSTIFIED):
+            continue
+        if any(p_ in pi and p_ in pj for p_ in PILES):
+            continue
+        key = (oi.path() if oi else pi, oj.path() if oj else pj)
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append((round(float(dd), 2), pi.replace("PizzaShack/", ""), pj.replace("PizzaShack/", "")))
+    return sorted(out, reverse=True)
+
+
 # ---------------------------------------------------------------- openables
 
 KEEP_CLEAR = {}         # name -> (lo, hi) world boxes no open door may stand in (filled in openings())
@@ -943,6 +1019,7 @@ def run(sc, old=None, quick=False):
     rep["clear"] = clear(sc)
     rep["bodies"] = bodies(sc)
     rep["openings"] = openings(sc)
+    rep["overlaps"] = overlaps(sc, b)
     if not quick:
         rep["planes"] = planes(sc, b)
         rep["horizon"] = horizon(sc, b)
@@ -981,6 +1058,10 @@ def show(rep, limit=25):
     head("bodies, items and swings")
     print(len(rep["bodies"]))
     for r in rep["bodies"][:limit * 2]:
+        print("  ", r)
+    head("overlaps between props (deeper than 0.05, less the justified kinds)")
+    print(len(rep["overlaps"]))
+    for r in rep["overlaps"][:limit * 2]:
         print("  ", r)
     head("openables: swept, left open")
     print(len(rep["openings"]))

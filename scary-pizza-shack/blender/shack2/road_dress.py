@@ -295,10 +295,10 @@ def billboard(k, f, gr):
     board(k, m, (8.0, 0.9, 0.15), base * CF((3.0, yb + 0.8, -0.27)), "red", text="1/2 MILE AHEAD",
           text_color=(250, 236, 200), name="Distance")
     mascot = k.sc.model(m, "Mascot")
-    mb = base * CF((-4.4, yb + 0.6, -0.35))
+    mb = base * CF((-4.4, yb + 0.6, -0.45))
     k.mesh(mascot, "Slice", "Billboard__Slice", face_slab([(0.0, 0.0), (2.9, 6.0), (-2.9, 6.0)], 0.4, 0.1)
            .xf(G.M(G.ry(180))), mb, "cheese", shadow=False)
-    k.mesh(mascot, "Crust", "Billboard__Crust", bevel_box(6.4, 1.0, 0.6, 0.25), mb * CF((0, 6.2, 0.1)), "dough",
+    k.mesh(mascot, "Crust", "Billboard__Crust", bevel_box(6.4, 1.0, 0.6, 0.25), mb * CF((0, 6.2, -0.1)), "dough",
            shadow=False)
     face = G.Geo()
     for dx in (-0.9, 0.9):

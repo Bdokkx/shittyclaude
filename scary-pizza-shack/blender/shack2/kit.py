@@ -25,7 +25,7 @@ PAL = {
     "cornice": (212, 200, 168), "ceil": (212, 206, 186), "ceil_stain": (190, 172, 130), "ceil_stain2": (198, 186, 150),
     "tbar": (176, 170, 154),
     "beam": (98, 66, 44), "beam_dark": (78, 52, 36),
-    "floor_w": (222, 214, 192), "floor_b": (46, 44, 46), "floor_w_worn": (200, 190, 164),
+    "floor_w": (222, 214, 192), "floor_b": (52, 52, 58), "floor_w_worn": (200, 190, 164),
     "floor_b_worn": (72, 66, 60), "floor_w_new": (244, 244, 238), "floor_b_new": (24, 24, 28),
     "fridge_body": (66, 70, 76), "liner": (214, 224, 228), "puddle": (120, 132, 140), "crate_blue": (52, 92, 160),
     "tub_lid_red": (196, 52, 40), "tub_lid_green": (70, 140, 70), "tub_white": (236, 234, 226),

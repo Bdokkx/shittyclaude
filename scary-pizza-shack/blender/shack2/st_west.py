@@ -22,8 +22,8 @@ def storage_shelf(k):
     """A heavy wooden shelving unit: Slot1/2 on the middle shelf, Slot3/4 on the bottom deck,
     Slot5/6 on the shelf above; stock on the top board (tins, tubs, a box of hairnets)."""
     m = station(k, "StorageShelf")
-    z0, z1 = 2.0, 6.0
-    x0, x1 = WX, WX + 4                          # as deep as the cooler: no recess beside it
+    z0, z1 = 2.0, 5.0                            # clear of the sink run's front (Z 6)
+    x0, x1 = WX, WX + 4                          # deeper than the cooler beside it: nothing tucked away
     xc = (x0 + x1) / 2
     k.box(m, "Base", (x0, L.FLOOR, z0), (x1, 1.2, z1), "wood_dark", solid=True)
     for zz in (z0 + 0.2, z1 - 0.2):
@@ -31,22 +31,21 @@ def storage_shelf(k):
                solid=True)
     for y in (4.0, 6.8, 8.2):
         k.box(m, "Shelf", (x0, y - 0.4, z0), (x1, y, z1), "wood", solid=True)
-        k.mesh(m, "ShelfEdge", "StorageShelf__Edge", bevel_box(0.2, 0.3, 4.0, 0.04), CF((x1 + 0.1, y - 0.15, (z0 + z1) / 2)),
+        k.mesh(m, "ShelfEdge", "StorageShelf__Edge3", bevel_box(0.2, 0.3, z1 - z0, 0.04), CF((x1 + 0.1, y - 0.15, (z0 + z1) / 2)),
                "wood_dark", shadow=False)
     kk = 1
     for y in (4.0, 1.2, 6.8):
-        for z in (z1 - 1.4, z0 + 1.3):              # clear of the sink counter and the cooler
+        for z in (z1 - 0.8, z0 + 0.8):              # a slot each side of the middle
             spot(k, m, "Slot%d" % kk, x1 - 1.0, y, z, W)
             kk += 1
     # more stock at the backs of the shelves, behind the slots (out of their clear boxes)
     xb = x0 + 0.7
-    k.prop(m, "SackPile", CF((xb, 1.2, (z0 + z1) / 2 + 0.2), G.ry(3)), name="Sacks")
-    k.prop(m, "JarRow", CF((xb + 0.05, 4.0, z0 + 1.0), G.ry(90)), name="Jars")
-    k.prop(m, "TinPair", CF((xb + 0.05, 4.0, z1 - 1.3), G.ry(90)), name="BackTins")
-    k.prop(m, "JarRow", CF((xb + 0.05, 6.8, (z0 + z1) / 2), G.ry(90)), name="Jars", seed=2)
-    # stock on the top board
-    k.prop(m, "TinRow", CF((xc, 8.2, z1 - 1.0), G.ry(90)), name="Tins")
-    k.prop(m, "HairnetBox", CF((xc, 8.2, z0 + 1.1), G.ry(90)), name="Hairnets")
+    zm = (z0 + z1) / 2
+    k.prop(m, "SackPile", CF((xb, 1.2, zm), G.ry(3)), name="Sacks")
+    k.prop(m, "JarRow", CF((xb + 0.05, 4.0, zm), G.ry(90)), name="Jars")
+    k.prop(m, "TinPair", CF((xb + 0.05, 6.8, zm), G.ry(90)), name="BackTins")
+    # a spare pair of tins on the top board, clear of the conduit along the wall and the beam
+    k.prop(m, "TinPair", CF((x0 + 1.9, 8.2, zm), G.ry(90)), name="Tins", seed=3)
     k.prop(m, "LabelStrip", CF((x1 + 0.28, 3.75, (z0 + z1) / 2), G.ry(90)), name="Labels")
     stand(k, m, x1 + IP.STAND_GAP, (z0 + z1) / 2, W)
     return m
@@ -74,7 +73,7 @@ def drinks_cooler(k):
     k.attr(m, "RowDepth", 3)                          # drinks a row holds, front to back
     k.attr(m, "RowPitch", ROW_PITCH)                  # studs between them (going back from the Slot)
     k.box(m, "Base", (x0, L.FLOOR, z0), (x1, 0.8, z1), "black", solid=True)
-    k.mesh(m, "Grille", "DrinksCooler__Grille", _grille(4.0), CF((x1 + 0.05, 0.6, zc)), "steel_dark", shadow=False)
+    k.mesh(m, "Grille", "DrinksCooler__Grille", _grille(4.0), CF((x1 + 0.05, 0.55, zc)), "steel_dark", shadow=False)
     for zz in (z0 + 0.2, z1 - 0.2):
         k.mesh(m, "Side", "DrinksCooler__Side", bevel_box(3.0, 7.4, 0.4, 0.06), CF(((x0 + x1) / 2, 0.8 + 3.7, zz)),
                "red", solid=True)
@@ -108,7 +107,8 @@ def drinks_cooler(k):
             for zz in (z0 + 0.4, z1 - 0.4):
                 k.mesh(m, "Ledge", "DrinksCooler__Ledge", bevel_box(sd, 0.15, 0.2, 0.03),
                        CF((sxc, y - 0.225, zz + (0.1 if zz < zc else -0.1))), "steel_dark", shadow=False)
-        board(k, m, (1.0, 0.35, 0.15), CF((x1 - 0.12, y - 0.3, zc), G.facing((1, 0, 0))), "label_white",
+        board(k, m, (1.0, 0.35, 0.15), CF((x1 - 0.12, y - 0.3 if y > 1.0 else y + 0.17, zc), G.facing((1, 0, 0))),
+              "label_white",
               text=("$2.50", "$1.25", "$1.25", "$1.25")[si], text_color=(160, 30, 24), name="PriceCard")
         for ri, z in enumerate((z1 - 1.0, zc, z0 + 1.0)):
             flav = COOLER_ROWS[si][ri]
@@ -185,7 +185,7 @@ def lockers(k, parent):
         free = 1 if north_hinge else -1                   # which way the free edge is from the centre (+Z / -Z)
         k.mesh(op, "Handle", "Lockers__Handle", bevel_box(0.2, 0.5, 0.2, 0.05),
                cf * CF((0.2, 0.1, free * (lw / 2 - 0.3))), "steel_dark", shadow=False)
-        board(k, op, (0.8, 0.3, 0.15), cf * CF((0.18, 1.15, 0.0), G.ry(-90)), "paper",
+        board(k, op, (0.8, 0.3, 0.15), cf * CF((0.27, 1.15, 0.0), G.ry(-90)), "paper",
               text=("DEB", "MARCO")[i], text_color=(30, 30, 30), name="NameTape")
         if i == 0:
             board(k, op, (0.9, 0.7, 0.15), cf * CF((-0.18, 0.6, 0.0), G.ry(90)), "paper_old",
@@ -197,7 +197,7 @@ def lockers(k, parent):
         insides.fill_cupboard(k, q, [op])
     k.mesh(m, "Cushion", "Lockers__Cushion", bevel_box(x1 - x0, 0.4, z1 - z0, 0.15),
            CF(((x0 + x1) / 2, L.FLOOR + 3.4, (z0 + z1) / 2)), "red_dark", solid=True)
-    k.prop(m, "Newspaper", CF(((x0 + x1) / 2 + 0.1, L.FLOOR + 3.6, -4.9), G.ry(20)), name="Newspaper")
+    k.prop(m, "Newspaper", CF((x1 - 0.45, L.FLOOR + 3.6, -4.9), G.ry(90)), name="Newspaper")    # clear of the sill
     k.mark_used("Lockers")
     return m
 
@@ -248,12 +248,12 @@ def fuse_box(k):
     k.mesh(dm, "Catch", "FuseBox__Catch", bevel_box(0.15, 0.4, 0.15, 0.03), CF((x + 0.12, 5.7, z0 + 0.825)), "black",
            shadow=False)
     hinge(dm, leaf, CF((x - 0.85, 5.7, z0 + 0.75)))
-    k.part(m, "Hub", (0.4, 0.8, 0.8), CF((x + 0.55, 5.4, z0 + 0.65), G.ry(90)), "black", shape="Cylinder", grid=False)
+    k.part(m, "Hub", (0.4, 0.8, 0.8), CF((x + 0.62, 5.4, z0 + 0.65), G.ry(90)), "black", shape="Cylinder", grid=False)
     lev = G.Geo()
     lev.add(bevel_box(0.2, 1.2, 0.2, 0.05, c=(0, 0.6, 0)))
     lev.add(G.sphere(0.22, 8, 4, c=(0, 1.25, 0)))
-    lv = k.mesh(m, "Lever", "FuseBox__Lever", lev, CF((x + 0.55, 5.4, z0 + 0.95)), "red", solid=True)
-    pivot(lv, CF((x + 0.55, 5.4, z0 + 0.95), G.ry(-90)))
+    lv = k.mesh(m, "Lever", "FuseBox__Lever", lev, CF((x + 0.62, 5.4, z0 + 0.95)), "red", solid=True)
+    pivot(lv, CF((x + 0.62, 5.4, z0 + 0.95), G.ry(-90)))
     moving(m, "Lever", "pointing up = ON. Rotate the pivot about X (the wall's normal): +120 deg swings it down = OFF")
     cond = G.Geo()
     for dx in (-0.5, 0.0, 0.5):

@@ -272,7 +272,24 @@ local found, foundNorm = {}, {}
 local function inOurs(d)
 	return (oldRoot and d:IsDescendantOf(oldRoot)) or (cache and d:IsDescendantOf(cache))
 end
+-- the import is the container holding the axis cubes: look for the meshes in there first, so a
+-- part elsewhere in the game that happens to share a mesh's name is never taken for it
+local searchRoots = {workspace, ServerStorage, ReplicatedStorage}
 for _, root in ipairs({workspace, ServerStorage, ReplicatedStorage}) do
+	for _, d in ipairs(root:GetDescendants()) do
+		if d:IsA("MeshPart") and not inOurs(d) and norm(d.Name) == norm(AXIS .. "O") then
+			local top = d
+			while top.Parent and top.Parent ~= workspace and top.Parent ~= ServerStorage
+				and top.Parent ~= ReplicatedStorage and top.Parent ~= game do
+				top = top.Parent
+			end
+			searchRoots = {top}
+			break
+		end
+	end
+	if #searchRoots == 1 then break end
+end
+for _, root in ipairs(searchRoots) do
 	for _, d in ipairs(root:GetDescendants()) do
 		if d:IsA("MeshPart") and not inOurs(d) then
 			if wanted[d.Name] ~= nil and found[d.Name] == nil then
@@ -343,19 +360,20 @@ if fresh then
 		m.Name = name
 		m.Size = src.Size / scale
 		m.CFrame = CFrame.new(0, -10000, 0) * turn
+		m.PivotOffset = CFrame.new() -- the importer leaves pivots far away; the real hinges come later
 		m.Anchored = true
 		m.CanCollide = false
 		m.CanTouch = false
 		m.CanQuery = false
 		m.Parent = newCache
 	end
-	-- remember where the import lives so it can be removed afterwards
-	for _, root in ipairs({workspace, ServerStorage, ReplicatedStorage}) do
-		for _, d in ipairs(root:GetDescendants()) do
-			if d:IsA("BasePart") and not inOurs(d) and (wanted[d.Name] ~= nil or wantedNorm[norm(d.Name)] ~= nil) then
-				containers[d] = true
-			end
-		end
+	-- remember the import this run used (only those instances: other parts that happen to share
+	-- a mesh's name elsewhere in the game are left alone), so it can be removed afterwards
+	for _, name in ipairs(MESHES) do
+		containers[imported(name)] = true
+	end
+	for _, name in ipairs({AXIS .. "O", AXIS .. "X", AXIS .. "Y", AXIS .. "Z"}) do
+		containers[imported(name)] = true
 	end
 	if cache then cache:Destroy() end
 	cache = newCache
@@ -464,6 +482,7 @@ for line in string.gmatch(DATA, "[^\n]+") do
 	elseif k == "X" then
 		local mi = tonumber(f[4])
 		local p = SOURCES[mi]:Clone()
+		p.PivotOffset = CFrame.new() -- an imported mesh's pivot can sit thousands of studs away
 		p.Name = nm(f[3])
 		p.CFrame = cfAt(f, 5) * TURNS[mi]
 		p.Color = color(tonumber(f[9]))
@@ -585,7 +604,7 @@ for part in pairs(containers) do
 	while p and p ~= workspace and p ~= ServerStorage and p ~= ReplicatedStorage and p ~= game do
 		local clean = true
 		for _, d in ipairs(p:GetDescendants()) do
-			if d:IsA("BasePart") and wanted[d.Name] == nil and wantedNorm[norm(d.Name)] == nil then
+			if d:IsA("BasePart") and not containers[d] then -- anything this run did not bring in: keep it
 				clean = false
 				break
 			end

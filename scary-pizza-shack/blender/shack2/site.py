@@ -69,7 +69,7 @@ def forecourt(k, f, gr, rng):
     from_prop(k, vmm, "Flap", ["Flap"], vm * CF((-0.4, 1.28, 1.345)), "Swing", "Metal", angle=-70.0, axis="X",
               label="Take")
     stash(k, vmm, vm * CF((-0.4, 0.8, 1.05), G.facing((0, 0, 1))), (1.3, 0.5, 0.45), behind="Flap")
-    board(k, m.get("VendingMachine"), (1.7, 0.7, 0.15), vm * CF((-0.4, 5.55, 1.29), G.ry(180)), "vending_red",
+    board(k, m.get("VendingMachine"), (1.7, 0.7, 0.15), vm * CF((-0.4, 5.55, 1.36), G.ry(180)), "vending_red",
           text="ICE COLD", text_color=(250, 240, 220), name="Header")
     lamp = k.sc.model(m.get("VendingMachine"), "Glow")
     b = k.part(lamp, "Bulb", (1.4, 3.6, 0.15), vm * CF((-0.4, 3.6, 1.15)), (255, 240, 220), material="Neon",
@@ -280,7 +280,7 @@ def yard(k, f, gr, rng):
     ruts(k, m, rng)
     for i, (x, z) in enumerate(((7.9, -27.5), (12.1, -39.0))):
         k.prop(m, "Puddle", CF((x, 0.03, z), G.ry(90 + 8 * i)), where="outside", name="Puddle", seed=40 + i)
-    for i, (x, z) in enumerate(((-8.5, -31.0), (-2.0, -40.5), (1.5, -34.0), (-12.5, -44.0), (-22.0, -33.5),
+    for i, (x, z) in enumerate(((-6.0, -36.0), (-2.0, -40.5), (1.5, -34.0), (-12.5, -44.0), (-22.0, -33.5),
                                 (19.5, -27.0), (24.0, -22.5), (-5.5, -22.5))):
         k.prop(m, "Stones", CF((x, 0.0, z), G.ry(37 * i)), where="outside", name="Stones", seed=60 + i)
     lead(k, m)
@@ -367,7 +367,7 @@ def lead(k, m):
     """The extension lead from the reel by the generator across the yard to the back wall,
     lying on the ground, kinked."""
     pts = [(-23.0, 0.12, -29.8), (-19.0, 0.12, -26.5), (-17.5, 0.12, -22.0), (-14.0, 0.12, -18.0),
-           (-11.0, 0.12, -14.5), (-9.5, 0.12, -12.6), (-9.5, 1.0, SZ0() - 0.62)]
+           (-13.0, 0.12, -14.5), (-13.0, 0.12, -12.9), (-13.0, 1.0, SZ0() - 0.62)]   # west of the logs and the downpipe
     lead = G.Geo()                                    # one rod a stretch, so each stretch is its own piece
     for a, b in zip(pts, pts[1:]):
         lead.add(rod(a, b, 0.1, 5))
