@@ -21,14 +21,83 @@ sys.path.insert(0, TOOLS)
 import numpy as np  # noqa: E402
 import spslib  # noqa: E402
 
-from potato import brickcheck, fuse, npc, plotkit, rig, spud_anim, spuds  # noqa: E402
+from potato import brickcheck, fuse, guardian_anim, guardians, npc, plotkit, rig, spud_anim, spuds  # noqa: E402,E501
 
 PIECES = {
     "potatoes_meadow": dict(file="Potatoes_Meadow", title="the Meadow Patch potatoes and their clips"),
     "plot": dict(file="PlotKit", title="the plot kit (fences, soil, board, mound, seeds)"),
     "questnpc": dict(file="QuestNpc", title="Farmer Spud, the quest NPC, and his clips"),
     "fuse": dict(file="FuseMachine", title="the Fuse Machine"),
+    "guardians1": dict(file="Guardians1", title="guardians 1-6 (Meadow to Frost) and their clips", span=(0, 6)),
+    "guardians2": dict(file="Guardians2", title="guardians 7-12 (Haunt to Candy) and their clips", span=(6, 12)),
+    "guardians3": dict(file="Guardians3", title="guardians 13-18 (Clock to Olympus) and their clips", span=(12, 18)),
 }
+GAITS = ("Stomp", "Scuttle", "Hop", "Float", "Gallop")
+
+
+def check_guardian(m, area):
+    errs = []
+    parts = [n for n in m.walk() if n.kind == "Part"]
+    root = m.p.get("primary")
+    if root is None or root.name != "Root" or not root.p["anchored"] or root.p["transparency"] < 0.99:
+        errs.append("%s: Root is not an anchored invisible PrimaryPart" % area)
+    elif abs(float(root.p["cf"].p[1]) - root.p["size"][1] / 2) > 1e-6:
+        errs.append("%s: Root is not on the ground" % area)
+    if len(parts) > 60:
+        errs.append("%s: %d parts" % (area, len(parts)))
+    for p in parts:
+        if p is root:
+            continue
+        if p.p["anchored"] or p.p["collide"] or p.p["touch"] or p.p["query"] or not p.p["massless"]:
+            errs.append("%s: %s flags" % (area, p.path()))
+        if p.p["shadow"] and max(p.p["size"]) < 2.5:
+            errs.append("%s: small %s casts a shadow" % (area, p.path()))
+    eo = [p for p in parts if p.name == "EyeOpen"]
+    es = [p for p in parts if p.name == "EyeShut"]
+    if not eo or not es or any(p.p["transparency"] > 0 for p in eo) or any(p.p["transparency"] < 1 for p in es):
+        errs.append("%s: eyes (%d open, %d shut)" % (area, len(eo), len(es)))
+    at = m.p.get("attrs", {})
+    if at.get("Gait") not in GAITS or not 6.0 <= at.get("Height", 0) <= 10.0 or not at.get("RunSpeed"):
+        errs.append("%s: attributes %s" % (area, at))
+    motors = [n for n in m.walk() if n.kind == "Motor"]
+    for n in motors:
+        if n.p["part1"].name != n.name:
+            errs.append("%s: motor %s drives %s" % (area, n.name, n.p["part1"].name))
+    names = {n.name for n in motors}
+    for c in guardian_anim.CLIPS[area]:
+        frames = c.bake()
+        extra = set().union(*[set(X) for X in frames]) - names
+        if extra:
+            errs.append("%s: %s writes %s" % (area, c.name, sorted(extra)))
+    errs += ["%s: %s" % (area, e) for e in brickcheck.rules(parts)]
+    for shut in (False, True):                                 # flickering faces, eyes open and eyes shut
+        if shut:
+            for p in eo:
+                p.p["transparency"] = 1.0
+            for p in es:
+                p.p["transparency"] = 0.0
+        for a, b, ar in brickcheck.zfight(parts, ground=0.0):
+            errs.append("%s%s: z-fight %s %s / %s %s (%.3f)" % (area, " (shut)" if shut else "", a.path().split("/", 2)[-1],
+                        [round(v, 2) for v in a.p["size"]], b.path().split("/", 2)[-1],
+                        [round(v, 2) for v in b.p["size"]], ar))
+        if shut:
+            for p in eo:
+                p.p["transparency"] = 0.0
+            for p in es:
+                p.p["transparency"] = 1.0
+    # no clip pushes a part far into the ground
+    P = rig.Pose(m)
+    for c in guardian_anim.CLIPS[area]:
+        frames = c.bake()
+        low = 1e9
+        for X in frames[::3]:
+            for part, cf_ in P.world(X).values():
+                if part.p["transparency"] >= 0.99 and part.name != "EyeShut":
+                    continue
+                low = min(low, float((cf_.p - np.abs(cf_.R) @ (np.array(part.p["size"]) / 2))[1]))
+        if low < -0.45:
+            errs.append("%s: %s goes %.2f into the ground" % (area, c.name, -low))
+    return errs
 
 
 def check_rig(m, joints, allowed_anchored=("Root", "Prompt")):
@@ -187,6 +256,29 @@ def main():
         hi = np.max([p.p["cf"].p + np.abs(p.p["cf"].R) @ (np.array(p.p["size"]) / 2) for p in parts], axis=0)
         print("  FuseMachine: %d parts (%d solid), size %s" % (len(parts), sum(1 for p in parts if p.p["collide"]),
                                                              np.round(hi - lo, 1)))
+    elif piece.startswith("guardians"):
+        sc = spslib.Scene("PotatoKit")
+        gfold = sc.container(sc.root, "Guardians")
+        afold = sc.container(sc.root, "GuardianAnimations")
+        errs = []
+        i0, i1 = cfg["span"]
+        for area, title, fn in guardians.AREAS[i0:i1]:
+            m = fn(sc, gfold)
+            sc.container(afold, area)
+            errs += check_guardian(m, area)
+            clips = [rig.write_clip(m, c, c.bake()) for c in guardian_anim.CLIPS[area]]
+            ap = os.path.join(out, "%s_%s_anims.json" % (cfg["file"], area))
+            with open(ap, "w") as f:
+                json.dump([rig.folder_json(area, clips)], f)
+            anim_specs[area] = ap
+            at = m.p["attrs"]
+            print("  %-8s %-16s %2d parts  %-7s Height %.2f  RunSpeed %4.1f  joints %s" % (
+                area, title, sum(1 for x in m.walk() if x.kind == "Part"), at["Gait"], at["Height"], at["RunSpeed"],
+                sorted(n.name for n in m.walk() if n.kind == "Motor")))
+            for c in guardian_anim.CLIPS[area]:
+                fr = c.bake()
+                print("           %-5s %.2f s %s %3d keys  joints %s" % (c.name, c.length, "loop" if c.loop else "once",
+                                                                      len(fr), sorted(rig.moving(fr))))
     elif piece == "plot":
         sc = spslib.Scene("PotatoKit")
         plotkit.build(sc)

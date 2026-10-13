@@ -175,9 +175,15 @@ def main(src, dst, title, anims=None):
                 lines.append("T %d %s s %s" % (me, key, lua_name(str(val))))
 
     items = items_of(nodes)
+    by = {n["i"]: n for n in nodes}
     for folder_name, path in (anims or {}).items():
+        f = [n for n in nodes if n["kind"] == "Folder" and n["name"] == folder_name][0]
+        names, q = [], f
+        while q is not None:
+            names.append(q["name"])
+            q = by.get(q["parent"]) if q["parent"] is not None else None
         for ks in json.load(open(path))[0]["children"]:
-            items.append("PotatoKit.%s.%s (KeyframeSequence)" % (folder_name, ks["name"]))
+            items.append("%s.%s (KeyframeSequence)" % (".".join(reversed(names)), ks["name"]))
     colors = ", ".join("{%d, %d, %d}" % c for c in tb.colors)
     mats = ", ".join('"%s"' % m for m in tb.mats)
     rots = ",\n\t".join("{%s}" % ", ".join(num(v, 5) for v in r) for r in tb.rots)

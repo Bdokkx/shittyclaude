@@ -16,6 +16,7 @@ The pieces so far:
 | `BuildPlotKit.lua` | 4.2, the plot kit: four fence tiers, Soil, UpgradeBoard, Mound, the Seeds (now 18, with 30% bigger toppers; GateArch now 14 wide) |
 | `BuildQuestNpc.lua` | Farmer Spud, the quest NPC, and his four clips |
 | `BuildFuseMachine.lua` | The Fuse Machine |
+| `BuildGuardians1.lua`, `BuildGuardians2.lua`, `BuildGuardians3.lua` | The 18 guardians, six per script, and their Sleep, Wake and Run clips |
 
 ---
 
@@ -291,3 +292,87 @@ The dome and the pipe stay low enough that the whole sign shows from a player's 
 - `turn_FuseMachine.jpg`: front, right, back, left
 - `face_FuseMachine.jpg`: three-quarter view
 - `face_FuseMachine_eye.jpg`: from a player's eye level, 34 studs out
+
+---
+
+## The 18 guardians (`BuildGuardians1.lua`, `BuildGuardians2.lua`, `BuildGuardians3.lua`)
+
+| Script | Areas | Size |
+|---|---|---|
+| `BuildGuardians1.lua` | Meadow, Dunes, Marsh, Jungle, Reef, Frost | 257 KB |
+| `BuildGuardians2.lua` | Haunt, Lava, Crystal, Dino, Toy, Candy | 223 KB |
+| `BuildGuardians3.lua` | Clock, Neon, Cloud, Cosmic, Void, Olympus | 208 KB |
+
+Each script builds its six into these paths, and leaves the other areas' guardians alone:
+
+| Path | What |
+|---|---|
+| `PotatoKit.Guardians.<AreaId>` | The guardian (a Model) |
+| `PotatoKit.GuardianAnimations.<AreaId>.Sleep`, `Wake`, `Run` | Its clips (KeyframeSequences) |
+
+**Every guardian.**
+
+- **Root:** the PrimaryPart. Anchored and invisible, 2 × 0.4 × 2, on the ground in the middle of its footprint. The front is -Z. Move the guardian by moving Root (its pivot is on the ground).
+- **The other parts:** unanchored and Massless, with CanCollide, CanTouch and CanQuery off.
+- **Joints:** as on Farmer Spud. Parts are welded into groups, and the groups are joined by Motor6Ds. Each Motor6D's Part1 carries the Motor6D's own name, so a Pose, its Motor6D and its Part1 share one name. A few groups hang off small invisible parts at their hinge, named the same way.
+- **Eyes:**
+  - **EyeOpen:** every part of the open eyes (whites, pupils, glints).
+  - **EyeShut:** the closed-eye lines.
+  - The models are built awake: EyeOpen at Transparency 0, EyeShut at 1. Swap them for sleep.
+  - Some eyes glow (Neon): Frost's pupils, Lava, Toy, Clock, Neon, and both sets on Void (its shut eyes are magenta lines).
+- **Attributes:**
+  - `Gait`: Stomp, Scuttle, Hop, Float or Gallop.
+  - `Height`: its top above the ground in the rest pose.
+  - `RunSpeed`: the speed in studs a second that Run's feet are made for (see below).
+- **Parts:** 34 to 56 each, Root included.
+
+| Area | Guardian | Gait | Height | Parts | RunSpeed | Motor6Ds (Part0 → Part1 is Root → Body → … unless noted) |
+|---|---|---|---|---|---|---|
+| Meadow | Scarecrow on a pole, crow on its hat | Hop | 9.6 | 51 | 7 | Body; LegL, LegR, ArmL, ArmR, Head (on Body); Hat (on Head); Crow (on Hat) |
+| Dunes | Scorpion | Scuttle | 6.5 | 56 | 8.5 | Body; Head, ClawL, ClawR, LegL1–3, LegR1–3, Tail (on Body); Sting (on Tail) |
+| Marsh | Bog frog with a mushroom | Hop | 6.1 | 48 | 8 | Body; Head, LegL, LegR, ArmL, ArmR (on Body); Jaw (on Head) |
+| Jungle | Tiger | Gallop | 7.0 | 48 | 15 | Body; Head, LegFL, LegFR, LegBL, LegBR, Tail (on Body); Jaw (on Head) |
+| Reef | Giant crab with an eyepatch | Scuttle | 6.2 | 51 | 7.7 | Body; Head (eye stalks), ClawL, ClawR, LegL1–3, LegR1–3 (on Body) |
+| Frost | Snow golem | Stomp | 9.8 | 47 | 6.5 | LegL, LegR, Body (on Root); Head, ArmL, ArmR (on Body) |
+| Haunt | Ghost with a lantern | Float | 7.8 | 34 | 8 | Body; Head, ArmL, ArmR, Tail (on Body) |
+| Lava | Magma golem | Stomp | 9.7 | 36 | 6.7 | LegL, LegR, Body (on Root); Head, ArmL, ArmR (on Body) |
+| Crystal | Crystal spider | Scuttle | 6.9 | 53 | 11.7 | Body; Head, LegL1–4, LegR1–4 (on Body) |
+| Dino | Raptor | Gallop | 8.3 | 43 | 16.1 | Body; Head, ArmL, ArmR, LegL, LegR, Tail (on Body); Jaw (on Head); TailTip (on Tail) |
+| Toy | Wind-up tin robot | Stomp | 9.4 | 47 | 9.5 | LegL, LegR, Body (on Root); Head, ArmL, ArmR, Key (on Body) |
+| Candy | Jelly slime with a cherry | Hop | 6.5 | 36 | 6 | Body; Top (on Body); Head (on Top: the face) |
+| Clock | Clockwork beetle | Scuttle | 6.6 | 52 | 8.5 | Body; Head, Gear, LegL1–3, LegR1–3 (on Body) |
+| Neon | Patrol drone | Float | 7.5 | 34 | 12 | Body; Head (the eye), RotorFL, RotorFR, RotorBL, RotorBR (on Body) |
+| Cloud | Storm cloud | Float | 8.3 | 40 | 7 | Body; Head (the face), PuffL, PuffR, Bolt, Rain (on Body) |
+| Cosmic | Star hound | Gallop | 6.4 | 42 | 14.6 | Body; Head, LegFL, LegFR, LegBL, LegBR, Tail (on Body); Jaw (on Head) |
+| Void | Glitch cube | Hop | 7.7 | 38 | 6 | Body; SliceMid, SliceTop, Bits (on Body); Head (on SliceTop: the face) |
+| Olympus | Marble lion with a laurel | Gallop | 8.1 | 39 | 13.4 | Body; Head, LegFL, LegFR, LegBL, LegBR, Tail (on Body); Jaw (on Head) |
+
+**The clips.** They are in `PotatoKit.GuardianAnimations.<AreaId>` and are posed on the guardian's own Motor6Ds, like Farmer Spud's. Keys are Linear.
+
+| Clip | Length | Loop | Keys a second | Priority | What it does |
+|---|---|---|---|---|---|
+| **Sleep** | 3.0 s | yes | 10 | Movement | The sleeping pose, breathing, with a `Snore` marker at 1.5 s. Animals lie down, the golems and the robot slump where they stand, the crawlers settle onto the ground, the ghost and the cloud sink low, and the drone powers down onto the ground. |
+| **Wake** | 1.5 s | no | 30 | Action | Starts in Sleep's first pose. The head comes up first: open the eyes at **0.25 s** (marker `EyesOpen`). It gets up between 0.25 and 0.8 s, roars or threatens around **1.0 s** (marker `Roar`), and settles into its rest pose by 1.5 s. |
+| **Run** | 0.4–1.0 s | yes | 30 | Movement | Its gait, in place, with `Step` markers on footfalls (`Land` for the hoppers). |
+
+**Playing them.**
+
+- **The order:** Sleep while it sleeps (show EyeShut), then Wake once (show EyeOpen at 0.25 s), then Run while it chases. Wake ends in the rest pose, and Run starts close to it. Run leans forward a little, so a 0.1–0.2 s blend into it is smoother if your player has one.
+- **Speed:**
+  - `RunSpeed` is how fast Run's feet are made for. If you move a guardian at V studs a second, play Run at V / RunSpeed speed, and its feet won't slide.
+  - The animals run near a player's speed: the tiger at 15, the raptor at 16.
+  - The golems are slow, at 6.5. The hoppers and floaters don't touch the ground much, so any speed looks right for them.
+- **Hoppers and floaters:** Root stays on the ground the whole time. For a hopper, the clip lifts the body into the air (Body, or Body and Top for the slime). A floater hovers on its Body joint.
+- **Moving bits:**
+  - Neon's four rotors spin in Wake and Run.
+  - Toy's wind-up key turns as it runs.
+  - Clock's gear spins.
+  - Cloud's Rain falls and its Bolt jumps down out of the cloud as it wakes. The Bolt stays tucked inside the cloud while it sleeps.
+  - Void's slices twist and glitch, and its Bits orbit.
+  - The scarecrow's crow pecks while its master sleeps, and flies up off the hat when it wakes.
+
+**Previews:** `previews/guardians/`
+
+- `guardians_grid_*.jpg`: all 18, awake
+- `guardians_sleep_*.jpg`: all 18 with their eyes shut
+- `clips_<AreaId>.jpg`: six frames each of Sleep, Wake and Run

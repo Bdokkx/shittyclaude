@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 previews/**/_*.png
 previews/**/_frames.txt
+out/kit/Guardians*_anims.json

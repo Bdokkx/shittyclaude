@@ -143,13 +143,14 @@ class Pose:
 # ---------------------------------------------------------------- KeyframeSequences
 
 class Clip:
-    def __init__(self, name, length, loop, priority, fn, markers=()):
+    def __init__(self, name, length, loop, priority, fn, markers=(), fps=FPS):
         self.name, self.length, self.loop, self.priority, self.fn = name, length, loop, priority, fn
         self.markers = list(markers)
+        self.fps = fps
 
     def times(self):
-        n = int(round(self.length * FPS))
-        return [i / FPS for i in range(n + 1)]
+        n = int(round(self.length * self.fps))
+        return [i / self.fps for i in range(n + 1)]
 
     def bake(self):
         out = []
