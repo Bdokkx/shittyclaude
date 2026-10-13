@@ -33,6 +33,7 @@ The pieces so far:
 | `BuildPotatoesClock.lua` | The Clockwork Yard potatoes |
 | `BuildPotatoesNeon.lua` | The Neon City potatoes |
 | `BuildPotatoesCloud.lua` | The Cloud Kingdom potatoes |
+| `BuildPotatoesVoid.lua` | The Glitch Void potatoes |
 
 ---
 
@@ -856,4 +857,29 @@ The rig, rules and clips are the same as the Meadow Patch six. Each has 42 to 45
 
 - `lineup_Cloud_L10.jpg`
 - `levels_SeraphSpud.jpg`
+- `turn_<Id>.jpg` for each of the six
+
+---
+
+## Glitch Void potatoes (`BuildPotatoesVoid.lua`)
+
+| Path | Rarity | What |
+|---|---|---|
+| `PotatoKit.Potatoes.StaticSpud` | Legendary | TV static: speckled grey, black and white noise across it, an old set's rabbit-ear aerial on its head |
+| `PotatoKit.Potatoes.ErrorTater` | Mythic | An error message: a pale window with a blue title bar on top, a red X to close it and a yellow warning sign on its front |
+| `PotatoKit.Potatoes.ShadowFry` | Secret | A shadow standing up on its own: tall, dark and a little see-through, wisps of shadow curling off it, only its glowing white eyes and mouth showing |
+| `PotatoKit.Potatoes.GlitchSpud` | Secret | A glitch: slices of it slipped sideways, red and cyan fringes down its edges like a bad signal, stray glowing pixels floating off it |
+| `PotatoKit.Potatoes.VoidWalker` | Divine | A walker between worlds: void black with stars inside it, glowing purple edges, a portal ring glowing behind it and glowing eyes |
+| `PotatoKit.Potatoes.KingNull` | Divine | The king of nothing: void black, a glowing white zero on its chest, a cape lined with glowing purple, black cubes orbiting it, glowing white eyes and a jagged black crown |
+
+The rig, rules and clips are the same as the Meadow Patch six. Each has 38 to 45 parts.
+
+- **ShadowFry's body** is at Transparency 0.25.
+- **KingNull's `Crown`** is a jagged crown like ObsidianOverlord's, in black with a glowing white `Jewel`. It shows at level 10.
+- **The glowing faces:** ShadowFry's, VoidWalker's and KingNull's eyes and mouths glow (Neon).
+
+**Previews:** `previews/potatoes/`
+
+- `lineup_Void_L10.jpg`
+- `levels_KingNull.jpg`
 - `turn_<Id>.jpg` for each of the six
