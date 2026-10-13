@@ -40,6 +40,7 @@ The pieces so far:
 | `BuildSceneryHaunt.lua` | The Haunted Hollow hero and props |
 | `BuildSceneryDino.lua` | The Dino Valley hero and props |
 | `BuildSceneryToy.lua` | The Toy Town hero and props |
+| `BuildSceneryClock.lua` | The Clockwork Yard hero and props |
 
 ---
 
@@ -1101,3 +1102,36 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 - `hero_Toy_corner.jpg`: from the corner
 - `props_Toy.jpg`: the props in a row
 - `props_Toy_top.jpg`: the props from above
+
+### Clockwork Yard (`BuildSceneryClock.lua`)
+
+**`PotatoKit.Heroes.Clock`**: 174 parts, 39.6 wide, 37.9 tall, 16.9 deep.
+
+- **The tower:** brass and copper on a stone base with steps. Copper panels in two shades sit between brass bands.
+- **The clock:** a big clock face at the top, its hands at ten past ten.
+- **Below the clock:** a glass case (Transparency 0.55) with the pendulum, then a door.
+- **On top:** an open cupola with a bell, a green stepped roof and a weathervane.
+- **The gears:** eight of them turn: three on the front, one on each side, one on the workshop and two in an iron frame on the far side.
+  - Every `Gear` part has `Spin`. The parts of one gear share a value and are all centred on its axle.
+  - Gears that mesh turn opposite ways (negative Spin).
+- **Beside it:** a brick workshop with a chimney letting off steam and a round clock window; copper pipes with a red valve and steam; and two gas lamps at the foot.
+- **Solid (18 parts):** the base and steps, the tower, the workshop and its roof, and the gear frame's posts and footing.
+- **Glow:** the two gas lamps (`Lamp`) have Flicker 0.08 and NightLamp. The steam is Transparency 0.35.
+
+| `PotatoKit.Props.Clock.<Name>` | Parts | W × H × D | Count | Scale | Band | Solid | What |
+|---|---|---|---|---|---|---|---|
+| `GearStand` | 16 | 7.9 × 8.3 × 2.5 | 6 | 0.85–1.25 | Side | yes | A big brass gear on an iron stand meshing with a copper one (`Spin` 30 and -62) |
+| `SteamPipes` | 28 | 5.4 × 10.6 × 3.0 | 5 | 0.9–1.3 | Edge | yes | Three copper pipes with brass collars, a red valve, a pressure gauge and steam |
+| `GasLamp` | 14 | 2.9 × 9.7 × 1.8 | 6 | 0.95–1.15 | Side | no | A Victorian gas lamp (`Lamp`: Flicker, NightLamp) |
+| `Boiler` | 28 | 5.3 × 11.2 × 5.4 | 4 | 0.9–1.2 | Side | yes | A copper boiler on legs with brass bands, a fire glowing in its door (`Fire`), a gauge, a chimney and steam |
+| `GearPile` | 16 | 5.9 × 3.1 × 5.2 | 8 | 0.8–1.3 | Any | no | Three loose gears in a heap |
+| `PocketWatch` | 25 | 7.0 × 7.3 × 3.1 | 3 | 0.9–1.2 | Side | yes | A giant brass pocket watch leaning back on a stand |
+| `StreetClock` | 17 | 4.0 × 11.6 × 2.5 | 4 | 0.95–1.15 | Side | no | A clock on a tall iron post |
+| `GiantSpring` | 17 | 3.7 × 7.2 × 3.7 | 5 | 0.85–1.2 | Any | yes | A giant steel spring coiled on a crate |
+
+**Previews:** `previews/scenery/`
+
+- `hero_Clock.jpg`: from the lane
+- `hero_Clock_corner.jpg`: from the corner
+- `props_Clock.jpg`: the props in a row
+- `props_Clock_top.jpg`: the props from above
