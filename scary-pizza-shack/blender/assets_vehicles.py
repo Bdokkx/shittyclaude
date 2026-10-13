@@ -117,6 +117,33 @@ def taillight(v, center, size):
 
 # ---------------------------------------------------------------- the Inspector's car
 
+DOOR_Z = (-2.6, 0.6)            # the driver's door, between the door lines (the driver sits on the left, -X)
+DOOR_OPEN = -70.0
+
+
+def driver_door(sc, v, m, K):
+    """The driver's door, an openable Model (the shack's Opens contract): the panel from the
+    sill to the waist with its piece of chrome strip and its handle, hinged on its front edge
+    and swinging out to the left. Papa_CarDoor (on the map) is where he stands once out."""
+    d = sc.model(m, "DriverDoor")
+    sc.attr(d, "Opens", "Swing")
+    sc.attr(d, "OpenAngle", DOOR_OPEN)
+    sc.attr(d, "OpenSound", "Metal")
+    dv = VB(sc, d, CF(v.o), v.owner)
+    z0, z1 = DOOR_Z
+    panel = dv.part("Panel", (1, 2.8, z1 - z0 - 0.06), (-3.5, 2.2, (z0 + z1) / 2), K)
+    t = G.Geo()
+    t.add(G.box(0.06, 0.14, z1 - z0 - 0.1, (-4.03, 2.95, (z0 + z1) / 2)))
+    t.add(G.box(0.06, 0.06, 0.5, (-4.03, 3.25, z1 - 0.6)))
+    dv.mesh("DoorTrim", t, "chrome", material="Metal")
+    pivot(panel, v.cf((-4.0, 0.8, z0)))
+    d.p["primary"] = panel
+    moving(m.name, "DriverDoor", "an openable Model: Opens Swing, OpenAngle %g about its pivot's Y (the hinge on "
+                                 "the door's front edge); open = DriverDoor:PivotTo(closed * CFrame.Angles(0, "
+                                 "math.rad(OpenAngle), 0))" % DOOR_OPEN)
+    return d
+
+
 def inspector_car(sc, parent, origin=CF(), name="InspectorCar"):
     """A long black 1960s saloon: 8 wide, 19 long (bumper to bumper), 6.5 tall to the beacon."""
     m = sc.model(parent, name)
@@ -126,11 +153,18 @@ def inspector_car(sc, parent, origin=CF(), name="InspectorCar"):
     v.box("Body", (-3, 0.8, -8.5), (3, 2.8, 8.5), K)
     for sx in (-1, 1):
         x0, x1 = (3, 4) if sx > 0 else (-4, -3)
-        v.box("Sill", (x0, 0.8, -4), (x1, 2.8, 4), K)
+        if sx > 0:
+            v.box("Sill", (x0, 0.8, -4), (x1, 2.8, 4), K)
+        else:                                           # the driver's door fills the gap between
+            v.part("Sill", (1, 2.0, DOOR_Z[0] + 4), (-3.5, 1.8, (DOOR_Z[0] - 4) / 2), K)
+            v.part("Sill", (1, 2.0, 4 - DOOR_Z[1]), (-3.5, 1.8, (DOOR_Z[1] + 4) / 2), K)
         v.box("Corner", (x0, 0.8, -8.5), (x1, 2.8, -7.5), K)
         v.box("Corner", (x0, 0.8, 7.5), (x1, 2.8, 8.5), K)
         v.wedge("Fin", (1, 0.8, 3), (sx * 3.5, 4.0, 7.0), None, K)
-    v.box("Deck", (-4, 2.8, -8.5), (4, 3.6, 8.5), K)
+    v.box("Deck", (-3, 2.8, -8.5), (4, 3.6, 8.5), K)
+    v.part("Deck", (1, 0.8, DOOR_Z[0] + 8.5), (-3.5, 3.2, (DOOR_Z[0] - 8.5) / 2), K)
+    v.part("Deck", (1, 0.8, 8.5 - DOOR_Z[1]), (-3.5, 3.2, (DOOR_Z[1] + 8.5) / 2), K)
+    driver_door(sc, v, m, K)
     v.box("Cabin", (-3, 3.6, -3), (3, 5.6, 3), "glass_dark", material="SmoothPlastic")
     v.wedge("Windscreen", (6, 2.0, 1), (0, 4.6, -3.5), None, "glass_dark", material="SmoothPlastic")
     v.wedge("RearWindow", (6, 2.0, 1), (0, 4.6, 3.5), G.ry(180), "glass_dark", material="SmoothPlastic")
@@ -146,10 +180,12 @@ def inspector_car(sc, parent, origin=CF(), name="InspectorCar"):
             pil.add(a.xf(T(sx * 3.07, 4.6, zz + sgn * 0.5)))
     v.mesh("Pillars", pil, K)
     trim = G.Geo()
-    for sx in (-1, 1):
-        trim.add(G.box(0.06, 0.14, 16.6, (sx * 4.03, 2.95, 0)))
-        trim.add(G.box(0.06, 0.06, 0.5, (sx * 4.03, 3.25, -1.2)))       # door handles
-        trim.add(G.box(0.06, 0.06, 0.5, (sx * 4.03, 3.25, 1.8)))
+    trim.add(G.box(0.06, 0.14, 16.6, (4.03, 2.95, 0)))
+    trim.add(G.box(0.06, 0.06, 0.5, (4.03, 3.25, -1.2)))               # door handles
+    trim.add(G.box(0.06, 0.06, 0.5, (4.03, 3.25, 1.8)))
+    for (za, zb) in ((-8.3, DOOR_Z[0]), (DOOR_Z[1], 8.3)):              # the driver's side, less the door
+        trim.add(G.box(0.06, 0.14, zb - za - 0.04, (-4.03, 2.95, (za + zb) / 2)))
+    trim.add(G.box(0.06, 0.06, 0.5, (-4.03, 3.25, 1.8)))
     grille = G.Geo().add([G.box(4.8, 0.08, 0.1, (0, 2.0 + 0.16 * k, -8.55)) for k in range(5)])
     grille.add(G.box(0.1, 0.8, 0.1, (-2.4, 2.32, -8.55)))
     grille.add(G.box(0.1, 0.8, 0.1, (2.4, 2.32, -8.55)))

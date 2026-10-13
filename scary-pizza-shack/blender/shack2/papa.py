@@ -15,6 +15,7 @@ from . import layout as L
 
 BODY = np.array((2.5, 4.6, 1.5))          # half extents of a 9-stud figure, arms in
 HEAD = 8.0
+CAR_DOOR = (-6.0, 0.0, 1.2)               # from the InspectorCar's pivot: clear of its door open at -70
 SEE_THROUGH = ("Glass", "Window", "Fence", "Mesh", "Gate", "Wire", "Blocker", "PlayerBlock", "Chain", "Cable",
                "Tuft", "Fern", "Leaf", "Litter", "Puddle", "Rut", "Stain", "Cracks", "Weeds", "Moth", "Glow",
                "Bulb", "Board", "Tape", "BayLines", "EdgeLine", "CentreLine")
@@ -237,6 +238,11 @@ def build(k, sc):
                        [(13.6 + dx, L.OUT_Z1 - 3.5 + dz) for dx in (0.0, 0.5, -0.5) for dz in (0.0, -1.0, 1.0)],
                        win + cams + ["Yard"], target=(0.0, 0.0, 40.0), half=crouch, y=L.ROOF_TOP)
     put("Papa_Roof", p, R, seen, {"Pose": "Crouch"})
+    # out of his car: beside the InspectorCar's open DriverDoor (on its left, the road side) at
+    # Car_Stop, behind the door's swing, facing the shack
+    cs = mk.find("Car_Stop").p["cf"]
+    p = np.asarray((cs * CF(CAR_DOOR)).p, float)
+    put("Papa_CarDoor", p, facing(p, (0.0, 0.0, 0.0)), space.sees(p, vps))
     # the walk round the shack (a loop: along the front, down the west side past the side
     # window, through the yard past the back door and the gate, out by the east side), found on
     # a grid of the spots his body fits and straightened into legs that are clear all the way
@@ -372,14 +378,14 @@ def check(sc):
     gr = sc.kit_ground
     need = (["Papa_Deep%d" % i for i in range(1, 5)] + ["Papa_Trees%d" % i for i in range(1, 5)] +
             ["Papa_Road1", "Papa_Road2", "Papa_BusStop", "Papa_BusStopSit", "Papa_Forecourt1", "Papa_Forecourt2",
-             "Papa_SideWindow", "Papa_BackDoor", "Papa_Yard1", "Papa_Yard2", "Papa_Roof", "Papa_Camp",
+             "Papa_SideWindow", "Papa_BackDoor", "Papa_Yard1", "Papa_Yard2", "Papa_Roof", "Papa_Camp", "Papa_CarDoor",
              "Truck_Stop"])
     for name in need:
         if mk.find(name) is None:
             out.append(("missing", name))
     for m in mk.children:
         n = m.name
-        if not n.startswith("Papa_") or n.startswith("Papa_Walk") or n in ("Papa_Camp", "Papa_CarDoor"):
+        if not n.startswith("Papa_") or n.startswith("Papa_Walk") or n == "Papa_Camp":
             continue
         a = m.p.get("attrs") or {}
         cf_ = m.p["cf"]
@@ -420,7 +426,7 @@ def standins(sc):
     f = sc.folder(sc.root, "PapaStandIns")
     for m in sc.root.get("Markers").children:
         n = m.name
-        if not n.startswith("Papa_") or n in ("Papa_Camp", "Papa_CarDoor"):
+        if not n.startswith("Papa_") or n == "Papa_Camp":
             continue
         pose = (m.p.get("attrs") or {}).get("Pose")
         cf_ = m.p["cf"]
