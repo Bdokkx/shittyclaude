@@ -30,6 +30,7 @@ The pieces so far:
 | `BuildPotatoesHaunt.lua` | The Haunted Hollow potatoes |
 | `BuildPotatoesDino.lua` | The Dino Valley potatoes |
 | `BuildPotatoesToy.lua` | The Toy Town potatoes |
+| `BuildPotatoesClock.lua` | The Clockwork Yard potatoes |
 
 ---
 
@@ -775,4 +776,31 @@ The rig, rules and clips are the same as the Meadow Patch six. Each has 40 to 45
 
 - `lineup_Toy_L10.jpg`
 - `levels_GeneralTater.jpg`
+- `turn_<Id>.jpg` for each of the six
+
+---
+
+## Clockwork Yard potatoes (`BuildPotatoesClock.lua`)
+
+| Path | Rarity | What |
+|---|---|---|
+| `PotatoKit.Potatoes.RustyBolt` | Epic | A rusty old bolt: a grey hex head on top, the thread's ridges round it and patches of orange rust |
+| `PotatoKit.Potatoes.GearTater` | Legendary | Brass clockwork: a cog set in its front and a big one turning behind its head |
+| `PotatoKit.Potatoes.SteamFry` | Mythic | A tall copper steam engine: brass goggles pushed up on its forehead, a smokestack puffing steam and a brass pipe down its side |
+| `PotatoKit.Potatoes.TickTockSpud` | Mythic | An alarm clock: bright red, its face on a white clock dial with ticks at twelve and six, two gold bells on top and the hammer between them |
+| `PotatoKit.Potatoes.TeslaTuber` | Secret | A Tesla coil: copper wound with darker coils, a silver sphere on its head, lightning crackling from it and glowing electric-blue eyes |
+| `PotatoKit.Potatoes.ChronoKing` | Divine | The king of time: gold, a royal purple cape with an ermine collar, a cog turning beside its head, an hourglass in its left hand and a bigger crown |
+
+The rig, rules and clips are the same as the Meadow Patch six. Each has 42 to 45 parts.
+
+- **ChronoKing's hourglass** (`Hourglass` bricks) is held in the left hand: children of `HandL`, welded to it.
+  - Hide them with it below level 5.
+  - Its top bulb is see-through (Transparency 0.4).
+- **TickTockSpud's face** sits a little further forward than usual (Z = -1.5), on its clock dial.
+- **TeslaTuber's eyes and lightning** glow (Neon).
+
+**Previews:** `previews/potatoes/`
+
+- `lineup_Clock_L10.jpg`
+- `levels_ChronoKing.jpg`
 - `turn_<Id>.jpg` for each of the six

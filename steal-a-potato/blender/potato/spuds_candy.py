@@ -22,10 +22,10 @@ def hand_at(sp, side="L", length=1.45, spread=38.0, hand_size=(0.8, 0.74, 0.74))
     return wrist + down * (hand_size[1] / 2 - 0.05), R
 
 
-def held(sp, name, size, pos, R=None, color="ffffff", side="L", material="Plastic"):
+def held(sp, name, size, pos, R=None, color="ffffff", side="L", material="Plastic", **kw):
     """A brick held in a hand: a child of the hand, welded to it."""
     hand = sp.feat["Hand" + side]
-    p = sp.b.part(hand, name, size, pos, R, color, material=material)
+    p = sp.b.part(hand, name, size, pos, R, color, material=material, **kw)
     sp.welds.append((hand, p))
     return p
 

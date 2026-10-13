@@ -567,6 +567,7 @@ from .spuds_reef import REEF  # noqa: E402
 from .spuds_haunt import HAUNT  # noqa: E402
 from .spuds_dino import DINO  # noqa: E402
 from .spuds_toy import TOY  # noqa: E402
+from .spuds_clock import CLOCK  # noqa: E402
 AREAS["Dunes"] = DUNES
 AREAS["Marsh"] = MARSH
 AREAS["Frost"] = FROST
@@ -579,3 +580,4 @@ AREAS["Reef"] = REEF
 AREAS["Haunt"] = HAUNT
 AREAS["Dino"] = DINO
 AREAS["Toy"] = TOY
+AREAS["Clock"] = CLOCK
