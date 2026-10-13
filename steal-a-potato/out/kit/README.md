@@ -31,6 +31,7 @@ The pieces so far:
 | `BuildPotatoesDino.lua` | The Dino Valley potatoes |
 | `BuildPotatoesToy.lua` | The Toy Town potatoes |
 | `BuildPotatoesClock.lua` | The Clockwork Yard potatoes |
+| `BuildPotatoesNeon.lua` | The Neon City potatoes |
 
 ---
 
@@ -803,4 +804,30 @@ The rig, rules and clips are the same as the Meadow Patch six. Each has 42 to 45
 
 - `lineup_Clock_L10.jpg`
 - `levels_ChronoKing.jpg`
+- `turn_<Id>.jpg` for each of the six
+
+---
+
+## Neon City potatoes (`BuildPotatoesNeon.lua`)
+
+| Path | Rarity | What |
+|---|---|---|
+| `PotatoKit.Potatoes.PixelSpud` | Epic | An 8-bit potato: square-cut magenta like an old game's sprite, highlight pixels in cyan and yellow, loose glowing pixels floating round it |
+| `PotatoKit.Potatoes.GlowTater` | Legendary | A glow stick: tall and glowing lime green all over, a dark cap on top with a loop to hang it by, sparks of light |
+| `PotatoKit.Potatoes.DJSpud` | Mythic | A DJ: purple, big headphones over its head, dark shades with a pink shine and a glowing music note in the air |
+| `PotatoKit.Potatoes.HoverFry` | Secret | A tall chrome potato of the future: glowing cyan stripes, a see-through visor over its eyes and a jetpack with glowing jets |
+| `PotatoKit.Potatoes.LaserTuber` | Secret | A laser show: dark with glowing pink edges, red glowing eyes and a laser on its head throwing red, green, cyan and pink beams into the sky |
+| `PotatoKit.Potatoes.CyberOverlord` | Divine | Part potato, part machine: dark chrome with glowing circuit traces, a steel plate over one side of its face with a red cyber eye, chrome shoulder pads and a bigger crown |
+
+The rig, rules and clips are the same as the Meadow Patch six. Each has 41 to 45 parts.
+
+- **GlowTater's `Body`** and the rest of its body are Neon.
+- **HoverFry's visor** is see-through (Transparency 0.35).
+- **DJSpud's shades** are part of its body (`Extra`), so it wears them at every level. Its eyes blink behind them.
+- **CyberOverlord's eyes:** one white `Eye` with a `Pupil`, and one Neon red `Eye` with a glowing `Glint`. Its `Mouth` is a thin Neon line.
+
+**Previews:** `previews/potatoes/`
+
+- `lineup_Neon_L10.jpg`
+- `levels_CyberOverlord.jpg`
 - `turn_<Id>.jpg` for each of the six
