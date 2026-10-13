@@ -14,7 +14,7 @@ import numpy as np
 
 import spsgeo as G
 
-from .scenery import (Area, Build, INK, bar, ori, potato, prop_attrs, register, round3, shade)
+from .scenery import (Area, Build, INK, bar, ori, potato, prop_attrs, register, round3)
 from .scenery_marsh import facets, facing, octo
 
 ICE = ("c4e3ff", "acd6fb", "dcf0ff")
@@ -104,6 +104,7 @@ def tower(B, x, z, sx):
     B.plate("Window", (1.0, 3.6, 0.12), p + R @ (0, 0, -0.06), R, col=DEEP[0])
     B.p("Window", (1.9, 0.5, 0.6), p + R @ (0, 2.05, -0.25), R, SNOW[1])
     B.p("Window", (1.9, 0.4, 0.7), p + R @ (0, -2.0, -0.3), R, SNOW[0])
+    icicle(B, p + R @ (0.35 * sx, -2.18, -0.45), 1.3, w=0.42)
 
 
 def gate(B):
@@ -193,12 +194,13 @@ def p_igloo(sc, parent):
     B = Build(sc, parent, "Igloo", seed=411)
     y = 0.0
     for k, (w, h) in enumerate(((8.6, 2.0), (7.6, 1.9), (6.0, 1.8), (3.8, 1.5))):
-        round3(B, "Igloo", (0.0, y + h / 2, 0.8), w, h, w, (SNOW[k % 2], SNOW[2], ICE[2] if k % 2 else SNOW[0]))
+        round3(B, "Igloo", (0.0, y + h / 2, 0.8), w, h, w, (SNOW[k % 2], SNOW[2], ICE[2] if k % 2 else SNOW[0]),
+               R=G.ry(22.5 * (k % 2)))
         y += h - 0.05
     B.p("Tunnel", (3.6, 2.9, 3.2), (0.0, 1.45, -3.6), None, SNOW[0])
     B.p("Tunnel", (4.0, 0.6, 3.4), (0.0, 3.1, -3.6), None, SNOW[2])
-    B.p("Door", (2.0, 2.2, 0.12), (0.0, 1.1, -5.26), None, "ffd27a", material="Neon", flicker=0.08, lamp=True)
-    B.p("Door", (1.42, 1.42, 0.12), (0.0, 2.2, -5.25), G.rz(45), "ffc45a", material="Neon", flicker=0.08, lamp=True)
+    B.p("Door", (2.0, 1.9, 0.12), (0.0, 0.95, -5.26), None, "ffd27a", material="Neon", flicker=0.08, lamp=True)
+    B.p("Door", (1.4, 0.56, 0.14), (0.0, 2.16, -5.24), None, "ffc45a", material="Neon", flicker=0.08, lamp=True)
     for k, (x, z, s) in enumerate(((3.4, -3.6, 1.1), (-3.0, -4.2, 0.9))):
         B.p("Snow", (s, s * 0.8, s), (x, s * 0.4, z), ori(0, 25 * k + 10, 0), SNOW[k % 3])
     return B.finish()
@@ -226,8 +228,8 @@ def p_sled(sc, parent):
         B.p("Present", (0.36, size[1] + 0.08, size[2] + 0.06), p, R, rib)
         if k == 2:
             for sx in (-1, 1):
-                B.p("Present", (0.62, 0.42, 0.285 + 0.025 * sx), p + R @ (sx * 0.3, size[1] / 2 + 0.2, 0.0), R @ G.rz(sx * 30),
-                    rib)
+                B.p("Present", (0.62, 0.42, 0.285 + 0.025 * sx), p + R @ (sx * 0.3, size[1] / 2 + 0.2, 0.0),
+                    R @ G.rz(sx * 30), rib)
     bar(B, "Rope", (-1.25, 1.5, -2.7), (0.0, 0.25, -5.0), 0.16, "c8a070")
     bar(B, "Rope", (1.25, 1.5, -2.7), (0.0, 0.25, -5.0), 0.16, "b89060")
     return B.finish()
@@ -263,8 +265,9 @@ def p_crystals(sc, parent):
     B = Build(sc, parent, "IceCrystals", seed=414)
     B.p("Snow", (3.6, 0.5, 3.0), (0.0, 0.25, 0.0), G.ry(15), SNOW[0])
     B.p("Snow", (2.4, 0.42, 2.6), (0.6, 0.45, 0.4), G.ry(55), SNOW[2])
-    for k, (d, L, w) in enumerate((((0.1, 1.0, -0.1), 4.4, 1.1), ((0.6, 0.8, -0.4), 3.2, 0.9), ((-0.7, 0.7, 0.2), 3.0, 0.85),
-                                    ((0.3, 0.7, 0.8), 2.4, 0.8), ((-0.4, 0.6, -0.8), 2.0, 0.7))):
+    for k, (d, L, w) in enumerate((((0.1, 1.0, -0.1), 4.4, 1.1), ((0.6, 0.8, -0.4), 3.2, 0.9),
+                                    ((-0.7, 0.7, 0.2), 3.0, 0.85), ((0.3, 0.7, 0.8), 2.4, 0.8),
+                                    ((-0.4, 0.6, -0.8), 2.0, 0.7))):
         d = np.asarray(d, float)
         d /= np.linalg.norm(d)
         base = np.array((0.15 * k - 0.3, 0.3, 0.1 * k - 0.2))

@@ -299,13 +299,14 @@ def hero(sc, parent):
                5.0 - 0.4 * (k % 2) + 0.6 * (k // 2), col, w=1.3, heading=15 * k)
     topper(B, (0.0, l3 - 0.04, cz - 0.2), 5.0)
     # a giant candy cane and a giant lollipop either side, gumdrops at the foot
-    cane(B, (-18.6, 0.0, cz + 2.5), 17.0, heading=90.0, hook=2.6, w=1.6, bands=5)
-    bar(B, "Lollipop", (18.4, 0.0, cz + 2.8), (18.4, 15.0, cz + 2.8), 0.8, WHITE)
-    swirl(B, (18.4, 18.6, cz + 2.8), 4.0, R=G.rz(10), cols=(PINK[1], WHITE), th=0.8, segs=6)
-    B.p("Ribbon", (1.8, 0.8, 1.0), (18.4, 14.2, cz + 2.4), G.rz(30), PINKICE[1])
-    B.p("Ribbon", (1.8, 0.8, 1.04), (18.4, 14.2, cz + 2.4), G.rz(-30), PINKICE[2])
-    for k, (x, z, s, cols) in enumerate(((-14.4, cz - 9.6, 2.4, MINT), (15.0, cz - 8.4, 2.8, LEMON),
-                                          (-16.6, cz - 5.0, 1.9, GRAPE))):
+    cane(B, (-19.6, 0.0, cz + 2.5), 17.0, heading=90.0, hook=2.6, w=1.6, bands=5)
+    lx = 17.6
+    bar(B, "Lollipop", (lx, 0.0, cz + 2.8), (lx, 15.0, cz + 2.8), 0.8, WHITE)
+    swirl(B, (lx, 18.6, cz + 2.8), 4.0, R=G.rz(10), cols=(PINK[1], WHITE), th=0.8, segs=6)
+    B.p("Ribbon", (1.8, 0.8, 1.0), (lx, 14.2, cz + 2.4), G.rz(30), PINKICE[1])
+    B.p("Ribbon", (1.8, 0.8, 1.04), (lx, 14.2, cz + 2.4), G.rz(-30), PINKICE[2])
+    for k, (x, z, s, cols) in enumerate(((-14.4, cz - 9.6, 2.4, MINT), (14.6, cz - 8.6, 2.8, LEMON),
+                                          (-17.0, cz - 5.0, 1.9, GRAPE))):
         gumdrop(B, (x, 0.0, z), s, cols, heading=25 * k)
     return B.finish()
 

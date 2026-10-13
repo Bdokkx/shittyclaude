@@ -1,12 +1,13 @@
 """Cosmic Garden: the hero, a crashed retro rocket with its potato astronaut, and the area's props.
 
 A big rocket, white with a red nose cone, a red band and three red fins, has come down nose first
-into a crater: it leans out of a ring of dark slabs, its nose buried among boulders, glowing cracks
-running across the scorched crater floor. Its engine points up at the sky and still burns (Neon
-orange and blue that flicker and light up at night), puffs of smoke drifting out of it. Round
-portholes glow along its side; the hatch hangs open, a ladder runs down from it and the potato
-astronaut, in a glass-dome helmet of pale blue blocks, climbs down it waving. Torn hull panels and a
-fin lie about and a little potato flag is planted on the crater rim.
+into a crater: it leans out of a ring of dark slabs over a scorched floor, its nose buried among
+boulders, glowing cracks running out from the rim across the ground. Its engine points up at the
+sky and still burns (Neon orange and blue that flicker and light up at night), puffs of smoke
+drifting off it. Round portholes glow along its side; the hatch hangs open, a ladder runs down from
+it and the potato astronaut, in a glass-dome helmet of pale blue blocks, climbs down it waving. Torn
+hull panels and a fin lie about, a little potato flag is planted on the crater rim and glowing
+alien plants come up round it.
 """
 import math
 
@@ -34,8 +35,7 @@ SUIT = ("f4f4fa", "d8dae6", "ffffff")
 GOLD = ("f5c518", "e0a800", "ffd447")
 ALIEN = ("4fae3a", "3f962e", "62c24a")
 NEON = ("ff5ad8", "40f0ff", "a8ff4a", "b67cff", "ffe14d")
-PLANETS = (("ff9f3d", "f07412", "ffc078"), ("4fd8c8", "2fb8a8", "8ff0e4"), ("b47cff", "9a5ef0", "d4b0ff"),
-           ("ff6f9f", "e8507f", "ffa4c4"))
+PLANET = ("ff9f3d", "f07412", "ffc078")
 
 
 # ==================================================================== shapes
@@ -271,7 +271,7 @@ def p_planet(sc, parent):
     bar(B, "Pole", (0.0, 0.5, 0.0), (0.15, 6.0, 0.0), 0.4, STEEL[1])
     c = np.array((0.2, 7.8, 0.0))
     A = G.rz(-22.0) @ G.rx(12.0)
-    col = PLANETS[0]
+    col = PLANET
     spin = dict(spin=24.0)
     drum(B, "Planet", c, 2.1, 3.0, (col[0], col[1]), R=A, **spin)
     for sy in (-1, 1):

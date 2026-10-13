@@ -15,7 +15,7 @@ import numpy as np
 import spsgeo as G
 from spsgeo import CF
 
-from .scenery import (Area, Build, INK, bar, grass, ori, potato, prop_attrs, register, round3, shade, turn)
+from .scenery import (Area, Build, INK, bar, grass, ori, potato, prop_attrs, register, round3)
 
 CAP = ("e8403a", "d6352e", "f25a46")
 DOT = ("ffffff", "f4eee4")

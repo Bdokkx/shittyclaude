@@ -22,7 +22,7 @@ from .scenery import (Area, Build, bar, frame, ori, potato, prop_attrs, register
 ROCK = ("5e5672", "6a6280", "766e8e", "837b9c", "9088aa", "9e97b8")   # grey-violet, darker at the foot
 CYAN = ("1fa4dc", "5ad6ff", "7ae8ff")      # body, its lighter turned facets, the glow
 PINK = ("d43c9c", "ff74cc", "ff9ce2")
-GOLD = ("e0901a", "ffbf3a", "ffd45a")
+GOLD = ("d88a12", "f5b532", "fff3c4")
 GEMS = (CYAN, PINK, GOLD)
 WOOD = ("6b4226", "7a4a2a", "8a5a32", "9a6238")
 IRON = ("3a3f4a", "4a505c", "5a6272", "2a2a30")
@@ -127,7 +127,7 @@ def miner(B, base, s, heading, name="Miner"):
         return base + R @ np.asarray(v, float)
     leg = 1.0
     for sx in (-1, 1):
-        B.p(name, (s * 0.24, leg + 0.12, s * 0.26), at((sx * s * 0.19, (leg + 0.12) / 2, 0.05)), R, OVERALL[1])
+        B.p(name, (s * 0.24, leg + 0.02, s * 0.26), at((sx * s * 0.19, 0.1 + (leg + 0.02) / 2, 0.05)), R, OVERALL[1])
         B.p(name, (s * 0.3, 0.5, s * 0.44 + 0.02 * (sx > 0)), at((sx * s * 0.19, 0.25, -0.14)), R, WOOD[0])
     c = at((0, leg + s / 2, 0))
     potato(B, c, s, SKIN, R=R, name=name, glints=True, cheeks="ff9aa8")
@@ -181,7 +181,7 @@ def hero(sc, parent):
                        ((-17.6, 6.2, 5.6), 2.6, (ROCK[2], ROCK[3], ROCK[1])),           # on the ledges
                        ((16.2, 6.7, 6.2), 2.4, (ROCK[3], ROCK[2], ROCK[4])),
                        ((-12.6, 9.2, 1.4), 2.0, (ROCK[3], ROCK[4], ROCK[2])),
-                       ((8.4, 10.2, 1.0), 1.9, (ROCK[4], ROCK[3], ROCK[2]))):
+                       ((9.8, 10.0, 2.8), 1.9, (ROCK[4], ROCK[3], ROCK[2]))):
         rock(B, c, s, cols, solid=s > 2.2)
     # the mine: a dark opening framed in timber, a second frame further in, a sign with a gem
     ex, zf = -2.0, -1.5
@@ -199,7 +199,7 @@ def hero(sc, parent):
     for k, (base, hd, ln, L, w, cols, lamp, solid, seg) in enumerate((
             ((0.5, 13.0, 7.0), 95.0, 8.0, 19.0, 5.6, CYAN, True, True, 2.6),
             ((3.5, 12.0, 7.4), 80.0, 30.0, 13.5, 4.0, PINK, True, True, 1.8),
-            ((-4.5, 11.5, 7.0), 265.0, 33.0, 12.5, 3.7, GOLD, True, True, 1.6),
+            ((-4.5, 11.5, 7.0), 265.0, 33.0, 13.5, 3.7, GOLD, True, True, 0.0),
             ((-2.5, 12.0, 9.5), 215.0, 20.0, 12.0, 3.2, CYAN, False, False, 0.0),
             ((4.0, 12.5, 9.0), 140.0, 16.0, 10.0, 2.8, PINK, False, False, 0.0),
             ((7.5, 10.5, 5.0), 100.0, 55.0, 9.0, 2.6, CYAN, False, False, 0.0),
@@ -230,8 +230,8 @@ def hero(sc, parent):
     for k, (x, z, s, cols, glow) in enumerate(((2.4, -5.0, 0.9, GOLD, False), (-6.6, -6.2, 0.8, CYAN, True),
                                                (3.4, -12.2, 0.7, PINK, False), (-7.6, -3.4, 0.7, GOLD, False))):
         gem(B, (x, s * 0.45, z), s, cols, glow=glow, R=ori(25, 30 * k, 40))
-    # the potato miner beside the cart
-    miner(B, (4.4, 0.0, -9.4), 4.2, 25.0)
+    # the potato miner up on the ledge beside the cluster, holding up a gem it has found
+    miner(B, (6.6, 10.3, -0.4), 4.2, 12.0)
     return B.finish()
 
 
