@@ -79,10 +79,13 @@ def stud_group():
     attr = nodes.new("ShaderNodeAttribute")
     attr.attribute_name = "stud"
     attr.attribute_type = "GEOMETRY"
-    mul = nodes.new("ShaderNodeMath")
+    mul = nodes.new("ShaderNodeMath")              # 'stud' > 0: studs stand up; < 0: inlets sink in
     mul.operation = "MULTIPLY"
     links.new(ramp.outputs["Result"], mul.inputs[0])
     links.new(attr.outputs["Fac"], mul.inputs[1])
+    mag = nodes.new("ShaderNodeMath")
+    mag.operation = "ABSOLUTE"
+    links.new(attr.outputs["Fac"], mag.inputs[0])
     bump = nodes.new("ShaderNodeBump")
     bump.inputs["Strength"].default_value = 0.7
     bump.inputs["Distance"].default_value = 0.08
@@ -100,7 +103,7 @@ def stud_group():
     m2 = nodes.new("ShaderNodeMath")
     m2.operation = "MULTIPLY"
     links.new(tri.outputs[0], m2.inputs[0])
-    links.new(attr.outputs["Fac"], m2.inputs[1])
+    links.new(mag.outputs[0], m2.inputs[1])
     links.new(m2.outputs[0], out.inputs["Shade"])
     return ng
 
@@ -289,12 +292,23 @@ def add_part(b, n, show_hidden=False):
     W = (p["cf"].R @ V.T).T + p["cf"].p
     sx, sy, sz = p["size"]
     uvs, stud = [], []
+    half = np.array((sx, sy, sz)) / 2
     for f in g.f:
         if p["shape"] == "Block":
-            uvs.append([(V[i][0] + sx / 2, V[i][2] + sz / 2) for i in f])
             fv = V[list(f)]
-            top = np.all(np.abs(fv[:, 1] - sy / 2) < 1e-6)
-            stud.append(1.0 if (top and p["surfaces"] == "studs") else 0.0)
+            # the face's own plane: the axis its corners all share picks the other two
+            k = int(np.argmin(np.ptp(fv, axis=0)))
+            ia, ib = [j for j in range(3) if j != k]
+            uvs.append([(V[i][ia] + half[ia], V[i][ib] + half[ib]) for i in f])
+            top = k == 1 and np.all(np.abs(fv[:, 1] - sy / 2) < 1e-6)
+            bottom = k == 1 and not top
+            surf = p["surfaces"]
+            if surf == "inlet":
+                stud.append(-1.0)
+            elif surf == "studs":
+                stud.append(1.0 if top else (-1.0 if bottom else 0.0))
+            else:
+                stud.append(0.0)
         else:
             uvs.append([(0.0, 0.0)] * len(f))
             stud.append(0.0)

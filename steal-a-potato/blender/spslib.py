@@ -137,6 +137,13 @@ class Scene:
         parent = self._node(parent)
         return parent.find(name) or Node("Folder", name, parent)
 
+    def container(self, parent, name):
+        """A Folder the build script merges into the live one of that name (made if missing):
+        what sits in it is replaced item by item, everything else in it is left alone."""
+        f = self.folder(parent, name)
+        f.p["container"] = True
+        return f
+
     def model(self, parent, name, **p):
         parent = self._node(parent)
         return Node("Model", name, parent, **p)
@@ -461,6 +468,10 @@ def to_json(scene, path):
                 d["pivot"] = _cf_json(p["pivot"])
             if p.get("attrs"):
                 d["attrs"] = p["attrs"]
+        if n.kind == "Folder" and p.get("container"):
+            d["container"] = True
+        if n.kind == "Model" and p.get("wpivot") is not None:
+            d["wpivot"] = _cf_json(p["wpivot"])
         if n.kind in ("Model", "Accessory"):
             if p.get("primary") is not None:
                 d["primary"] = p["primary"].idx

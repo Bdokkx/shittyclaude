@@ -272,6 +272,12 @@ function Inst.SetAttribute(o, k, v)
 	o._attrs[k] = v
 end
 function Inst.GetAttribute(o, k) return o._attrs[k] end
+function Inst.GetAttributes(o) local t = {} for k, v in pairs(o._attrs) do t[k] = v end return t end
+function Inst.GetFullName(o)
+	local names, x = {}, o
+	while x and x ~= game do table.insert(names, 1, x._p.Name) x = rawget(x, "_parent") end
+	return table.concat(names, ".")
+end
 local REFKEYS = {Part0 = true, Part1 = true, PrimaryPart = true}
 function Inst.Clone(o)
 	local map = {}
