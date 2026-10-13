@@ -410,8 +410,35 @@ def yard_ground(k, f, rng):
                   studs=c.startswith("gravel"))
 
 
+def truck_track(k, f):
+    """The delivery truck's track through the forest to the yard gate: dirt and gravel plates
+    let into the ground cells they cross (each plate within one cell, so it follows the
+    ground's steps), two darker wheel ruts along it."""
+    import math as _m
+    from .kit import bevel_box
+    x0, x1, z0, z1 = L.TRUCK_LANE
+    xs = [x0] + [v for v in range(int(_m.floor(x0 / 8) + 1) * 8, int(x1), 8)] + [x1]
+    rut = G.Geo()
+    for z in np.arange(z0, z1, 4.0):
+        if len(rut.f) and int(z - z0) % 16 == 0:                     # a mesh every 16 studs of track
+            k.mesh(f, "Ruts", "Track__Ruts%d" % int(z), rut, CF(), "mud", shadow=False)
+            rut = G.Geo()
+        for a, b in zip(xs, xs[1:]):
+            cx, cz = (a + b) / 2, z + 2.0
+            X0, Z0 = _m.floor(cx / 16) * 16, _m.floor(cz / 16) * 16
+            cs = 8 if max(abs(X0 + 8), abs(Z0 + 8)) < 104 else 16
+            h = cell_height(_m.floor(cx / cs) * cs, _m.floor(cz / cs) * cs, cs)
+            c = "gravel2" if (int(z) // 4 + int(a)) % 3 == 0 else "dirt"
+            k.box(f, "Path", (a, h - 0.36, z), (b, h + 0.04, min(z + 4.0, z1)), c, solid=True)
+            for rx in (6.5, 13.5):
+                if a <= rx < b:
+                    rut.add(bevel_box(1.2, 0.15, 3.9, 0.04, c=(rx, h + 0.06, cz)))
+    k.mesh(f, "Ruts", "Track__Ruts%d" % int(z1), rut, CF(), "mud", shadow=False)
+
+
 def build(k, out, rng):
     n = ground(k, k.sc.folder(out, "Ground"))
+    truck_track(k, k.sc.folder(out, "TruckTrack"))
     rf = k.sc.folder(out, "Road")
     road(k, rf, rng)
     corridor(k, k.sc.folder(out, "RoadSide"), rng)

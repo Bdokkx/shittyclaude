@@ -1020,6 +1020,8 @@ def run(sc, old=None, quick=False):
     rep["bodies"] = bodies(sc)
     rep["openings"] = openings(sc)
     rep["overlaps"] = overlaps(sc, b)
+    from . import papa
+    rep["papa"] = papa.check(sc)
     if not quick:
         rep["planes"] = planes(sc, b)
         rep["horizon"] = horizon(sc, b)
@@ -1066,6 +1068,10 @@ def show(rep, limit=25):
     head("openables: swept, left open")
     print(len(rep["openings"]))
     for r in rep["openings"][:limit * 3]:
+        print("  ", r)
+    head("Papa Stud's places, his walk, the truck's lane")
+    print(len(rep["papa"]))
+    for r in rep["papa"][:limit * 2]:
         print("  ", r)
     head("clear boxes at markers")
     print(len(rep["clear"]))

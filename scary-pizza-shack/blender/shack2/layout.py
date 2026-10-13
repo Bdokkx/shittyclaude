@@ -85,9 +85,15 @@ WALKWAY_Z = (11.0, 14.0)                     # paving along the front wall
 LOT = (22.0, 46.0, -8.0, 21.0)               # side lot east of the shack: two nose-in bays
 BAYS_X = ((24.0, 34.0), (34.0, 44.0))        # bay A (empty, oil stains), bay B (the old pickup)
 BUS_STOP_X = (50.0, 58.0)
-YARD_X = (-28.0, 28.0)
+YARD_X = (-30.0, 28.0)          # wide enough west of the shack for Papa to walk round into the yard
 YARD_Z = (-47.0, -11.0)
 GATE_X = (8.0, 12.0)
+# the delivery truck's lane through the forest to the yard gate: 14 wide, 13 clear overhead,
+# from Z -176 to the gate; the truck stops with its nose 3 short of the shut gate
+TRUCK_LANE = (3.0, 17.0, -176.0, -47.0)
+TRUCK_HEAD = 13.0
+TRUCK_NOSE = 12.0                     # the truck's pivot (its middle) to its front bumper
+CAMP = (-56.0, -58.0)                 # Papa's camp in a clearing, 80 out (folding chair, cool box, lantern)
 
 # the moon (from the shack towards it) and the view composed for it: a meadow across the road
 MOON = (0.41, 0.24, 0.88)

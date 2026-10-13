@@ -238,12 +238,31 @@ def _deer():
     return g
 
 
+def _lamp_south(k, lm, x, y0, z):
+    R = G.ry(180)
+    k.mesh(lm, "Base", "RoadLamp__Base", ccyl(0.7, 0.8, 10, "y", (0, 0.2, 0), 0.08), CF((x, y0, z)), "concrete",
+           solid=True)
+    k.mesh(lm, "Pole", "RoadLamp__Pole", O.flat_pole(11.0, 0.3, 0.2, 10), CF((x, y0 + 0.6, z)), "galv", solid=True)
+    arm = G.tube([(0, 11.2, 0), (0, 12.0, 0.6), (0, 12.2, 1.6), (0, 12.05, 2.6), (0, 11.9, 3.0)], 0.15, 8)
+    k.mesh(lm, "ArmPipe", "RoadLamp__Arm", arm, CF((x, y0, z), R), "galv", shadow=False)
+    hd = G.outward(G.lathe([(0.0, -0.35), (0.55, -0.3), (0.7, 0.0), (0.5, 0.3), (0.0, 0.35)], 10, sz=1.6))
+    k.mesh(lm, "Head", "RoadLamp__Head", hd, CF((x, y0 + 11.75, z - 3.6)), "galv_dark")
+    bulb = k.part(lm, "Bulb", (1.0, 0.4, 1.6), CF((x, y0 + 11.35, z - 3.6)), "sodium", material="Neon",
+                  grid=False, shadow=False)
+    k.lamp(lm, bulb, "Street", "Spot", 44.0, 2.2, (255, 184, 110), angle=125.0, flicker=0.2)
+    k.sc.attachment(bulb, "Fx_Moths", CF((x, y0 + 10.8, z - 3.6)))
+
+
 def road_lamps(k, f, gr):
-    """Two more street lamps on the north verge: pools of light with dark between them."""
+    """Two more street lamps on the north verge and one on the far (south) side: pools of light
+    with dark between them (Papa_Road2 stands under the far one)."""
     m = k.sc.model(f, "RoadLamps")
-    for i, (x, z) in enumerate((off_road(-46.0, 21.6, 13.6), off_road(68.0, 18.4, 13.6))):
+    for i, (x, z) in enumerate((off_road(-46.0, 21.6, 13.6), off_road(68.0, 18.4, 13.6), off_road(-14.0, 48.0, 13.6))):
         lm = k.sc.model(m, "RoadLamp%d" % (i + 1))
         y0 = gr.y(x, z)
+        if z > L.ROAD_Z:                              # the far side: the arm reaches back over the road
+            _lamp_south(k, lm, x, y0, z)
+            continue
         k.mesh(lm, "Base", "RoadLamp__Base", ccyl(0.7, 0.8, 10, "y", (0, 0.2, 0), 0.08), CF((x, y0, z)), "concrete",
                solid=True)
         k.mesh(lm, "Pole", "RoadLamp__Pole", O.flat_pole(11.0, 0.3, 0.2, 10), CF((x, y0 + 0.6, z)), "galv", solid=True)

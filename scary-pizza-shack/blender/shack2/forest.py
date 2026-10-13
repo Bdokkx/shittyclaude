@@ -53,6 +53,10 @@ def crown_room(x, z):
          _rect_d(x, z, L.LOT[0], L.LOT[1], L.LOT[2], L.LOT[3]),
          _rect_d(x, z, L.BUS_STOP_X[0] - 2, L.BUS_STOP_X[1] + 2, 17.0, 24.0)]
     d += [math.hypot(x - px, z - L.POLE_Z) - 0.8 for px in L.POLE_X]
+    d.append(_rect_d(x, z, L.TRUCK_LANE[0], L.TRUCK_LANE[1], L.TRUCK_LANE[2] - 6.0, L.TRUCK_LANE[3]))   # no crown over it
+    d.append(math.hypot(x - L.CAMP[0], z - L.CAMP[1]) - 6.0)
+    if -56.0 < x < 62.0 and z > L.ROAD_Z:                              # the guard rail on the south edge
+        d.append(L.dist_to_road(x, z) - 13.6)
     d += [math.hypot(x - s["x"], z - s["z"]) - 3.0 for s in L.ROAD_SIGNS.values()]
     return max(1.5, min(d) - 0.3)
 
@@ -335,7 +339,8 @@ def _discs():
         d.append((s["x"], s["z"], 11.0))
     for x in L.POLE_X:
         d.append((x, L.POLE_Z, 10.0))
-    d += [(-46.0, 20.0, 9.0), (68.0, 17.0, 9.0), (L.CULVERT_X + 4.2, 58.5, 6.0), (10.0, -47.5, 10.0)]
+    d += [(-46.0, 20.0, 9.0), (68.0, 17.0, 9.0), (L.CULVERT_X + 4.2, 58.5, 6.0), (10.0, -47.5, 10.0),
+          (-14.0, 47.6, 9.0)]                         # (the far-side road lamp)
     return d
 
 
@@ -359,9 +364,12 @@ def keep_out(x, z):
         return True
     if -68 < x < -44 and 54 < z < 72:                 # billboard
         return True
-    if L.CULVERT_X - 5 < x < L.CULVERT_X + 5 and 40 < z < 140:   # the farm track into the meadow
+    if L.CULVERT_X - 6 < x < L.CULVERT_X + 6 and 36 < z < 140:   # the farm track into the meadow, the culvert
         return True
-    if 8 < x < 12 and -110 < z < -45:                  # the dirt path from the yard gate
+    lx0, lx1, lz0, lz1 = L.TRUCK_LANE
+    if lx0 - 2.0 < x < lx1 + 2.0 and lz0 - 6.0 < z < lz1 + 2.0:      # the truck lane to the yard gate
+        return True
+    if math.hypot(x - L.CAMP[0], z - L.CAMP[1]) < 9.0:                 # Papa's camp
         return True
     return False
 
@@ -413,6 +421,8 @@ def build(k, out, rng):
         r = math.hypot(x, z)
         y = ground_y(x, z)
         u = rng.random()
+        if _rect_d(x, z, *L.TRUCK_LANE) < 10.0:
+            u = 1.0                       # only pines by the truck lane (their crowns keep off it)
         if u < 0.08:
             m = dead_lean(k, near, x, y, z, float(rng.uniform(16, 26)), rng)
         elif u < 0.15:
@@ -470,7 +480,12 @@ def build(k, out, rng):
     for (x, z) in poisson(rng, 7000, L.FOREST_R[1] + 8, L.FAR_R[1], lambda x, z: 10.0, ok_far, existing=trees):
         j = int(rng.integers(0, len(geos)))
         y = ground_y(x, z) if max(abs(x), abs(z)) < L.FAR_R[0] + 20 else 0.0
-        k.mesh(far, "FarTree", "FarTree%d__Mass" % j, geos[j], CF((x, y - 0.4, z), G.ry(rng.uniform(0, 90))),
+        rot = rng.uniform(0, 90)
+        cr = FAR_KINDS[j][1] * 0.72 + 0.5                  # its widest tier, turned 45, hangs below the
+        lx0, lx1, lz0, lz1 = L.TRUCK_LANE                  # truck's headroom: keep it off the lane
+        if lx0 - cr < x < lx1 + cr and lz0 - cr - 6.0 < z < lz1 + cr:
+            continue
+        k.mesh(far, "FarTree", "FarTree%d__Mass" % j, geos[j], CF((x, y - 0.4, z), G.ry(rot)),
                ("far_trees", "pine_dark", "pine2")[j % 3], shadow=False)
     k.mark_used("FarTree", "outside")
     # the far ground under them, and the ring of hills closing the horizon
@@ -488,6 +503,14 @@ def build(k, out, rng):
             h *= 0.75                     # a lower ridge under the moon, with the mast on it
         g = hill_geo(rng, rng.uniform(58, 86), h, int(rng.integers(3, 6)))
         x, z = r * math.sin(a), r * math.cos(a)
+        lx0, lx1, lz0, lz1 = L.TRUCK_LANE
+        v = np.asarray(g.v, float)
+        lo, hi = v.min(0), v.max(0)
+        def in_lane(x, z):                    # its footprint's box (its slabs are big flat faces)
+            return x + lo[0] < lx1 + 6.0 and x + hi[0] > lx0 - 6.0 and z + hi[2] > lz0 - 8.0 and z + lo[2] < lz1
+        while in_lane(x, z):                  # the hill behind the truck lane's end stands back from it
+            r += 4.0
+            x, z = r * math.sin(a), r * math.cos(a)
         k.mesh(hills, "Hill", "Hill%d__Terraces" % j, g, CF((x, 0, z)), ("hill", "hill2", "hill3")[j % 3],
                shadow=False, solid=False)
         # tree masses on the hill's shoulders

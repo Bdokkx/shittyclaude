@@ -241,8 +241,8 @@ def yard(k, f, gr, rng):
     _fence_run(k, m, (g1 + 0.3, zf), (x1 - 0.4, zf), gr, skip=("start",))
     _fence_run(k, m, (x0 + 0.4, zf), (x0 + 0.4, z1 - 4.0), gr, sag_panel=2)
     _fence_run(k, m, (x1 - 0.4, zf), (x1 - 0.4, z1 - 4.0), gr)
-    _fence_run(k, m, (x0 + 0.4, z1 - 4.0), (-26.6, z1 - 4.0), gr)  # side returns (a walk-round gap by the shack)
-    _fence_run(k, m, (24.5, z1 - 4.0), (x1 - 0.4, z1 - 4.0), gr)
+    # the east side return (a walk-round gap by the shack); the west side is open from the fence's end
+    _fence_run(k, m, (25.6, z1 - 4.0), (x1 - 0.4, z1 - 4.0), gr)
     shed(k, m, gr)
     yp = L.YARD_PROPS
     for i, dz in enumerate((0.0, 0.62, 1.24)):
@@ -274,6 +274,8 @@ def yard(k, f, gr, rng):
         if L.SHED[0] - 2.5 < p[0] < L.SHED[1] + 2.5 and L.SHED[2] - 2.5 < p[1] < L.SHED[3] + 2.5:
             continue
         if p[0] > 14 and p[1] < -33:                  # the pallets and crates corner
+            continue
+        if math.hypot(p[0] - yp["Tyres"][0], p[1] - yp["Tyres"][1]) < 3.0:
             continue
         k.prop(m, "Weeds", CF((p[0], 0.0, p[1]), G.ry(rng.uniform(0, 360))), where="outside", name="Weeds", seed=i)
     paths(k, m, rng)
@@ -378,6 +380,53 @@ def SZ0():
     return L.OUT_Z0 - 0.5
 
 
+def camp(k, f, gr):
+    """Papa's camp in a clearing 80 out: a folding chair big enough for him, facing the shack;
+    a cool box, a pizza box on it, a camping lantern that is always lit (LampGroup Always);
+    marker Papa_Camp on the chair's seat."""
+    m = k.sc.model(f, "PapaCamp")
+    cx, cz = L.CAMP
+    y = gr.y(cx, cz)
+    look = np.array((-cx, 0.0, -cz))
+    look /= np.linalg.norm(look)
+    R = G.facing(look)                                # -Z towards the shack
+    base = CF((cx, y, cz), R)
+    fr = G.Geo()
+    for sx in (-1, 1):
+        fr.add(rod((sx * 1.6, 0.0, -1.2), (sx * 1.6, 2.6, 1.0), 0.12, 6))      # the X legs
+        fr.add(rod((sx * 1.6, 0.0, 1.0), (sx * 1.6, 2.6, -1.2), 0.12, 6))
+        fr.add(rod((sx * 1.6, 2.6, 1.0), (sx * 1.6, 5.4, 1.6), 0.12, 6))       # the back posts
+        fr.add(rod((sx * 1.6, 3.6, -1.0), (sx * 1.6, 3.6, 0.9), 0.1, 6))       # arm rests
+    k.mesh(m, "ChairFrame", "Camp__ChairFrame", fr, base, "galv_dark", solid=True)
+    k.mesh(m, "Seat", "Camp__Seat", bevel_box(3.2, 0.2, 2.2, 0.06, c=(0, 2.6, -0.1)).xf(G.M(G.rx(-4))), base,
+           "tarp_blue", solid=True)
+    k.mesh(m, "Back", "Camp__Back", bevel_box(3.2, 2.6, 0.2, 0.06, c=(0, 4.0, 1.3)).xf(G.M(G.rx(-12))), base,
+           "tarp_blue", shadow=False)
+    cb = base * CF((3.6, 0.0, -0.6))
+    k.mesh(m, "CoolBox", "Camp__CoolBox", bevel_box(2.2, 1.4, 1.4, 0.12, c=(0, 0.7, 0)), cb, "label_white", solid=True)
+    k.mesh(m, "CoolLid", "Camp__CoolLid", bevel_box(2.3, 0.3, 1.5, 0.08, c=(0, 1.55, 0)), cb, "label_blue",
+           shadow=False)
+    k.mesh(m, "PizzaBox", "Camp__PizzaBox", bevel_box(1.8, 0.4, 1.8, 0.06, c=(0, 1.9, 0)).xf(G.M(G.ry(12))), cb,
+           "cardboard", shadow=False)
+    board(k, m, (1.0, 0.6, 0.15), cb * CF((0, 2.18, 0), G.ry(12) @ G.rx(90)), "cardboard", text="PAPA\nSTUD'S",
+          text_color=(170, 32, 26), name="BoxPrint")
+    ln = k.sc.model(m, "Lantern")
+    lb = base * CF((-3.0, 0.0, -1.2))
+    k.mesh(ln, "Base", "Camp__LanternBase", ccyl(0.45, 0.3, 10, "y", (0, 0.15, 0), 0.06), lb, "red_dark", shadow=False)
+    k.mesh(ln, "Glass", "Camp__LanternGlass", ccyl(0.35, 0.9, 10, "y", (0, 0.75, 0), 0.04), lb, "glass",
+           material="Glass", transparency=0.5, shadow=False)
+    k.mesh(ln, "Cap", "Camp__LanternCap", ccyl(0.45, 0.25, 10, "y", (0, 1.32, 0), 0.06), lb, "red_dark", shadow=False)
+    bulb = k.part(ln, "Bulb", (0.4, 0.5, 0.4), lb * CF((0, 0.75, 0)), (255, 214, 150), material="Neon", grid=False,
+                  shadow=False)
+    k.lamp(ln, bulb, "Always", "Point", 16.0, 1.2, (255, 200, 140), shadows=False, flicker=0.1)
+    k.sc.marker(sc_markers(k), "Papa_Camp", base * CF((0, 2.7, -0.2)))
+    k.mark_used("PapaCamp", "outside")
+
+
+def sc_markers(k):
+    return k.sc.root.get("Markers")
+
+
 def build(k, sc):
     gr = sc.kit_ground
     rng = np.random.default_rng(31)
@@ -385,4 +434,5 @@ def build(k, sc):
     forecourt(k, f, gr, rng)
     lot(k, f, gr, rng)
     yard(k, f, gr, rng)
+    camp(k, f, gr)
     return f

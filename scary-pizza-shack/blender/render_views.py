@@ -407,6 +407,9 @@ def main():
     if "open" in opts:                                   # open=all or open=Fridge,CabinetDoor (path fragments)
         from shack2 import opens
         opens.apply_open(sc, opts["open"])
+    if opts.get("papa") == "1":                          # block stand-ins at Papa Stud's places
+        from shack2 import papa
+        papa.standins(sc)
     views = views_for(sc, which)
     # extra cameras for close looks: cams=name:x,y,z:tx,ty,tz;... (inside=1 lights them as inside)
     if "cams" in opts:

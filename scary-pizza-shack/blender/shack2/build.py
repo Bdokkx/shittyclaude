@@ -187,6 +187,36 @@ NO_COLLIDE = ("CCTVDesk/Phone/", "CCTVDesk/Radio/", "CCTVDesk/Monitor", "CCTVDes
               "Dressing/SideWindow/Sill", "Oven/Door1/", "Oven/Door2/")
 
 
+def clear_undergrowth(sc):
+    """The undergrowth is scattered before the site is built: drop any piece that ends up in
+    something built (a lamp's base, a culvert's wall) rather than nudging the scatter."""
+    from . import checks as K
+    und = sc.root.get("Outside").get("Forest").get("Undergrowth")
+    if und is None:
+        return 0
+    b = K.Boxes(sc)
+    own = {}
+    for m in und.children:
+        for n in m.walk():
+            own[id(n)] = m
+    drop = set()
+    for i, n in enumerate(b.nodes):
+        m = own.get(id(n))
+        if m is None or m in drop:
+            continue
+        for j in b.query(b.lo[i], b.hi[i]):
+            o = b.nodes[j]
+            if id(o) in own or "/Forest/" in o.path() or o.name in ("Ground", "Path", "Meadow", "Bank", "FarBank",
+                                                                      "Verge", "Ruts"):
+                continue
+            if K.sat_depth(b.C[i], b.R[i], b.H[i], b.C[j], b.R[j], b.H[j]) > 0.02:
+                drop.add(m)
+                break
+    for m in drop:
+        und.children.remove(m)
+    return len(drop)
+
+
 def no_collide(sc):
     n_off = 0
     for n in sc.nodes(("Part", "MeshPart")):
@@ -230,6 +260,9 @@ def build(items=False, seed=2026):
     outside_markers(sc)
     st_out2.cameras(k, sc)
     no_collide(sc)
+    clear_undergrowth(sc)
+    from . import papa
+    papa.build(k, sc)               # Papa Stud's places outside, his walk, the truck's path
     if items:
         from . import items2
         items2.build_items(k)
