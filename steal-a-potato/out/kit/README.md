@@ -39,6 +39,7 @@ The pieces so far:
 | `BuildSceneryReef.lua` | The Coral Cove hero and props |
 | `BuildSceneryHaunt.lua` | The Haunted Hollow hero and props |
 | `BuildSceneryDino.lua` | The Dino Valley hero and props |
+| `BuildSceneryToy.lua` | The Toy Town hero and props |
 
 ---
 
@@ -1069,3 +1070,34 @@ Each area gets one script, `BuildScenery<Area>.lua`. It builds:
 - `hero_Dino_corner.jpg`: from the corner
 - `props_Dino.jpg`: the props in a row
 - `props_Dino_top.jpg`: the props from above
+
+### Toy Town (`BuildSceneryToy.lua`)
+
+**`PotatoKit.Heroes.Toy`**: 164 parts, 41.5 wide, 30.1 tall, 28.2 deep.
+
+- **The castle:** toy building blocks on a green baseplate. The keep is big bricks laid in a running bond in red, blue, yellow and green, with battlements on top, four windows, a gate under a yellow arch and a drawbridge.
+- **The towers:** two round towers of stacked blocks, each block turned 45 degrees from the last, with cone roofs and flags.
+- **The key:** a giant wind-up key in the keep's left side that turns. Its three `Key` parts have `Spin` = 40, each centred on the axle.
+- **The staircase:** blocks up the right side to the top of the keep, each about 3.5 high, so players jump up them.
+- **The soldiers:** two potato toy soldiers with bearskins and rifles guard the gate.
+- **The train:** a toy train waits on its track in front. The engine has a smiling face, and two wagons carry alphabet blocks. Its wheels are Cylinder parts.
+- **Round about:** a spinning top, with `Spin` = 120 on its five `Top` parts, and three alphabet blocks.
+- **Solid (41 parts):** the baseplate, the keep's bricks and battlements, the towers, the drawbridge and the staircase.
+
+| `PotatoKit.Props.Toy.<Name>` | Parts | W × H × D | Count | Scale | Band | Solid | What |
+|---|---|---|---|---|---|---|---|
+| `ABCBlocks` | 12 | 6.6 × 4.9 × 5.3 | 8 | 0.8–1.3 | Any | yes | Four alphabet blocks, one stacked on the others |
+| `SpinningTops` | 10 | 6.7 × 5.3 × 4.0 | 6 | 0.8–1.3 | Any | no | One top spinning on its point (`Spin` = 120 on its five parts) and one fallen over |
+| `ToySoldier` | 21 | 4.7 × 8.1 × 3.4 | 5 | 0.9–1.2 | Side | yes | A potato toy soldier on a stand, with a bearskin, a rifle and a drum |
+| `RubberDuck` | 14 | 6.3 × 5.1 × 5.8 | 4 | 0.9–1.3 | Any | yes | A giant rubber duck on a puddle (Transparency 0.3) |
+| `JackInTheBox` | 24 | 5.0 × 10.2 × 3.9 | 4 | 0.9–1.2 | Side | yes | A striped box with its lid open, a crank and a clown potato on a spring |
+| `TeddyBear` | 18 | 5.8 × 6.5 × 3.7 | 4 | 0.9–1.2 | Side | yes | A sitting teddy bear with a red bow tie |
+| `ToyCar` | 12 | 6.2 × 4.0 × 3.8 | 5 | 0.9–1.2 | Any | yes | A blue toy car with cylinder wheels and glowing headlights (`Light`, NightLamp) |
+| `Crayons` | 12 | 5.6 × 7.4 × 2.6 | 6 | 0.85–1.3 | Side | no | Three giant crayons standing up, leaning |
+
+**Previews:** `previews/scenery/`
+
+- `hero_Toy.jpg`: from the lane
+- `hero_Toy_corner.jpg`: from the corner
+- `props_Toy.jpg`: the props in a row
+- `props_Toy_top.jpg`: the props from above
